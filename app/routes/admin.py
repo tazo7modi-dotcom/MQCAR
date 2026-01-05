@@ -395,7 +395,6 @@ def loyverse_webhook():
     return jsonify({'status': 'ignored'}), 200
 
 
-
 @admin_bp.route('/sync_loyverse_stock')
 @login_required
 @admin_required
@@ -409,74 +408,84 @@ def sync_loyverse_stock():
         created_count = 0
         updated_count = 0
         
+        # --- PHASE 1: FETCH ITEMS & PRICES ---
         while True:
-            # Fetch Items
             resp = requests.get(f"{BASE_URL}/items?limit=250&cursor={cursor or ''}", headers=HEADERS)
             data = resp.json()
             
             for item in data.get('items', []):
                 name = item.get('item_name')
                 
-                # Check if product exists (by Name or Loyverse ID)
-                # We prioritize checking by Name to avoid duplicates if ID wasn't saved yet
+                # Check if product exists
                 product = Product.query.filter_by(name=name).first()
                 
-                # GET PRICE & SKU
+                # GET PRICE & SKU (With Safety Fix)
                 price = 0.0
+                variant_id = None
                 variants = item.get('variants', [])
+                
                 if variants:
-                    # Loyverse structure: variants -> stores -> price
                     v = variants[0]
-                    if v.get('stores'):
-                        price = v['stores'][0].get('price', 0.0)
-                    else:
-                        price = v.get('default_price', 0.0)
-                    
                     variant_id = v.get('variant_id')
+                    
+                    # SAFETY FIX: Use (value or 0) to handle None/null values
+                    if v.get('stores'):
+                        # Check store price, fallback to 0 if None
+                        raw_price = v['stores'][0].get('price')
+                        price = float(raw_price or 0)
+                    else:
+                        # Check default price, fallback to 0 if None
+                        raw_price = v.get('default_price')
+                        price = float(raw_price or 0)
                 
                 if not product:
                     # CREATE NEW PRODUCT
                     product = Product(
                         name=name,
-                        price=float(price),
+                        price=price,
                         description=item.get('description', ''),
-                        image_url=item.get('image_url'), # Uses Loyverse URL
-                        quantity=0, # Will update in Phase 2
+                        # Only use image if it exists
+                        image_url=item.get('image_url') or '', 
+                        quantity=0, 
                         label="New",
                         loyverse_id=variant_id
                     )
                     db.session.add(product)
                     created_count += 1
                 else:
-                    # UPDATE EXISTING PRODUCT (Link ID if missing)
-                    if not product.loyverse_id:
+                    # LINK EXISTING PRODUCT
+                    if not product.loyverse_id and variant_id:
                         product.loyverse_id = variant_id
-                    
-                    # Optional: Force update price/image?
-                    # product.price = float(price) 
-                    # product.image_url = item.get('image_url')
+                        
+                    # Optional: Update price if you want to sync prices too
+                    # product.price = price 
                     
             cursor = data.get('cursor')
             if not cursor: break
             
-        db.session.commit() # Save new products before syncing stock
+        db.session.commit() # Save items before syncing stock
 
         # --- PHASE 2: SYNC STOCK NUMBERS ---
-        # (This is the same logic as before)
         stock_totals = {}
         cursor = None
         while True:
             resp = requests.get(f"{BASE_URL}/inventory?limit=250&cursor={cursor or ''}", headers=HEADERS)
             data = resp.json()
+            
             for record in data.get('inventory_levels', []):
                 vid = record.get('variant_id')
-                qty = record.get('in_stock', 0)
-                stock_totals[vid] = stock_totals.get(vid, 0) + float(qty)
+                
+                # SAFETY FIX: Handle None in stock levels
+                raw_qty = record.get('in_stock')
+                qty = float(raw_qty or 0)
+                
+                stock_totals[vid] = stock_totals.get(vid, 0) + qty
+                
             cursor = data.get('cursor')
             if not cursor: break
 
+        # Update Database with Stock Totals
         for vid, total_qty in stock_totals.items():
-            # Now we can find by ID perfectly
             product = Product.query.filter_by(loyverse_id=vid).first()
             if product:
                 product.quantity = int(total_qty)
@@ -488,6 +497,8 @@ def sync_loyverse_stock():
         flash(msg, "success")
 
     except Exception as e:
+        # Print error to console for debugging
+        print(f"SYNC ERROR: {e}")
         flash(f"Sync Error: {str(e)}", "error")
 
     return redirect(url_for('admin.dashboard'))
