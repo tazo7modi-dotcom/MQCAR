@@ -31,6 +31,9 @@ def admin_required(f):
     return decorated_function
 
 # --- 1. DASHBOARD ---
+
+
+
 @admin_bp.route('/')
 @login_required
 @admin_required
@@ -45,6 +48,14 @@ def dashboard():
     recent_orders = Order.query.order_by(Order.created_at.desc()).limit(10).all()
     products = Product.query.all()
     all_categories = Category.query.all()
+
+    search_query = request.args.get('q')
+    if search_query:
+        # Filter by name (case-insensitive)
+        products = Product.query.filter(Product.name.ilike(f'%{search_query}%')).all()
+    else:
+        # Show all if no search
+        products = Product.query.all()
 
     labels = [o.created_at.strftime("%d %b") for o in recent_orders[:7]][::-1]
     values = [o.total_amount for o in recent_orders[:7]][::-1]
@@ -175,6 +186,9 @@ def manage_product(product_id):
 
     categories = Category.query.all()
     return render_template('admin/product_form.html', product=product, categories=categories)
+
+
+
 
 # --- 5. DELETE PRODUCT ---
 @admin_bp.route('/product/delete/<int:product_id>', methods=['POST'])
