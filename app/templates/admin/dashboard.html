@@ -177,9 +177,9 @@
         <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
             
             <form action="{{ url_for('admin.dashboard') }}" method="GET" class="relative group w-full md:w-64">
-                <input type="text" name="q" placeholder="Search products..." 
+                <input id="searchInput" type="text" name="q" placeholder="Search products..." 
                        value="{{ request.args.get('q', '') }}"
-                       class="w-full pl-10 pr-4 py-2 bg-gray-100 border-2 border-transparent focus:bg-white focus:border-amber-500 rounded-lg text-sm transition outline-none font-bold">
+                       class="w-full pl-10 pr-4 py-2 bg-black-300 border-2 border-white focus:bg-red-100 focus:border-amber-500 rounded-lg text-sm transition outline-none font-bold">
                 <div class="absolute left-3 top-2.5 text-gray-400 group-focus-within:text-amber-500 transition">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                 </div>
@@ -220,7 +220,7 @@
                             <th class="p-4 border-b border-zinc-200 text-center">{{ _('th_actions') or 'Actions' }}</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-zinc-100">
+                    <tbody id="productsTableBody" class="divide-y divide-zinc-100">
                         
                         {% for product in products %}
                         <tr class="hover:bg-zinc-50 transition group">
@@ -397,6 +397,46 @@
                 x: { grid: { display: false } }
             },
             plugins: { legend: { display: false } }
+        }
+    });
+</script>
+
+
+<script>
+    const searchInput = document.getElementById('searchInput');
+    const tableBody = document.getElementById('productsTableBody');
+    let timeout = null;
+
+    searchInput.addEventListener('input', function() {
+        // Clear the previous timer (debounce)
+        clearTimeout(timeout);
+
+        // Wait 300ms after you stop typing to send the request
+        timeout = setTimeout(() => {
+            const query = this.value;
+            
+            // Fetch the current page with the search query in the background
+            fetch(`${window.location.pathname}?q=${query}`)
+                .then(response => response.text())
+                .then(html => {
+                    // Parse the HTML we got back
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    
+                    // Extract only the new table rows
+                    const newTableBody = doc.getElementById('productsTableBody').innerHTML;
+                    
+                    // Update the page instantly
+                    tableBody.innerHTML = newTableBody;
+                })
+                .catch(err => console.error('Search failed', err));
+        }, 300);
+    });
+
+    // Optional: Prevent "Enter" from reloading the page
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
         }
     });
 </script>
