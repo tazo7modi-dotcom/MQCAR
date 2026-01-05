@@ -452,7 +452,9 @@ dictionary = {
         "del_coverage": "Kingdom Coverage",
         'th_category':'Category',
         'th_stock':'Quantity',
-        'th_product_details':'Product Details'
+        'th_product_details':'Product Details',
+        'lbl_flavors':'Flavor',
+        'lbl_nicotine':'Nicotine'
         
 
        
@@ -912,7 +914,9 @@ dictionary = {
         "del_coverage": "تغطية المملكة",
         'th_category':'القسم',
         'th_stock':'الكمية',
-        'th_product_details':'تفاصيل المنتج'
+        'th_product_details':'تفاصيل المنتج',
+        'lbl_flavors':'النكهات',
+        'lbl_nicotine':'النيكوتين'
 
 
 
