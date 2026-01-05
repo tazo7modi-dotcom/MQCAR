@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-16 max-w-6xl">
+    
+<div class="mb-8">
+        {% set fallback = url_for('main.category_view', category_id=product.category.id) if product.category else url_for('main.home') %}
+        {% set back_url = request.referrer if request.referrer and request.referrer != request.url else fallback %}
+
+        <a href="{{ back_url }}" class="inline-flex items-center text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-[#cc0000] transition font-bold-heading">
+            <svg class="w-4 h-4 ltr:mr-2 rtl:ml-2 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            
+          
+            {% if request.referrer %}
+                {{ _('btn_back') or 'Back' }}
+            {% else %}
+                 {{ _('btn_back_category') or 'Back to Collection' }}
+            {% endif %}
+        </a>
+    </div>
+
+    <div class="flex flex-col lg:flex-row gap-12 lg:gap-20">
+        
+        <div class="w-full lg:w-1/2">
+            <div class="aspect-[4/5] w-full overflow-hidden border-2 border-[#222] bg-[#1a1a1a] relative group">
+                               {% if product.image_url %}
+                                   
+                                    {% if not product.image_url.startswith('http') %}
+                                        <img src="{{ url_for('uploaded_file', filename=product.image_url) }}" 
+                                             class="h-full w-full object-contain transform group-hover:scale-110 transition duration-500 ease-in-out drop-shadow-xl">
+                                    
+                                 
+                                    {% else %}
+                                        <img src="{{ product.image_url }}" 
+                                             class="h-full w-full object-contain transform group-hover:scale-110 transition duration-500 ease-in-out drop-shadow-xl">
+                                    {% endif %}
+                                {% else %}
+                                    <div class="flex h-full items-center justify-center text-gray-700 text-xs uppercase tracking-widest font-bold">{{ _('txt_no_img') }}</div>
+                                {% endif %}
+                
+                {% if product.on_sale() %}
+                <div class="absolute top-0 left-0 z-20 bg-[#cc0000] text-white text-xl font-comic px-4 py-2 uppercase tracking-wide shadow-lg skew-x-[-10deg] -ml-2 mt-4 ltr:font-['Bangers'] rtl:font-['Cairo']">
+                    <span class="block skew-x-[10deg]">-{{ product.discount_percentage }}%</span>
+                </div>
+                {% endif %}
+                
+ 
+            </div>
+        </div>
+
+        <div class="w-full lg:w-1/2 flex flex-col justify-center">
+            
+            {% if product.category %}
+                <p class="text-[#cc0000] text-sm font-bold uppercase tracking-[0.2em] mb-2 font-bold-heading">
+                    {{ product.category.name | translate_dynamic }}
+                </p>
+            {% endif %}
+            
+            <h1 class="text-5xl md:text-6xl text-white mb-4 leading-[0.9] font-comic uppercase ltr:font-['Bangers'] rtl:font-['Cairo'] rtl:font-black drop-shadow-[0_4px_0_rgba(0,0,0,1)]">
+                {{ product.name | translate_dynamic }}
+            </h1>
+            
+            <div class="flex items-end gap-4 mb-8 border-b border-[#222] pb-6">
+                {% if product.on_sale() %}
+                    <span class="text-lg text-gray-500 line-through font-bold mb-2 font-bold-heading">
+                        {{ product.price | currency }}
+                    </span>
+                {% endif %}
+                
+                <span id="displayPrice" class="text-4xl md:text-5xl text-[#cc0000] font-comic ltr:font-['Bangers'] rtl:font-['Cairo']">
+                    {{ product.get_price() | currency }}
+                </span>
+            </div>
+
+            <div class="prose prose-invert prose-sm text-gray-400 mb-10 leading-relaxed font-bold-heading tracking-wide">
+                {{ product.description | translate_dynamic }}
+            </div>
+
+            <form action="{{ url_for('main.add_to_cart') }}" method="POST" class="space-y-8">
+                <input type="hidden" name="product_id" value="{{ product.id }}">
+
+                {% if product.has_sizes %}
+                <div>
+                    <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4 font-bold-heading">{{ _('prod_select_size') }}</h3>
+                    <div class="flex flex-wrap gap-3">
+                        {% for size in product.available_sizes.split(',') %}
+                        <label class="cursor-pointer">
+                            <input type="radio" name="selected_size" value="{{ size.strip() }}" class="peer sr-only" required>
+                            <div class="min-w-[4rem] h-12 flex items-center justify-center px-4 bg-[#1a1a1a] border-2 border-[#333] text-sm font-bold text-white uppercase 
+                                        hover:border-[#cc0000] 
+                                        peer-checked:bg-[#cc0000] peer-checked:border-[#cc0000] peer-checked:text-white 
+                                        peer-checked:shadow-[0_0_15px_rgba(204,0,0,0.4)]
+                                        transition-all skew-x-[-10deg]">
+                                <span class="skew-x-[10deg]">{{ size.strip() }}</span>
+                            </div>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if product.has_colors and product.available_colors %}
+                <div>
+                    <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4 font-bold-heading">{{ _('prod_select_color') }}</h3>
+                    <div class="flex flex-wrap gap-4">
+                        {% for color_entry in product.available_colors.split(',') %}
+                            {% set parts = color_entry.split('|') %}
+                            {% set c_name = parts[0] %}
+                            {% set c_hex = parts[1] if parts|length > 1 else '#000' %} 
+                        <label class="cursor-pointer group relative">
+                            <input type="radio" name="color" value="{{ c_name }}" class="peer sr-only" required>
+                            <span class="block w-10 h-10 rounded-full border-2 border-[#333] peer-checked:border-[#cc0000] p-1 transition-all peer-checked:scale-110">
+                                <span class="block w-full h-full rounded-full shadow-inner" style="background-color: {{ c_hex }}; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);"></span>
+                            </span>
+                            <span class="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-[#cc0000] text-white text-[10px] uppercase font-bold tracking-widest px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none skew-x-[-10deg]">
+                                {{ c_name }}
+                            </span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+{% if product.is_juice %}
+                    
+                    {% if product.juice_nicotine %}
+                    <div class="mb-6">
+                        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4 font-bold-heading">
+                            {{ _('prod_select_nicotine') or 'Select Nicotine' }}
+                        </h3>
+                        <div class="flex flex-wrap gap-3">
+                            {% for nic in product.juice_nicotine.split(',') %}
+                            <label class="cursor-pointer">
+                                <input type="radio" name="nicotine" value="{{ nic.strip() }}" class="peer sr-only" required>
+                                <div class="min-w-[4rem] h-10 flex items-center justify-center px-4 bg-[#1a1a1a] border-2 border-[#333] text-sm font-bold text-white uppercase 
+                                            hover:border-[#cc0000] 
+                                            peer-checked:bg-[#cc0000] peer-checked:border-[#cc0000] peer-checked:text-white 
+                                            peer-checked:shadow-[0_0_10px_rgba(204,0,0,0.4)]
+                                            transition-all skew-x-[-10deg]">
+                                    <span class="skew-x-[10deg]">{{ nic.strip() }}</span>
+                                </div>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if product.juice_flavors %}
+                    <div class="mb-6">
+                        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4 font-bold-heading">
+                            {{ _('prod_select_flavor') or 'Select Flavor' }}
+                        </h3>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            {% for flavor in product.juice_flavors.split(',') %}
+                            <label class="cursor-pointer">
+                                <input type="radio" name="juice_flavor" value="{{ flavor.strip() }}" class="peer sr-only" required>
+                                <div class="w-full py-3 px-2 flex items-center justify-center text-center bg-[#1a1a1a] border-2 border-[#333] text-xs font-bold text-gray-300 uppercase 
+                                            hover:border-[#cc0000] hover:text-white
+                                            peer-checked:bg-[#cc0000] peer-checked:border-[#cc0000] peer-checked:text-white 
+                                            peer-checked:shadow-[0_0_10px_rgba(204,0,0,0.2)]
+                                            transition-all">
+                                    {{ flavor.strip() }}
+                                </div>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                {% endif %}
+                {% if product.extras %}
+                <div>
+                    <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4 font-bold-heading">{{ _('prod_addons') }}</h3>
+                    <div class="space-y-3">
+                        {% for extra in product.extras %}
+                        <label class="relative flex items-center justify-between p-4 border border-[#333] bg-[#1a1a1a] cursor-pointer hover:border-[#cc0000] transition-all group">
+                            <input type="checkbox" 
+                                   name="extras" 
+                                   value="{{ extra.id }}" 
+                                   data-price="{{ extra.price }}" 
+                                   onclick="updateTotal()"
+                                   class="peer sr-only">
+                            
+                            <div class="absolute inset-y-0 left-0 w-1 bg-[#cc0000] opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+                            
+                            <div class="flex items-center gap-3 pl-2">
+                                <span class="text-sm font-bold text-white uppercase tracking-wide group-hover:text-[#cc0000] transition-colors">{{ extra.name | translate_dynamic }}</span>
+                            </div>
+                            <span class="text-sm font-bold text-[#cc0000] ltr:font-['Oswald'] rtl:font-['Cairo']">+{{ extra.price | currency }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="pt-8 border-t border-[#222]">
+                    <div class="flex gap-4">
+                        <div class="w-24">
+                            <input type="number" 
+                                   id="quantityInput"
+                                   name="quantity" 
+                                   value="1" 
+                                   min="1" 
+                                   oninput="updateTotal()"
+                                   class="w-full h-full py-4 text-center bg-[#1a1a1a] border-2 border-[#333] text-white font-bold focus:outline-none focus:border-[#cc0000] transition font-bold-heading text-xl"
+                                   placeholder="1">
+                        </div>
+                        
+                        <button type="submit" class="flex-1 bg-[#cc0000] text-white py-4 font-comic text-xl md:text-2xl uppercase tracking-widest hover:bg-white hover:text-[#cc0000] transition-all duration-300 flex justify-between px-8 items-center group shadow-[0_4px_0_rgba(0,0,0,0.5)] active:shadow-none active:translate-y-1 ltr:font-['Bangers'] rtl:font-['Cairo'] rtl:font-black">
+                            <span>{{ _('prod_add_cart') }}</span>
+                            
+                            <span id="btnPrice" class="group-hover:scale-110 transition-transform duration-300">
+                                {{ product.get_price() | currency }}
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+            
+            <div class="mt-8 space-y-3 text-xs font-bold text-gray-500 uppercase tracking-widest font-bold-heading">
+                <p class="flex items-center gap-2">
+                    <svg class="w-5 h-5 text-[#cc0000]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> 
+                    <span class="text-gray-400">{{ _('prod_free_ship') }} <span class="text-white">{{ 30| currency }}</span></span>
+                </p>
+                <p class="flex items-center gap-2">
+                    <svg class="w-5 h-5 text-[#cc0000]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> 
+                    <span class="text-gray-400">{{ _('prod_ship_time') }}</span>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% set code = current_currency %}
+{% set c_data = config['CURRENCY_RATES'].get(code, config['CURRENCY_RATES']['BHD']) %}
+
+<script>
+    
+    const basePrice = {{ product.get_price() }};
+    const exchangeRate = {{ c_data.rate }};
+    const symbol = "{{ c_data.symbol }}";
+    const decimals = {{ c_data.decimals }};
+    
+    function updateTotal() {
+        let currentTotal = basePrice;
+        
+        // Add Extras
+        const checkboxes = document.querySelectorAll('input[name="extras"]:checked');
+        checkboxes.forEach((box) => {
+            currentTotal += parseFloat(box.getAttribute('data-price'));
+        });
+
+        // Multiply by Quantity
+        const qtyInput = document.getElementById('quantityInput');
+        let quantity = parseInt(qtyInput.value);
+        if (isNaN(quantity) || quantity < 1) {
+            quantity = 1; 
+        }
+        
+        // Calculate Total Base
+        const totalBase = currentTotal * quantity;
+        
+        // Convert Currency
+        const localTotal = totalBase * exchangeRate;
+        
+        // Format
+        const formatted = symbol + " " + localTotal.toLocaleString(undefined, {minimumFractionDigits: decimals, maximumFractionDigits: decimals});
+        
+        // Update DOM
+        const displayEl = document.getElementById('displayPrice');
+        const btnEl = document.getElementById('btnPrice');
+        
+        if(displayEl) displayEl.innerText = formatted;
+        if(btnEl) btnEl.innerText = formatted;
+    }
+
+    // Initialize on load
+    window.onload = updateTotal;
+</script>
+{% endblock %}

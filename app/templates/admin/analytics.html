@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12">
+    
+    <div class="mb-10 flex items-center justify-between">
+        <div>
+            <h1 class="text-4xl font-bold uppercase text-zinc-900 ltr:font-['Oswald'] rtl:font-['Cairo']">
+                {{ _('hdr_analytics') }}
+            </h1>
+            <p class="text-zinc-500 mt-2">{{ _('admin_overview') }}</p>
+        </div>
+        <a href="{{ url_for('admin.dashboard') }}" class="text-sm font-bold text-zinc-400 hover:text-black uppercase">
+            &larr; {{ _('admin_dashboard') }}
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        <div class="bg-zinc-900 text-white p-6 rounded-lg shadow-xl relative overflow-hidden">
+            <div class="relative z-10">
+                <p class="text-zinc-400 text-xs font-bold uppercase tracking-widest">{{ _('stat_monthly_revenue') }}</p>
+                <h2 class="text-4xl font-bold mt-2 ltr:font-['Oswald'] rtl:font-['Cairo']">
+                    {{ monthly_revenue | currency }}
+                </h2>
+            </div>
+            <div class="absolute right-0 top-0 h-full w-24 bg-gradient-to-l from-amber-500/20 to-transparent"></div>
+        </div>
+
+        <div class="bg-white border border-zinc-200 p-6 rounded-lg shadow-sm">
+            <p class="text-zinc-500 text-xs font-bold uppercase tracking-widest">{{ _('stat_growth') }}</p>
+            <div class="flex items-center gap-4 mt-2">
+                <h2 class="text-4xl font-bold text-zinc-800 ltr:font-['Oswald'] rtl:font-['Cairo']">
+                    {{ growth_percent | round(1) }}%
+                </h2>
+                {% if growth_percent >= 0 %}
+                    <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">▲ Up</span>
+                {% else %}
+                    <span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-bold">▼ Down</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="bg-white border border-zinc-200 p-6 rounded-lg shadow-sm">
+            <p class="text-zinc-500 text-xs font-bold uppercase tracking-widest">{{ _('lbl_inventory_health') }}</p>
+            <div class="flex items-center gap-4 mt-2">
+                <h2 class="text-4xl font-bold {% if low_stock|length > 0 %}text-red-600{% else %}text-green-600{% endif %} ltr:font-['Oswald'] rtl:font-['Cairo']">
+                    {{ low_stock|length }}
+                </h2>
+                <span class="text-xs font-bold text-zinc-400 uppercase">{{ _('stat_low_stock') }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+        
+        <div class="bg-white rounded-lg shadow-lg border border-zinc-100 overflow-hidden">
+            <div class="bg-zinc-50 p-4 border-b border-zinc-200">
+                <h3 class="font-bold text-zinc-800 uppercase text-sm ltr:tracking-widest rtl:tracking-normal">
+                    {{ _('stat_top_products') }}
+                </h3>
+            </div>
+            <table class="w-full ltr:text-left rtl:text-right">
+                <thead class="bg-white text-xs text-zinc-400 uppercase">
+                    <tr>
+                        <th class="px-6 py-3">{{ _('th_name') }}</th>
+                        <th class="px-6 py-3">{{ _('th_sold_qty') }}</th>
+                        <th class="px-6 py-3 text-right">{{ _('stat_revenue') }}</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-zinc-100">
+                    {% for name, img, qty, earned in top_products %}
+                    <tr class="hover:bg-zinc-50">
+                        <td class="px-6 py-4 flex items-center gap-3">
+                            {% if img %}
+                                <img src="{{ url_for('uploaded_file', filename=img) }}" class="w-8 h-8 rounded object-cover">
+                            {% endif %}
+                            <span class="font-bold text-zinc-800 text-sm">{{ name }}</span>
+                        </td>
+                        <td class="px-6 py-4 font-bold text-amber-600">{{ qty }}</td>
+                        <td class="px-6 py-4 text-right font-mono text-xs">{{ earned | currency }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="3" class="p-6 text-center text-zinc-400 italic">No sales data yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-lg border border-zinc-100 overflow-hidden">
+            <div class="bg-red-50 p-4 border-b border-red-100 flex justify-between items-center">
+                <h3 class="font-bold text-red-800 uppercase text-sm ltr:tracking-widest rtl:tracking-normal">
+                    ⚠️ {{ _('stat_low_stock') }}
+                </h3>
+            </div>
+            <div class="divide-y divide-zinc-100">
+                {% for p in low_stock %}
+                <div class="p-4 flex justify-between items-center hover:bg-red-50/30 transition">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-red-100 text-red-600 font-bold w-8 h-8 flex items-center justify-center rounded text-xs">
+                            {{ p.quantity }}
+                        </div>
+                        <div>
+                            <p class="font-bold text-zinc-800 text-sm">{{ p.name }}</p>
+                            <p class="text-xs text-zinc-500">REF: {{ p.id }}</p>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('admin.manage_product', product_id=p.id) }}" class="text-xs font-bold text-blue-600 hover:underline uppercase">
+                        {{ _('btn_edit') }}
+                    </a>
+                </div>
+                {% else %}
+                <div class="p-8 text-center text-green-600 font-bold bg-green-50">
+                    ✅ All inventory levels are healthy.
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

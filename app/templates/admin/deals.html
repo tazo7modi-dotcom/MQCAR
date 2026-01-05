@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12">
+    <div class="max-w-xl mx-auto bg-white border border-zinc-200 shadow-xl relative">
+        
+        <div class="bg-zinc-900 text-white p-6 border-b-4 border-amber-500">
+            <h2 class="text-3xl font-bold uppercase ltr:font-['Oswald'] rtl:font-['Cairo']">
+                {{ _('admin_deals_title') }}
+            </h2>
+        </div>
+        
+        <div class="p-8">
+            
+            <form method="POST" class="mb-12">
+                <input type="hidden" name="action" value="apply">
+                
+                <div class="mb-6">
+                    <label class="block text-zinc-500 text-xs font-bold uppercase mb-2 ltr:tracking-widest rtl:tracking-normal">{{ _('lbl_discount_pct') }}</label>
+                    <input type="number" name="percentage" min="1" max="99" class="w-full border-2 border-zinc-200 p-3 bg-zinc-50 text-zinc-900 focus:outline-none focus:border-amber-500 font-bold text-lg" placeholder="20" required>
+                </div>
+
+                <div class="mb-8">
+                    <label class="block text-zinc-500 text-xs font-bold uppercase mb-2 ltr:tracking-widest rtl:tracking-normal">{{ _('lbl_apply_to') }}</label>
+                    <select name="target_type" class="w-full border-2 border-zinc-200 p-3 bg-zinc-50 text-zinc-900 focus:outline-none focus:border-amber-500 font-bold">
+                        <option value="all">{{ _('opt_all_products') }}</option>
+                        <option disabled>──────────</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.id }}">{{ _('Category') }}: {{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <button type="submit" class="w-full bg-amber-500 text-zinc-900 py-4 font-bold text-lg uppercase tracking-widest hover:bg-amber-400 transition ltr:font-['Oswald'] rtl:font-['Cairo']">
+                    {{ _('btn_apply_deal') }}
+                </button>
+            </form>
+
+            <hr class="border-zinc-200 mb-8">
+
+            <form method="POST">
+                <input type="hidden" name="action" value="clear">
+                <button type="submit" class="w-full bg-zinc-200 text-zinc-500 py-3 font-bold text-sm uppercase tracking-wide hover:bg-red-700 hover:text-white transition" onclick="return confirm('Are you sure? This will remove ALL discounts.');">
+                    {{ _('btn_clear_deals') }}
+                </button>
+            </form>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

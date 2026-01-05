@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="flex items-center justify-center min-h-[80vh] bg-gray-50/50">
+    <div class="w-full max-w-md bg-white p-10 rounded-sm border border-gray-100 shadow-xl">
+        
+        <div class="text-center mb-10">
+            <h2 class="text-3xl font-bold tracking-tight text-gray-900 mb-2 uppercase">{{ _('auth_login_title') }}</h2>
+            <div class="h-1 w-12 bg-black mx-auto"></div>
+        </div>
+
+        <form method="POST" class="space-y-6">
+            <div>
+                <label class="block text-xs font-bold uppercase text-gray-500 mb-2">{{ _('auth_email') }}</label>
+                <input type="email" name="email" 
+                       class="w-full border border-gray-200 p-4 rounded-sm text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all bg-gray-50/30 focus:bg-white" 
+                       required>
+            </div>
+            
+            <div>
+                <label class="block text-xs font-bold uppercase text-gray-500 mb-2">{{ _('auth_password') }}</label>
+                <input type="password" name="password" 
+                       class="w-full border border-gray-200 p-4 rounded-sm text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all bg-gray-50/30 focus:bg-white" 
+                       required>
+            </div>
+
+            <button class="w-full bg-black text-white py-4 rounded-sm font-bold text-sm uppercase tracking-widest hover:bg-gray-800 transition shadow-lg transform active:scale-95 duration-200">
+                {{ _('auth_btn_login') }}
+            </button>
+        </form>
+
+        <div class="mt-8 text-center pt-6 border-t border-gray-50">
+            <p class="text-sm text-gray-500">
+                {{ _('auth_no_account') }} 
+                <a href="{{ url_for('auth.signup') }}" class="font-bold text-black hover:underline ml-1">
+                    {{ _('auth_link_signup') }}
+                </a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

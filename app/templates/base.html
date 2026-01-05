@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="{{ current_lang }}" dir="{{ layout_dir }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ _('nav_home') }} | VAKU VAPE</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Oswald:wght@400;700&family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        body { font-family: 'Oswald', 'Cairo', sans-serif; background-color: #111; color: white; }
+        
+        /* Font Utilities */
+        .font-comic { font-family: 'Bangers', 'Cairo', cursive; }
+        .font-bold-heading { font-family: 'Oswald', 'Cairo', sans-serif; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #111; }
+        ::-webkit-scrollbar-thumb { background: #cc0000; border-radius: 4px; }
+    </style>
+
+
+
+</head>
+<div id="flash-container" class="fixed bottom-5 right-5 z-[100] flex flex-col gap-3 pointer-events-none ltr:right-5 ltr:left-auto rtl:left-5 rtl:right-auto">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                
+                <div class="toast-item pointer-events-auto min-w-[320px] max-w-sm bg-[#1a1a1a] border-l-4 {{ 'border-[#cc0000]' if category == 'error' else 'border-green-600' }} text-white p-5 shadow-[0_5px_15px_rgba(0,0,0,0.5)] transform ltr:translate-x-[150%] rtl:-translate-x-[150%] transition-transform duration-500 ease-out flex items-start gap-3 group relative overflow-hidden">
+                    
+                    <div class="flex-shrink-0 pt-0.5">
+                        {% if category == 'error' %}
+                            <svg class="w-5 h-5 text-[#cc0000]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        {% else %}
+                            <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        {% endif %}
+                    </div>
+
+                    <div class="flex-1">
+                        <h4 class="font-bold uppercase tracking-wider text-xs {{ 'text-[#cc0000]' if category == 'error' else 'text-green-500' }} font-bold-heading">
+                            {{ 'Error' if category == 'error' else 'Success' }}
+                        </h4>
+                        <p class="text-sm text-gray-300 font-bold mt-1 leading-relaxed">{{ message | translate_dynamic }}</p>
+                    </div>
+
+                    <button onclick="closeToast(this.parentElement)" class="text-gray-600 hover:text-white transition -mt-1 -mr-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+
+                    <div class="absolute bottom-0 left-0 h-1 {{ 'bg-[#cc0000]' if category == 'error' else 'bg-green-600' }} w-full origin-left animate-shrink"></div>
+                </div>
+
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</div>
+
+<style>
+    @keyframes shrinkWidth {
+        from { width: 100%; }
+        to { width: 0%; }
+    }
+    .animate-shrink {
+        animation: shrinkWidth 4s linear forwards;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const toasts = document.querySelectorAll('.toast-item');
+        
+        toasts.forEach((toast, index) => {
+            // 1. Slide In Animation
+            setTimeout(() => {
+                toast.classList.remove('ltr:translate-x-[150%]');
+                toast.classList.remove('rtl:-translate-x-[150%]');
+            }, index * 100);
+
+            // 2. Auto Dismiss after 4 seconds
+            setTimeout(() => {
+                closeToast(toast);
+            }, 4000 + (index * 100));
+        });
+    });
+
+    function closeToast(element) {
+        // Slide out based on direction
+        if(document.dir === 'rtl') {
+            element.classList.add('-translate-x-[150%]');
+        } else {
+            element.classList.add('translate-x-[150%]');
+        }
+        
+        // Remove from DOM after animation
+        setTimeout(() => {
+            element.remove();
+        }, 500);
+    }
+</script>
+<body class="bg-[#111] text-white flex flex-col min-h-screen antialiased selection:bg-[#cc0000] selection:text-white">
+
+    <nav class="fixed w-full z-50 bg-black/90 backdrop-blur-md border-b border-[#cc0000] shadow-lg">
+        <div class="container mx-auto px-6 h-20 flex justify-between items-center">
+            
+            <a href="{{ url_for('main.home') }}" class="flex items-center gap-2">
+                <img src="/static/vapelogo.PNG" class="h-11 w-11 brightness-200"> 
+                <span class="text-2xl font-bold italic tracking-tighter text-white">BAKU<span class="text-[#cc0000]">VAPE</span></span>
+            </a>
+            
+            <div class="flex items-center gap-6">
+                
+                <div class="flex items-center gap-2 text-sm font-bold">
+                    <a href="{{ url_for('main.set_language', lang_code='en') }}" class="hover:text-[#cc0000] transition {% if current_lang == 'en' %}text-[#cc0000]{% else %}text-gray-400{% endif %}">EN</a>
+                    <span class="text-gray-700">|</span>
+                    <a href="{{ url_for('main.set_language', lang_code='ar') }}" class="hover:text-[#cc0000] transition {% if current_lang == 'ar' %}text-[#cc0000]{% else %}text-gray-400{% endif %}">AR</a>
+                </div>
+
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('main.account') }}" class="text-sm font-bold hover:text-[#cc0000] transition uppercase flex items-center gap-1">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                        <span class="hidden md:inline">{{ _('link_account') }}</span>
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="text-sm font-bold hover:text-[#cc0000] transition uppercase flex items-center gap-1">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+                        <span>LOGIN</span>
+                    </a>
+                {% endif %}
+
+                <a href="{{ url_for('main.cart_page') }}" class="relative text-white hover:text-[#cc0000] transition group">
+                    <svg class="w-6 h-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    {% if cart_count > 0 %}
+                        <span class="absolute -top-2 -right-2 bg-[#cc0000] text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full shadow-md">{{ cart_count }}</span>
+                    {% endif %}
+                </a>
+
+                {% if current_user.is_authenticated and current_user.is_admin %}
+                    <a href="{{ url_for('admin.dashboard') }}" class="bg-[#cc0000] text-white px-3 py-1 text-xs rounded uppercase font-bold hover:bg-red-700 transition">Admin</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow pt-20">
+        {% block content %}{% endblock %}
+    </main>
+
+<footer class="bg-black border-t-4 border-[#cc0000] pt-16 pb-8 text-gray-400">
+    <div class="container mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+        
+        <div>
+            <h4 class="text-white font-bold-heading uppercase mb-4">{{ _('footer_about') }}</h4>
+            <p class="text-xs leading-relaxed mb-4">{{ _('footer_about_text') }}</p>
+            <div class="flex gap-4">
+                <a href="#" class="text-white hover:text-[#cc0000]"><i class="fab fa-instagram text-xl"></i></a>
+                <a href="#" class="text-white hover:text-[#cc0000]"><i class="fab fa-whatsapp text-xl"></i></a>
+            </div>
+        </div>
+
+        <div>
+            <h4 class="text-white font-bold-heading uppercase mb-4">{{ _('footer_quick') }}</h4>
+            <ul class="text-xs space-y-2 uppercase tracking-wide">
+                <li><a href="{{ url_for('main.home') }}" class="hover:text-[#cc0000]">{{ _('nav_home') }}</a></li>
+                <li><a href="/category/7" class="hover:text-[#cc0000]">{{ _('cat_disposables') }}</a></li>
+                <li><a href="/category/1" class="hover:text-[#cc0000]">{{ _('cat_saltnic') }}</a></li>
+            </ul>
+        </div>
+
+        <div>
+            <h4 class="text-white font-bold-heading uppercase mb-4">{{ _('footer_contact') }}</h4>
+            <ul class="text-xs space-y-3">
+                <li class="flex items-start gap-3">
+                    <span dir="ltr" class="text-[#cc0000]">📍</span> {{ _('footer_address') }}
+                </li>
+                <li class="flex items-center gap-3">
+                    <span dir="ltr" class="text-[#cc0000]">📞</span><span dir="ltr">+973 66xx xxxx</span> 
+                </li>
+                <li class="flex items-center gap-3">
+                    <span class="text-[#cc0000]">🕒</span> 9:00 AM - 12:00 AM
+                </li>
+            </ul>
+        </div>
+
+        <div class="bg-[#111] border border-[#222] rounded flex items-center justify-center h-32">
+            <span class="text-xs uppercase font-bold text-gray-600">Map Loading...</span>
+        </div>
+    </div>
+
+    <div class="border-t border-gray-900 pt-8 text-center">
+        <p class="text-[10px] uppercase tracking-widest text-gray-600">{{ _('footer_rights') }}</p>
+    </div>
+</footer>
+
+</body>
+</html>

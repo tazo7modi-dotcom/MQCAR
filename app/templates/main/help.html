@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-16 max-w-4xl min-h-screen">
+    
+    <div class="text-center mb-16">
+        <h1 class="text-4xl font-bold text-gray-900 mb-4">{{ _('help_title') }}</h1>
+        <p class="text-gray-500 max-w-lg mx-auto">{{ _('help_intro') }}</p>
+    </div>
+
+    <div class="grid gap-8">
+        
+        <div class="bg-white p-8 rounded-sm border border-gray-100 shadow-sm hover:shadow-md transition duration-300">
+            <div class="flex items-start gap-4">
+                <div class="p-3 bg-gray-50 rounded-full flex-shrink-0">
+                    <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-gray-900 mb-3">{{ _('policy_return_title') }}</h2>
+                    <p class="text-gray-600 leading-relaxed text-sm">
+                        {{ _('policy_return_text') }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white p-8 rounded-sm border border-gray-100 shadow-sm hover:shadow-md transition duration-300">
+            <div class="flex items-start gap-4">
+                <div class="p-3 bg-gray-50 rounded-full flex-shrink-0">
+                    <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-gray-900 mb-3">{{ _('policy_ship_title') }}</h2>
+                    <p class="text-gray-600 leading-relaxed text-sm">
+                        {{ _('policy_ship_text') }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white p-8 rounded-sm border border-gray-100 shadow-sm hover:shadow-md transition duration-300">
+            <div class="flex items-start gap-4">
+                <div class="p-3 bg-gray-50 rounded-full flex-shrink-0">
+                    <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-gray-900 mb-3">{{ _('policy_payment_title') }}</h2>
+                    <p class="text-gray-600 leading-relaxed text-sm">
+                        {{ _('policy_payment_text') }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="mt-16 text-center bg-gray-50 p-10 rounded-sm">
+        <h3 class="text-xl font-bold text-gray-900 mb-6">{{ _('policy_contact_title') }}</h3>
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+            <a href="https://wa.me/97333000000" target="_blank" class="flex items-center justify-center gap-2 bg-green-500 text-white px-8 py-3 rounded-full font-bold text-sm hover:bg-green-600 transition shadow-lg">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.897.001-6.627 5.392-12.018 12.02-12.018 3.209 0 6.226 1.25 8.493 3.52 2.269 2.27 3.519 5.286 3.519 8.496 0 6.625-5.394 12.014-12.02 12.014-2.082 0-4.125-.55-5.909-1.59l-6.203 1.638z"/></svg>
+                {{ _('btn_whatsapp') }}
+            </a>
+            <a href="mailto:support@brand.com" class="flex items-center justify-center gap-2 bg-white text-gray-900 border border-gray-200 px-8 py-3 rounded-full font-bold text-sm hover:bg-gray-100 transition shadow-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                {{ _('btn_email') }}
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

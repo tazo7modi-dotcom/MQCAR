@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12">
+    <div class="max-w-xl mx-auto bg-white border border-[#2ff495]/20 shadow-xl relative rounded-3xl overflow-hidden">
+        
+        <div class="bg-[#897cef] text-white p-6 flex justify-between items-center">
+            <h2 class="text-3xl font-bold uppercase ltr:font-['Oswald'] rtl:font-['Cairo']">
+                {{ _('admin_title_new_cat') }}
+            </h2>
+            <a href="{{ url_for('admin.dashboard') }}" class="text-white/70 hover:text-white text-sm uppercase font-bold ltr:tracking-wider rtl:tracking-normal hover:underline">
+                {{ _('admin_cancel') }}
+            </a>
+        </div>
+        
+        <form method="POST" enctype="multipart/form-data" class="p-8 space-y-8">
+            
+            <div>
+                <label class="block text-zinc-400 text-xs font-bold uppercase mb-2 ltr:tracking-widest rtl:tracking-normal">
+                    {{ _('lbl_parent_cat') }}
+                </label>
+                <div class="relative">
+                    <select id="parentSelect" name="parent_id" onchange="toggleSubFields()" class="w-full border border-zinc-200 p-4 bg-zinc-50 text-zinc-700 focus:outline-none focus:border-[#2ff495] focus:bg-white transition-colors font-bold rounded-xl appearance-none cursor-pointer">
+                        <option value="">-- {{ _('opt_no_parent') }} (Main Collection) --</option>
+                        {% for cat in categories %}
+                            <option value="{{ cat.id }}">{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-zinc-400">
+                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <label id="nameLabel" class="block text-zinc-400 text-xs font-bold uppercase mb-2 ltr:tracking-widest rtl:tracking-normal">
+                    {{ _('lbl_cat_name') }}
+                </label>
+                <input type="text" id="nameInput" name="name" class="w-full border border-zinc-200 p-4 bg-zinc-50 text-zinc-900 focus:outline-none focus:border-[#897cef] focus:bg-white transition-colors font-bold rounded-xl text-lg" required placeholder="e.g. Weddings">
+            </div>
+
+            <div>
+                <label class="block text-zinc-400 text-xs font-bold uppercase mb-2 ltr:tracking-widest rtl:tracking-normal">
+                    {{ _('lbl_cat_image') }} ({{ _('lbl_optional') }})
+                </label>
+                <div class="border-2 border-dashed border-[#2ff495]/40 bg-[#f5fbf7] p-8 text-center hover:bg-[#2ff495]/10 hover:border-[#2ff495] transition cursor-pointer relative rounded-2xl group">
+                    <input type="file" name="image" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/*" onchange="previewFile()">
+                    
+                    <div id="uploadPlaceholder">
+                        <div class="w-12 h-12 bg-white text-[#2ff495] rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm group-hover:scale-110 transition-transform">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        </div>
+                        <span class="text-xs font-bold text-zinc-400 uppercase">Upload Image (Transparent PNG Recommended)</span>
+                    </div>
+                    
+                    <div id="filePreview" class="hidden text-sm font-bold text-[#897cef]"></div>
+                </div>
+            </div>
+
+            <div id="subFields" class="hidden transition-all duration-300 animate-fade-in-up">
+                <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                    <label class="block text-amber-600 text-xs font-bold uppercase mb-2 ltr:tracking-widest rtl:tracking-normal">
+                        Collection Year / Description
+                    </label>
+                    <input type="text" name="model_years" class="w-full border border-white p-3 shadow-inner rounded-lg text-zinc-900 font-bold focus:outline-none focus:border-amber-500" placeholder="e.g. Winter 2025">
+                    <p class="text-[10px] text-amber-600/60 mt-1 font-bold">
+                        * Appears under the title in the catalog.
+                    </p>
+                </div>
+            </div>
+
+            <div class="pt-6 border-t border-zinc-100 mt-8">
+                <button type="submit" class="w-full bg-[#897cef] text-white py-4 font-bold text-lg uppercase tracking-widest hover:bg-[#2ff495] hover:text-emerald-900 transition-all shadow-lg rounded-xl ltr:font-['Oswald'] rtl:font-['Cairo']">
+                    {{ _('btn_create_cat') }}
+                </button>
+            </div>
+            
+        </form>
+    </div>
+</div>
+
+<script>
+    function toggleSubFields() {
+        const select = document.getElementById('parentSelect');
+        const subFields = document.getElementById('subFields');
+        const nameLabel = document.getElementById('nameLabel');
+        const nameInput = document.getElementById('nameInput');
+        
+        if (select.value !== "") {
+            // It is a SUBCATEGORY
+            subFields.classList.remove('hidden');
+            nameLabel.innerText = "Collection Name (e.g. Red Roses)";
+            nameInput.placeholder = "Red Roses";
+        } else {
+            // It is a MAIN CATEGORY
+            subFields.classList.add('hidden');
+            nameLabel.innerText = "{{ _('lbl_cat_name') }}";
+            nameInput.placeholder = "e.g. Weddings";
+        }
+    }
+
+    function previewFile() {
+        const input = document.querySelector('input[type=file]');
+        const placeholder = document.getElementById('uploadPlaceholder');
+        const preview = document.getElementById('filePreview');
+        
+        if (input.files && input.files[0]) {
+            placeholder.classList.add('hidden');
+            preview.classList.remove('hidden');
+            preview.innerText = "Selected: " + input.files[0].name;
+        }
+    }
+</script>
+{% endblock %}

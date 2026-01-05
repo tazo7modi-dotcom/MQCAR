@@ -1,0 +1,318 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-screen bg-[#111] text-white">
+    <div class="container mx-auto px-4 py-16 max-w-6xl">
+        
+        <h1 class="text-4xl font-bold mb-12 text-white rtl:text-right font-comic ltr:font-['Bangers'] rtl:font-['Cairo'] uppercase tracking-wide">
+            {{ _('checkout_title') }}
+        </h1>
+        
+        <div class="flex flex-col lg:flex-row gap-12 lg:gap-20">
+            
+            <div class="lg:w-2/3">
+                <form method="POST" id="checkoutForm">
+                    
+                    {% if addresses %}
+                    <div class="mb-10">
+                        <h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-[#cc0000] uppercase tracking-wider rtl:flex-row-reverse font-comic ltr:font-['Bangers'] rtl:font-['Cairo']">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            {{ _('checkout_saved_addr') }}
+                        </h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {% for addr in addresses %}
+                            <label class="border-2 border-[#333] bg-[#1a1a1a] p-6 cursor-pointer hover:border-[#cc0000] transition relative group text-left rtl:text-right shadow-md group">
+                                <input type="radio" name="selected_address" value="{{ addr.id }}" 
+                                       data-country="{{ addr.country }}"
+                                       class="absolute top-6 ltr:right-6 rtl:left-6 accent-[#cc0000] w-5 h-5 saved-addr-radio"
+                                       onchange="handleAddressChange(this)">
+                                
+                                <p class="font-bold text-white text-lg mb-1 group-hover:text-[#cc0000] transition">{{ addr.full_name }}</p>
+                                <p class="text-sm text-gray-400">{{ addr.street_address }}</p>
+                                <p class="text-sm text-gray-400 font-medium mt-1">{{ addr.city }}, {{ addr.country }}</p>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="mb-10 rtl:text-right">
+                        <h2 class="text-xl font-bold mb-6 flex items-center gap-2 text-[#cc0000] uppercase tracking-wider rtl:flex-row-reverse font-comic ltr:font-['Bangers'] rtl:font-['Cairo']">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            {% if addresses %}{{ _('checkout_new_addr') }}{% else %}{{ _('checkout_ship_details') }}{% endif %}
+                        </h2>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-[#1a1a1a] p-8 border border-[#333] shadow-lg relative" id="newAddressContainer">
+                            
+                            <div>
+                                <label class="block text-gray-500 text-xs font-bold uppercase mb-2 ml-1 font-bold-heading">{{ _('lbl_fullname') }} <span class="text-[#cc0000]">*</span></label>
+                                <input type="text" name="full_name" class="new-addr-input w-full border-2 border-[#333] p-4 bg-black text-white focus:border-[#cc0000] transition outline-none placeholder-gray-700 font-bold" required placeholder="John Doe">
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-500 text-xs font-bold uppercase mb-2 ml-1 font-bold-heading">{{ _('lbl_phone') }} <span class="text-[#cc0000]">*</span></label>
+                                <div class="flex" dir="ltr"> 
+                                    <select name="phone_code" id="phoneCodeSelect" class="new-addr-input border-2 border-r-0 border-[#333] p-4 bg-[#222] text-white focus:border-[#cc0000] outline-none w-28 text-sm font-bold appearance-none text-center">
+                                        <option value="+973">🇧🇭 +973</option>
+                                        <option value="+966">🇸🇦 +966</option>
+                                        <option value="+971">🇦🇪 +971</option>
+                                        <option value="+965">🇰🇼 +965</option>
+                                        <option value="+974">🇶🇦 +974</option>
+                                        <option value="+968">🇴🇲 +968</option>
+                                    </select>
+                                    <input type="text" name="phone_number" class="new-addr-input w-full border-2 border-[#333] p-4 bg-black text-white focus:border-[#cc0000] transition outline-none placeholder-gray-700 font-bold" required placeholder="33000000">
+                                </div>
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <label class="block text-gray-500 text-xs font-bold uppercase mb-2 ml-1 font-bold-heading">{{ _('lbl_street') }} <span class="text-[#cc0000]">*</span></label>
+                                <input type="text" name="street_address" class="new-addr-input w-full border-2 border-[#333] p-4 bg-black text-white focus:border-[#cc0000] transition outline-none placeholder-gray-700 font-bold" required placeholder="Building 123, Road 456">
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-500 text-xs font-bold uppercase mb-2 ml-1 font-bold-heading">{{ _('lbl_city') }} <span class="text-[#cc0000]">*</span></label>
+                                <input type="text" name="city" class="new-addr-input w-full border-2 border-[#333] p-4 bg-black text-white focus:border-[#cc0000] transition outline-none placeholder-gray-700 font-bold" required placeholder="Manama">
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-500 text-xs font-bold uppercase mb-2 ml-1 font-bold-heading">{{ _('lbl_country') }} <span class="text-[#cc0000]">*</span></label>
+                                <div class="relative">
+                                    <select name="country" id="countrySelect" 
+                                            class="new-addr-input w-full border-2 border-[#333] p-4 bg-black text-white focus:border-[#cc0000] transition outline-none appearance-none font-bold" 
+                                            required onchange="updateShippingOptions()">
+                                        <option value="Bahrain" selected>Bahrain (البحرين)</option>
+                                        </select>
+                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+                                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-10 rtl:text-right">
+                        <h2 class="text-xl font-bold mb-6 text-[#cc0000] uppercase tracking-wider font-comic ltr:font-['Bangers'] rtl:font-['Cairo']">{{ _('checkout_ship_method') }}</h2>
+                        <div id="shippingOptionsContainer" class="space-y-4">
+                            </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-[#cc0000] text-white py-5 font-bold text-2xl uppercase tracking-widest hover:bg-white hover:text-black transition shadow-[0_4px_0_rgba(0,0,0,0.5)] active:translate-y-1 active:shadow-none font-comic ltr:font-['Bangers'] rtl:font-['Cairo']">
+                        {{ _('btn_pay_now') }}
+                    </button>
+                </form>
+            </div>
+
+            <div class="lg:w-1/3">
+                <div class="bg-[#1a1a1a] p-8 sticky top-24 shadow-2xl border border-[#333] rtl:text-right relative">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-[#cc0000]"></div>
+
+                    <h3 class="text-2xl font-bold mb-8 text-white font-comic ltr:font-['Bangers'] rtl:font-['Cairo'] uppercase tracking-wide">{{ _('checkout_summary') }}</h3>
+                    
+                    <div class="space-y-6 mb-8 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
+                        {% for item in items %}
+                        <div class="flex justify-between text-sm group border-b border-[#333] pb-4 last:border-0">
+                            <div class="w-2/3">
+                                <p class="font-bold text-white text-base">{{ item.quantity }}x {{ item.product.name }}</p>
+                                <p class="text-gray-500 text-xs mt-1 font-medium">
+                                    {% if item.size %}{{ item.size }} <span class="mx-1">|</span> {% endif %}
+                                    {% if item.color %}{{ item.color }}{% endif %}
+                                </p>
+                            </div>
+                            <p class="font-bold text-[#cc0000] font-mono">{{ (item.unit_price * item.quantity) | currency }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="border-t border-[#333] pt-6 space-y-3">
+                        <div class="flex justify-between text-gray-400 text-sm font-bold uppercase">
+                            <span>{{ _('cart_subtotal') }}</span>
+                            <span class="font-bold font-mono text-white">{{ total | currency }}</span>
+                        </div>
+                        <div class="flex justify-between text-gray-400 text-sm font-bold uppercase">
+                            <span>{{ _('cart_shipping') }}</span>
+                            <span id="shippingDisplay" class="font-bold text-[#cc0000]">--</span>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-[#333] pt-6 mt-6">
+                        <div class="flex justify-between items-baseline text-white">
+                            <span class="text-xl font-bold font-comic ltr:font-['Bangers'] rtl:font-['Cairo'] uppercase">{{ _('cart_total') }}</span>
+                            <span id="totalDisplay" class="text-3xl font-bold font-mono text-[#cc0000]">{{ total | currency }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8 flex items-center justify-center gap-2 text-[10px] uppercase tracking-widest text-gray-600 font-bold">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                        <p>{{ _('msg_secure_ssl') }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% set code = session.get('currency', 'BHD') %}
+{% set c_data = config['CURRENCY_RATES'].get(code, config['CURRENCY_RATES']['BHD']) %}
+<script>
+    const cartTotalBHD = {{ total }}; 
+    const exchangeRate = {{ c_data.rate }};
+    const symbol = "{{ c_data.symbol }}";
+    const decimals = {{ c_data.decimals }};
+    const currentCurrencyCode = "{{ current_currency }}"; 
+    
+    const COUNTRY_PHONE_MAP = {
+        'Bahrain': '+973',
+        'Saudi Arabia': '+966',
+        'UAE': '+971',
+        'Kuwait': '+965',
+        'Qatar': '+974',
+        'Oman': '+968'
+    };
+    
+    const CURRENCY_TO_COUNTRY_MAP = {
+        'BHD': 'Bahrain',
+        'SAR': 'Saudi Arabia',
+        'AED': 'UAE',
+        'KWD': 'Kuwait',
+        'QAR': 'Qatar',
+        'OMR': 'Oman',
+    };
+
+    // --- UPDATED SHIPPING RATES: BAHRAIN ONLY, 1 BHD ---
+    const SHIPPING_RATES = {
+        'bahrain_normal': 1.0,
+        // Kept others but they won't trigger if country is locked to Bahrain
+        'bahrain_fast': 3.0, 
+        'gulf_flat': 15.0
+    };
+
+    const SHIPPING_LABELS = {
+        'normal': "{{ _('ship_std') }}",
+        'fast': "{{ _('ship_fast') }}",
+        'gulf': "{{ _('ship_intl') }}"
+    };
+
+    let currentShippingCostBHD = 0;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const countrySelect = document.getElementById('countrySelect');
+        const savedAddrRadio = document.querySelector('input[name="selected_address"]:checked');
+
+        if (!savedAddrRadio) {
+            // Default to Bahrain for phone code
+            const mappedCountry = 'Bahrain'; 
+            countrySelect.value = mappedCountry;
+            updatePhoneCode(mappedCountry);
+        }
+
+        updateShippingOptions();
+        
+        document.querySelectorAll('.new-addr-input').forEach(input => {
+            input.addEventListener('input', () => {
+                document.querySelectorAll('.saved-addr-radio').forEach(r => r.checked = false);
+                setNewAddressRequired(true);
+                updateShippingOptions();
+            });
+        });
+    });
+
+    function handleAddressChange(radio) {
+        setNewAddressRequired(false);
+        const country = radio.getAttribute('data-country');
+        
+        // Although we hid options, we set value just in case
+        const sel = document.getElementById('countrySelect');
+        // Ensure options exist if using saved address from other country (legacy support)
+        if (!Array.from(sel.options).some(option => option.value === country)) {
+             let opt = document.createElement('option');
+             opt.value = country;
+             opt.innerHTML = country;
+             sel.appendChild(opt);
+        }
+        sel.value = country;
+        
+        updatePhoneCode(country);
+        renderShippingOptions(country);
+    }
+
+    function setNewAddressRequired(isRequired) {
+        document.querySelectorAll('.new-addr-input').forEach(inp => {
+            if(isRequired) inp.setAttribute('required', 'true');
+            else inp.removeAttribute('required');
+        });
+    }
+
+    function updatePhoneCode(countryName) {
+        const phoneSelect = document.getElementById('phoneCodeSelect');
+        if (COUNTRY_PHONE_MAP[countryName]) {
+            phoneSelect.value = COUNTRY_PHONE_MAP[countryName];
+        }
+    }
+
+    function updateShippingOptions() {
+        const countrySelect = document.getElementById('countrySelect');
+        const savedRadio = document.querySelector('input[name="selected_address"]:checked');
+        
+        let selectedCountry;
+
+        if (savedRadio) {
+            selectedCountry = savedRadio.getAttribute('data-country');
+        } else {
+            selectedCountry = countrySelect.value;
+        }
+
+        updatePhoneCode(selectedCountry);
+        renderShippingOptions(selectedCountry);
+    }
+
+    function renderShippingOptions(country) {
+        const container = document.getElementById('shippingOptionsContainer');
+        container.innerHTML = ''; 
+
+
+        if (country === 'Bahrain') {
+            
+            container.innerHTML += createOptionHTML('normal', '{{_("delivery_1")}}', SHIPPING_RATES.bahrain_normal, true);
+        } else {
+            // Fallback for saved addresses outside Bahrain (Legacy)
+            container.innerHTML += createOptionHTML('gulf', 'International Shipping', SHIPPING_RATES.gulf_flat, true);
+        }
+        calculateTotal();
+    }
+
+    function createOptionHTML(value, label, costBHD, isChecked) {
+        const costUser = (costBHD * exchangeRate).toFixed(decimals);
+        const checkedStr = isChecked ? 'checked' : '';
+        
+        return `
+        <label class="flex items-center justify-between p-6 border-2 border-[#333] bg-[#1a1a1a] cursor-pointer hover:border-[#cc0000] hover:bg-black transition relative shadow-md group">
+            <div class="flex items-center gap-4">
+                <input type="radio" name="shipping_option" value="${value}" ${checkedStr} onchange="calculateTotal()" class="accent-[#cc0000] w-5 h-5">
+                <span class="font-bold text-white text-sm md:text-base uppercase tracking-wider group-hover:text-[#cc0000] transition">${label}</span>
+            </div>
+            <span class="font-bold text-[#cc0000] font-mono text-lg">${symbol} ${costUser}</span>
+        </label>
+        `;
+    }
+
+    function calculateTotal() {
+        const selectedOption = document.querySelector('input[name="shipping_option"]:checked');
+        if (!selectedOption) return;
+
+        const type = selectedOption.value;
+        
+        // Ensure values match SHIPPING_RATES keys
+        if (type === 'normal') currentShippingCostBHD = SHIPPING_RATES.bahrain_normal;
+        else if (type === 'fast') currentShippingCostBHD = SHIPPING_RATES.bahrain_fast;
+        else currentShippingCostBHD = SHIPPING_RATES.gulf_flat;
+
+        const shippingUser = currentShippingCostBHD * exchangeRate;
+        document.getElementById('shippingDisplay').innerText = symbol + " " + shippingUser.toFixed(decimals);
+
+        const totalBHD = cartTotalBHD + currentShippingCostBHD;
+        const totalUser = totalBHD * exchangeRate;
+        
+        document.getElementById('totalDisplay').innerText = symbol + " " + totalUser.toFixed(decimals);
+    }
+</script>
+{% endblock %}

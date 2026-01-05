@@ -1,0 +1,563 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    
+    <div class="flex flex-col md:flex-row justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800">{{ _('admin_dashboard') }}</h1>
+            <p class="text-gray-500">{{ _('admin_overview') }}</p>
+        </div>
+        
+        <div class="mt-4 md:mt-0 flex flex-wrap gap-3">
+            
+            <a href="{{ url_for('admin.sync_loyverse_stock') }}" 
+               onclick="return confirm('Start full sync with Loyverse? This will import new items and update stock.')"
+               class="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold uppercase text-xs tracking-widest hover:bg-blue-700 transition flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                Sync Loyverse
+            </a>
+
+            <a href="{{ url_for('admin.deals') }}" class="bg-black text-white px-6 py-3 rounded-lg font-bold hover:bg-gray-800 transition flex items-center gap-2">
+                <svg class="w-5 h-5 rtl:ml-2 ltr:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                {{ _('admin_deals_title') }}
+            </a>
+
+            <a href="{{ url_for('admin.manage_product') }}" class="bg-black text-white px-6 py-3 rounded-lg font-bold hover:bg-gray-800 transition flex items-center gap-2">
+                <svg class="w-5 h-5 rtl:ml-2 ltr:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                {{ _('btn_add_product') }}
+            </a>
+        </div>
+
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white p-6 rounded-lg shadow border-l-4 border-green-500 rtl:border-l-0 rtl:border-r-4">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-green-100 text-green-500 ltr:mr-4 rtl:ml-4">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <div>
+                    <p class="text-gray-500 text-sm font-medium">{{ _('stat_revenue') }}</p>
+                    <p class="text-2xl font-bold text-gray-800">{{ total_revenue | round(2) | currency }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow border-l-4 border-blue-500 rtl:border-l-0 rtl:border-r-4">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100 text-blue-500 ltr:mr-4 rtl:ml-4">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                </div>
+                <div>
+                    <p class="text-gray-500 text-sm font-medium">{{ _('stat_orders') }}</p>
+                    <p class="text-2xl font-bold text-gray-800">{{ order_count }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow border-l-4 border-purple-500 rtl:border-l-0 rtl:border-r-4">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-purple-100 text-purple-500 ltr:mr-4 rtl:ml-4">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                </div>
+                <div>
+                    <p class="text-gray-500 text-sm font-medium">{{ _('stat_active_products') }}</p>
+                    <p class="text-2xl font-bold text-gray-800">{{ product_count }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow">
+            <h3 class="text-lg font-bold mb-4 text-gray-700">{{ _('chart_title') }}</h3>
+            <div class="relative h-64">
+                <canvas id="salesChart"></canvas>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h3 class="text-lg font-bold mb-4 text-gray-700">{{ _('hdr_quick_details') }}</h3>
+            <div class="space-y-4">
+                <div class="flex justify-between items-center p-3 bg-gray-50 rounded">
+                    <span class="text-gray-600">{{ _('stat_avg_order') }}</span>
+                    <span class="font-bold text-gray-800">
+                        {% if order_count > 0 %}
+                            {{ (total_revenue / order_count)|round(2) | currency }}
+                        {% else %}
+                            0
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            <div class="mt-6 border-t border-gray-100 pt-4">
+                <a href="{{ url_for('admin.analytics') }}" class="block w-full bg-zinc-900 text-white text-center py-3 rounded font-bold uppercase text-xs tracking-widest hover:bg-amber-500 hover:text-black transition ltr:font-['Oswald'] rtl:font-['Cairo']">
+                    {{ _('btn_full_analytics') }} &rarr;
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow overflow-hidden mb-8">
+        <div class="px-6 py-4 border-b border-gray-100">
+            <h3 class="text-lg font-bold text-gray-800">{{ _('hdr_recent_orders') }}</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full ltr:text-left rtl:text-right border-collapse">
+                <thead>
+                    <tr class="bg-gray-50 text-gray-600 text-sm uppercase tracking-wider">
+                        <th class="px-6 py-3">{{ _('th_order_id') }}</th>
+                        <th class="px-6 py-3">{{ _('th_customer') }}</th>
+                        <th class="px-6 py-3">{{ _('th_ship_status') }}</th>
+                        <th class="px-6 py-3">{{ _('th_payment') }}</th>
+                        <th class="px-6 py-3">{{ _('th_total') }}</th>
+                        <th class="px-6 py-3">{{ _('th_date') }}</th>
+                    </tr>
+                </thead>
+               <tbody class="divide-y divide-gray-100">
+                    {% for order in recent_orders | selectattr('payment_status', 'equalto', 'Paid') %}
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="px-6 py-4 font-bold text-gray-900">
+                            <a href="{{ url_for('admin.view_order', order_id=order.id) }}" class="text-blue-600 hover:text-black hover:underline transition">
+                                #{{ order.id }}
+                            </a>
+                        </td>
+                        <td class="px-6 py-4 text-gray-600">
+                            {{ order.shipping_details.split(',')[0] if order.shipping_details else order.user.username }}
+                        </td>
+                        
+                        <td class="px-6 py-4">
+                            <form action="{{ url_for('admin.update_order_status', order_id=order.id) }}" method="POST" class="flex items-center gap-2">
+                                <div class="relative">
+                                    <select name="status" class="appearance-none bg-gray-50 border border-gray-300 text-gray-700 py-1 px-3 ltr:pr-8 rtl:pl-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500 text-xs font-bold uppercase">
+                                        <option value="Pending" {% if order.status == 'Pending' %}selected{% endif %}>{{ _('status_pending') }}</option>
+                                        <option value="Processing" {% if order.status == 'Processing' %}selected{% endif %}>{{ _('status_processing') }}</option>
+                                        <option value="Shipped" {% if order.status == 'Shipped' %}selected{% endif %}>{{ _('status_shipped') }}</option>
+                                        <option value="Delivered" {% if order.status == 'Delivered' %}selected{% endif %}>{{ _('status_delivered') }}</option>
+                                        <option value="Cancelled" {% if order.status == 'Cancelled' %}selected{% endif %}>{{ _('status_cancelled') }}</option>
+                                    </select>
+                                    <div class="pointer-events-none absolute inset-y-0 ltr:right-0 rtl:left-0 flex items-center px-2 text-gray-700">
+                                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                                    </div>
+                                </div>
+                                <button type="submit" class="bg-black text-white p-1.5 rounded hover:bg-green-600 transition">
+                                    <svg class="w-3 h-3 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                </button>
+                            </form>
+                        </td>
+
+                        <td class="px-6 py-4">
+                            <span class="text-green-600 font-bold text-xs bg-green-100 px-2 py-1 rounded">{{ _('tag_paid') }}</span>
+                        </td>
+                        <td class="px-6 py-4 font-medium text-gray-900">{{ order.total_amount | currency }}</td>
+                        <td class="px-6 py-4 text-gray-500 text-sm">{{ order.created_at.strftime('%Y-%m-%d') }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-8 text-center text-gray-400">{{ _('msg_no_orders') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+<div class="mt-12 mb-12">
+        
+        <div class="flex flex-col md:flex-row justify-between items-end mb-6 border-b-4 border-amber-500 pb-2 gap-4">
+            <div>
+                <h3 class="text-2xl font-bold uppercase text-zinc-900 ltr:font-['Oswald'] rtl:font-['Cairo']">
+                    {{ _('hdr_inventory') or 'Product Inventory' }}
+                </h3>
+                <p class="text-xs text-gray-500 mt-1">Manage stock, prices, and images.</p>
+            </div>
+            
+            <div class="flex gap-2">
+                <a href="{{ url_for('admin.sync_loyverse_stock') }}" 
+                   onclick="return confirm('Update stock from Loyverse?')"
+                   class="bg-blue-600 text-white px-4 py-2 text-xs font-bold uppercase hover:bg-blue-700 transition flex items-center gap-2 rounded shadow">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    Sync Stock
+                </a>
+
+                <a href="{{ url_for('admin.manage_product') }}" class="bg-zinc-900 text-white px-4 py-2 text-xs font-bold uppercase hover:bg-amber-500 hover:text-black transition ltr:font-['Oswald'] rtl:font-['Cairo'] flex items-center gap-2 rounded shadow">
+                    + {{ _('btn_add_product') }}
+                </a>
+            </div>
+        </div>
+
+        <div class="bg-white border border-zinc-200 overflow-hidden shadow-lg rounded-lg">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left rtl:text-right border-collapse">
+                    <thead class="bg-zinc-100 text-zinc-500 text-xs uppercase font-bold ltr:tracking-wider rtl:tracking-normal font-['Oswald'] rtl:font-['Cairo']">
+                        <tr>
+                            <th class="p-4 border-b border-zinc-200 w-24 text-center">{{ _('th_image') or 'Image' }}</th>
+                            <th class="p-4 border-b border-zinc-200">{{ _('th_product_details') or 'Product Details' }}</th>
+                            <th class="p-4 border-b border-zinc-200">{{ _('th_category') or 'Category' }}</th>
+                            <th class="p-4 border-b border-zinc-200 text-center">{{ _('th_stock') or 'Stock' }}</th>
+                            <th class="p-4 border-b border-zinc-200 text-right">{{ _('th_price') or 'Price' }}</th>
+                            <th class="p-4 border-b border-zinc-200 text-center">{{ _('th_actions') or 'Actions' }}</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-zinc-100">
+                        
+                        {% for product in products %}
+                        <tr class="hover:bg-zinc-50 transition group">
+                            
+                            <td class="p-4">
+                                <div class="w-16 h-16 rounded-md bg-white border border-zinc-200 overflow-hidden mx-auto relative">
+                                    {% if product.image_url %}
+                                        {% if product.image_url.startswith('http') %}
+                                            <img src="{{ product.image_url }}" class="w-full h-full object-cover">
+                                        {% else %}
+                                            <img src="{{ url_for('uploaded_file', filename=product.image_url) }}" class="w-full h-full object-cover">
+                                        {% endif %}
+                                    {% else %}
+                                        <div class="w-full h-full flex items-center justify-center text-zinc-300 text-[10px] font-bold">NO IMG</div>
+                                    {% endif %}
+                                    
+                                    {% if product.images %}
+                                    <div class="absolute bottom-0 right-0 bg-black/70 text-white text-[8px] px-1 font-bold">
+                                        +{{ product.images|length }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </td>
+
+                            <td class="p-4">
+                                <div class="font-bold text-zinc-800 text-sm mb-1">{{ product.name }}</div>
+                                <div class="text-[10px] text-zinc-400 font-mono">ID: #{{ product.id }}</div>
+                                {% if product.loyverse_id %}
+                                    <div class="text-[9px] text-blue-500 font-mono mt-0.5" title="Synced with Loyverse">Linked: {{ product.loyverse_id[:8] }}...</div>
+                                {% endif %}
+                                
+                                {% if product.label %}
+                                    <span class="inline-block mt-2 text-[10px] bg-amber-500 text-white px-2 py-0.5 rounded-full uppercase font-bold tracking-wide shadow-sm">
+                                        {{ product.label }}
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <td class="p-4 text-sm font-medium text-zinc-600">
+                                {{ product.category.name if product.category else 'Uncategorized' }}
+                            </td>
+
+                            <td class="p-4 text-center">
+                                {% if product.quantity == 0 %}
+                                    <span class="bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-bold uppercase">Out of Stock</span>
+                                {% elif product.quantity < 5 %}
+                                    <span class="bg-amber-100 text-amber-600 px-2 py-1 rounded text-xs font-bold uppercase">Low: {{ product.quantity }}</span>
+                                {% else %}
+                                    <span class="font-bold text-zinc-700">{{ product.quantity }}</span>
+                                {% endif %}
+                            </td>
+
+                            <td class="p-4 text-right">
+                                <div class="font-bold text-zinc-900">{{ product.price | currency }}</div>
+                                {% if product.discount_percentage > 0 %}
+                                    <div class="text-xs text-red-500 font-bold">-{{ product.discount_percentage }}%</div>
+                                {% endif %}
+                            </td>
+
+                            <td class="p-4">
+                                <div class="flex items-center justify-center gap-3">
+                                    <a href="{{ url_for('admin.manage_product', product_id=product.id) }}" class="text-zinc-400 hover:text-blue-600 transition p-2 hover:bg-blue-50 rounded-full" title="{{ _('btn_edit') }}">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                    </a>
+                                    
+                                    <form action="{{ url_for('admin.delete_product', product_id=product.id) }}" method="POST" onsubmit="return confirm('{{ _('msg_confirm_delete') }}');">
+                                        <button type="submit" class="text-zinc-400 hover:text-red-600 transition p-2 hover:bg-red-50 rounded-full" title="{{ _('btn_delete') }}">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="p-12 text-center text-zinc-400 italic bg-zinc-50">
+                                <p class="mb-4">No products found in the database.</p>
+                                <a href="{{ url_for('admin.manage_product') }}" class="text-blue-600 hover:underline font-bold">Add your first product</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+<div class="mt-12">
+    <div class="flex justify-between items-end mb-6 border-b-4 border-amber-500 pb-2">
+        <h3 class="text-2xl font-bold uppercase text-zinc-900 ltr:font-['Oswald'] rtl:font-['Cairo']">
+            {{ _('hdr_manage_cats') }}
+        </h3>
+        <a href="{{ url_for('admin.new_category') }}" class="bg-zinc-900 text-white px-4 py-2 text-xs font-bold uppercase hover:bg-amber-500 hover:text-black transition ltr:font-['Oswald'] rtl:font-['Cairo']">
+            + {{ _('admin_title_new_cat') }}
+        </a>
+    </div>
+
+    <div class="bg-white border border-zinc-200 overflow-hidden shadow-lg">
+        <table class="w-full text-left rtl:text-right border-collapse">
+            <thead class="bg-zinc-100 text-zinc-500 text-xs uppercase font-bold ltr:tracking-wider rtl:tracking-normal font-['Oswald'] rtl:font-['Cairo']">
+                <tr>
+                    <th class="p-4 border-b border-zinc-200">{{ _('th_cat_name') }}</th>
+                    <th class="p-4 border-b border-zinc-200">{{ _('th_parent') }}</th>
+                    <th class="p-4 border-b border-zinc-200 text-center">{{ _('th_actions') }}</th>
+
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-zinc-100">
+                
+                {% for cat in categories %}
+                <tr class="hover:bg-zinc-50 transition">
+                    <td class="p-4 font-bold text-zinc-800">
+                        {{ cat.name }} {%if cat.model_years%} {{cat.model_years}} {%endif%} 
+                    </td>
+                    <td class="p-4 text-sm text-zinc-500">
+                        {% if cat.parent %}
+                            <span class="bg-amber-100 text-amber-800 px-2 py-1 rounded-none text-xs font-bold uppercase">{{ cat.parent.name }}</span>
+                        {% else %}
+                            <span class="text-zinc-300">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="p-4 flex justify-center gap-2">
+                        <a href="{{ url_for('admin.edit_category', id=cat.id) }}" class="text-zinc-400 hover:text-blue-600 transition" title="{{ _('btn_edit') }}">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+    </a>
+                        <form action="{{ url_for('admin.delete_category', id=cat.id) }}" method="POST" onsubmit="return confirm('{{ _('msg_confirm_delete_cat') }}');">
+                            <button type="submit" class="text-zinc-400 hover:text-red-700 transition">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3" class="p-8 text-center text-zinc-400 italic">No categories found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+
+<div class="mt-12 mb-12">
+        
+        <div class="flex flex-col md:flex-row justify-between items-end mb-6 border-b-4 border-amber-500 pb-2 gap-4">
+            <div>
+                <h3 class="text-2xl font-bold uppercase text-zinc-900 ltr:font-['Oswald'] rtl:font-['Cairo']">
+                    {{ _('hdr_inventory') or 'Product Inventory' }}
+                </h3>
+                <p class="text-xs text-gray-500 mt-1">Manage stock, prices, and images.</p>
+            </div>
+            
+            <div class="flex gap-2">
+                <a href="{{ url_for('admin.sync_loyverse_stock') }}" 
+                   onclick="return confirm('Update stock from Loyverse?')"
+                   class="bg-blue-600 text-white px-4 py-2 text-xs font-bold uppercase hover:bg-blue-700 transition flex items-center gap-2 rounded shadow">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    Sync Stock
+                </a>
+
+                <a href="{{ url_for('admin.manage_product') }}" class="bg-zinc-900 text-white px-4 py-2 text-xs font-bold uppercase hover:bg-amber-500 hover:text-black transition ltr:font-['Oswald'] rtl:font-['Cairo'] flex items-center gap-2 rounded shadow">
+                    + {{ _('btn_add_product') }}
+                </a>
+            </div>
+        </div>
+
+        <div class="bg-white border border-zinc-200 overflow-hidden shadow-lg rounded-lg">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left rtl:text-right border-collapse">
+                    <thead class="bg-zinc-100 text-zinc-500 text-xs uppercase font-bold ltr:tracking-wider rtl:tracking-normal font-['Oswald'] rtl:font-['Cairo']">
+                        <tr>
+                            <th class="p-4 border-b border-zinc-200 w-24 text-center">{{ _('th_image') or 'Image' }}</th>
+                            <th class="p-4 border-b border-zinc-200">{{ _('th_product_details') or 'Product Details' }}</th>
+                            <th class="p-4 border-b border-zinc-200">{{ _('th_category') or 'Category' }}</th>
+                            <th class="p-4 border-b border-zinc-200 text-center">{{ _('th_stock') or 'Stock' }}</th>
+                            <th class="p-4 border-b border-zinc-200 text-right">{{ _('th_price') or 'Price' }}</th>
+                            <th class="p-4 border-b border-zinc-200 text-center">{{ _('th_actions') or 'Actions' }}</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-zinc-100">
+                        
+                        {% for product in products %}
+                        <tr class="hover:bg-zinc-50 transition group">
+                            
+                            <td class="p-4">
+                                <div class="w-16 h-16 rounded-md bg-white border border-zinc-200 overflow-hidden mx-auto relative">
+                                    {% if product.image_url %}
+                                        {% if product.image_url.startswith('http') %}
+                                            <img src="{{ product.image_url }}" class="w-full h-full object-cover">
+                                        {% else %}
+                                            <img src="{{ url_for('uploaded_file', filename=product.image_url) }}" class="w-full h-full object-cover">
+                                        {% endif %}
+                                    {% else %}
+                                        <div class="w-full h-full flex items-center justify-center text-zinc-300 text-[10px] font-bold">NO IMG</div>
+                                    {% endif %}
+                                    
+                                    {% if product.images %}
+                                    <div class="absolute bottom-0 right-0 bg-black/70 text-white text-[8px] px-1 font-bold">
+                                        +{{ product.images|length }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </td>
+
+                            <td class="p-4">
+                                <div class="font-bold text-zinc-800 text-sm mb-1">{{ product.name }}</div>
+                                <div class="text-[10px] text-zinc-400 font-mono">ID: #{{ product.id }}</div>
+                                {% if product.loyverse_id %}
+                                    <div class="text-[9px] text-blue-500 font-mono mt-0.5" title="Synced with Loyverse">Linked: {{ product.loyverse_id[:8] }}...</div>
+                                {% endif %}
+                                
+                                {% if product.label %}
+                                    <span class="inline-block mt-2 text-[10px] bg-amber-500 text-white px-2 py-0.5 rounded-full uppercase font-bold tracking-wide shadow-sm">
+                                        {{ product.label }}
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <td class="p-4 text-sm font-medium text-zinc-600">
+                                {{ product.category.name if product.category else 'Uncategorized' }}
+                            </td>
+
+                            <td class="p-4 text-center">
+                                {% if product.quantity == 0 %}
+                                    <span class="bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-bold uppercase">Out of Stock</span>
+                                {% elif product.quantity < 5 %}
+                                    <span class="bg-amber-100 text-amber-600 px-2 py-1 rounded text-xs font-bold uppercase">Low: {{ product.quantity }}</span>
+                                {% else %}
+                                    <span class="font-bold text-zinc-700">{{ product.quantity }}</span>
+                                {% endif %}
+                            </td>
+
+                            <td class="p-4 text-right">
+                                <div class="font-bold text-zinc-900">{{ product.price | currency }}</div>
+                                {% if product.discount_percentage > 0 %}
+                                    <div class="text-xs text-red-500 font-bold">-{{ product.discount_percentage }}%</div>
+                                {% endif %}
+                            </td>
+
+                            <td class="p-4">
+                                <div class="flex items-center justify-center gap-3">
+                                    <a href="{{ url_for('admin.manage_product', product_id=product.id) }}" class="text-zinc-400 hover:text-blue-600 transition p-2 hover:bg-blue-50 rounded-full" title="{{ _('btn_edit') }}">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                    </a>
+                                    
+                                    <form action="{{ url_for('admin.delete_product', product_id=product.id) }}" method="POST" onsubmit="return confirm('{{ _('msg_confirm_delete') }}');">
+                                        <button type="submit" class="text-zinc-400 hover:text-red-600 transition p-2 hover:bg-red-50 rounded-full" title="{{ _('btn_delete') }}">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="p-12 text-center text-zinc-400 italic bg-zinc-50">
+                                <p class="mb-4">No products found in the database.</p>
+                                <a href="{{ url_for('admin.manage_product') }}" class="text-blue-600 hover:underline font-bold">Add your first product</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+<div class="mt-12">
+    <div class="flex justify-between items-end mb-6 border-b-4 border-amber-500 pb-2">
+        <h3 class="text-2xl font-bold uppercase text-zinc-900 ltr:font-['Oswald'] rtl:font-['Cairo']">
+            {{ _('hdr_manage_cats') }}
+        </h3>
+        <a href="{{ url_for('admin.new_category') }}" class="bg-zinc-900 text-white px-4 py-2 text-xs font-bold uppercase hover:bg-amber-500 hover:text-black transition ltr:font-['Oswald'] rtl:font-['Cairo']">
+            + {{ _('admin_title_new_cat') }}
+        </a>
+    </div>
+
+    <div class="bg-white border border-zinc-200 overflow-hidden shadow-lg">
+        <table class="w-full text-left rtl:text-right border-collapse">
+            <thead class="bg-zinc-100 text-zinc-500 text-xs uppercase font-bold ltr:tracking-wider rtl:tracking-normal font-['Oswald'] rtl:font-['Cairo']">
+                <tr>
+                    <th class="p-4 border-b border-zinc-200">{{ _('th_cat_name') }}</th>
+                    <th class="p-4 border-b border-zinc-200">{{ _('th_parent') }}</th>
+                    <th class="p-4 border-b border-zinc-200 text-center">{{ _('th_actions') }}</th>
+
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-zinc-100">
+                
+                {% for cat in categories %}
+                <tr class="hover:bg-zinc-50 transition">
+                    <td class="p-4 font-bold text-zinc-800">
+                        {{ cat.name }} {%if cat.model_years%} {{cat.model_years}} {%endif%} 
+                    </td>
+                    <td class="p-4 text-sm text-zinc-500">
+                        {% if cat.parent %}
+                            <span class="bg-amber-100 text-amber-800 px-2 py-1 rounded-none text-xs font-bold uppercase">{{ cat.parent.name }}</span>
+                        {% else %}
+                            <span class="text-zinc-300">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="p-4 flex justify-center gap-2">
+                        <a href="{{ url_for('admin.edit_category', id=cat.id) }}" class="text-zinc-400 hover:text-blue-600 transition" title="{{ _('btn_edit') }}">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+    </a>
+                        <form action="{{ url_for('admin.delete_category', id=cat.id) }}" method="POST" onsubmit="return confirm('{{ _('msg_confirm_delete_cat') }}');">
+                            <button type="submit" class="text-zinc-400 hover:text-red-700 transition">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3" class="p-8 text-center text-zinc-400 italic">No categories found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('salesChart').getContext('2d');
+    
+    // Data passed from Python
+    const labels = {{ graph_labels | tojson }};
+    const data = {{ graph_values | tojson }};
+
+    // Use Jinja to inject translation into JS string
+    const labelText = "{{ _('chart_label') }}";
+
+    const salesChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: labelText, // Translated label
+                data: data,
+                borderColor: 'rgb(79, 70, 229)', 
+                backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                borderWidth: 2,
+                tension: 0.3,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, grid: { display: false } },
+                x: { grid: { display: false } }
+            },
+            plugins: { legend: { display: false } }
+        }
+    });
+</script>
+{% endblock %}

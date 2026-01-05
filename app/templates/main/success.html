@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-xl mx-auto text-center py-24 px-4">
+    
+    <div class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-green-50 mb-8 animate-bounce-slow">
+        <svg class="h-10 w-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+    </div>
+
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ _('success_title') }}</h1>
+    <p class="text-gray-500 text-base mb-10 leading-relaxed">{{ _('success_msg') }}</p>
+
+    <div class="bg-white p-8 rounded-sm shadow-xl mb-10 border border-gray-100 ltr:text-left rtl:text-right relative overflow-hidden">
+        <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-black via-gray-500 to-black"></div>
+
+        <h2 class="text-xs font-bold uppercase tracking-widest mb-6 text-gray-400 border-b border-gray-100 pb-2">{{ _('success_receipt') }}</h2>
+        
+        <div class="flex justify-between items-center py-2">
+            <span class="text-gray-600 text-sm">{{ _('success_order_num') }}</span>
+            <span class="font-mono font-bold text-gray-900">#{{ order.id }}</span>
+        </div>
+        
+        <div class="flex justify-between items-center py-2">
+            <span class="text-gray-600 text-sm">{{ _('success_pay_status') }}</span>
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-green-100 text-green-800">
+                {{ _('tag_paid') }}
+            </span>
+        </div>
+
+        <div class="flex justify-between items-center py-3 mt-2 border-t border-dashed border-gray-200">
+            <span class="text-gray-900 font-bold">{{ _('success_amount') }}</span>
+            <span class="font-bold text-green-600 text-xl">{{ order.total_amount | currency }}</span>
+        </div>
+        
+        <div class="mt-4 text-[10px] text-gray-400 font-mono">
+            {{ _('success_ref') }}: {{ order.stripe_session_id if order.stripe_session_id else 'TAP_TXN_ID' }}
+        </div>
+    </div>
+
+    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a href="{{ url_for('main.account') }}" class="w-full sm:w-auto bg-black text-white px-8 py-3 rounded-sm font-bold text-sm uppercase tracking-widest hover:bg-gray-800 transition shadow-lg">
+            {{ _('btn_view_order') }}
+        </a>
+        <a href="{{ url_for('main.home') }}" class="w-full sm:w-auto bg-white border border-gray-200 text-gray-900 px-8 py-3 rounded-sm font-bold text-sm uppercase tracking-widest hover:bg-gray-50 transition">
+            {{ _('cart_continue') }}
+        </a>
+    </div>
+</div>
+{% endblock %}

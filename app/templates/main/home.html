@@ -1,0 +1,308 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="relative w-full h-[600px] md:h-[80vh] flex items-center justify-center overflow-hidden bg-black">
+    
+    <img src="/static/back.PNG" 
+         class="absolute inset-0 w-full h-full object-cover opacity-60">
+    
+  <div class="absolute inset-0 bg-gradient-to-r rtl:bg-gradient-to-l from-black via-black/60 to-transparent"></div>
+
+    <div class="relative z-10 container mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+        
+        <div class="text-left rtl:text-right">
+<div class="flex items-center gap-3 md:gap-5 border-l-[6px] border-[#cc0000] pl-6 rtl:border-l-0 rtl:border-r-[6px] rtl:pl-0 rtl:pr-6 mb-8">
+    
+    <span class="text-[#cc0000] text-[10rem] md:text-[14rem] font-comic leading-[0.75] drop-shadow-[0_4px_0_rgba(0,0,0,0.5)] transform translate-y-2">
+        1
+    </span>
+
+    <h1 class="text-6xl md:text-8xl text-white font-comic uppercase leading-[0.85] drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]">
+        {{ _('hero_title')|safe }}
+    </h1>
+
+</div>
+
+            <p class="text-gray-300 text-lg md:text-xl font-bold uppercase tracking-wide mb-2 ltr:font-['Oswald'] rtl:font-['Cairo']">
+                {{ _('hero_location_tag') }}
+            </p>
+            
+            <p class="text-gray-400 text-sm max-w-md mb-8 leading-relaxed ltr:font-['Oswald'] rtl:font-['Cairo']">
+                {{ _('hero_subtitle') }}
+            </p>
+
+            <a href="https://wa.me/97300000000" class="inline-block bg-[#cc0000] hover:bg-red-700 text-white font-black text-lg px-8 py-4 uppercase tracking-widest skew-x-[-10deg] shadow-[5px_5px_0px_0px_rgba(255,255,255,0.2)] transition-all transform hover:translate-x-1 hover:translate-y-1 hover:shadow-none">
+                <span class="block skew-x-[10deg]">{{ _('hero_cta_whatsapp') }}</span>
+            </a>
+        </div>
+
+        <div class="hidden md:block relative">
+            </div>
+
+    </div>
+</div>
+
+<div class="container mx-auto px-6 py-24">
+    
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-y-12 gap-x-6">
+        {% for category in categories %}
+        <a href="{{ url_for('main.category_view', category_id=category.id) }}" class="group relative flex items-center justify-center w-full aspect-square hover:scale-105 transition-transform duration-500">
+            
+            <div class="w-full h-full relative z-0">
+                {% if category.image_url %}
+                    <img src="{{ url_for('uploaded_file', filename=category.image_url) }}" 
+                         alt="{{ category.name }}" 
+                         class="w-full h-full object-contain drop-shadow-[0_15px_15px_rgba(0,0,0,0.5)]">
+                {% else %}
+                    <div class="w-full h-full flex items-center justify-center opacity-20">
+                        <svg class="w-20 h-20 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="absolute bottom-4 left-0 w-full z-10 text-center pointer-events-none">
+                <h3 class="text-2xl md:text-4xl font-comic text-[#cc0000] uppercase tracking-wide ltr:font-['Bangers'] rtl:font-['Cairo'] rtl:font-black leading-none
+                           drop-shadow-[0_4px_0_rgba(0,0,0,1)] stroke-black 
+                           group-hover:text-white group-hover:drop-shadow-[0_4px_0_#cc0000] transition-all duration-300">
+                    {{ category.name | translate_dynamic }}
+                </h3>
+            </div>
+
+        </a>
+        {% endfor %}
+    </div>
+
+</div>
+<div class="bg-[#0a0a0a] py-24 border-t border-gray-900 relative overflow-hidden">
+    <div class="container mx-auto px-6 relative z-10">
+        
+        <h2 class="text-5xl md:text-7xl font-comic text-white text-center mb-4 uppercase tracking-widest ltr:font-['Bangers'] rtl:font-['Cairo'] rtl:font-black">
+            {{ _('del_title') }}
+        </h2>
+        <p class="text-gray-500 text-center mb-16 font-bold uppercase tracking-widest">{{ _('del_subtitle') }}</p>
+
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-[#111] border border-[#222] p-10 md:p-14 hover:border-[#cc0000] transition-all duration-300 group relative flex flex-col items-center text-center shadow-2xl">
+                
+                <div class="absolute top-0 right-0 bg-[#cc0000] text-white text-sm font-black px-6 py-2 uppercase skew-x-[-10deg] -mt-4 -mr-4 shadow-lg tracking-wider">
+                    {{ _('del_badge') or 'KINGDOM WIDE' }}
+                </div>
+                
+                <div class="mb-8 text-[#cc0000] group-hover:scale-110 transition-transform duration-500">
+                    <svg class="w-20 h-20 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+
+                <h3 class="text-4xl md:text-6xl font-comic text-white mb-4 ltr:font-['Bangers'] rtl:font-['Cairo'] uppercase tracking-wide">
+                    {{ _('del_all_bahrain') or 'All of Bahrain' }}
+                </h3>
+                
+                <p class="text-gray-500 text-lg mb-10 max-w-2xl font-bold-heading tracking-wide leading-relaxed">
+                    {{ _('del_all_bahrain_desc') or 'We provide fast, reliable, and secure delivery to every governorate in the Kingdom. From Manama to Zallaq, we have you covered.' }}
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 w-full border-t border-[#222] pt-8 mt-2">
+                    <div class="group-hover:translate-y-[-2px] transition-transform duration-300">
+                        <span class="block text-[#cc0000] text-4xl font-comic mb-1 ltr:font-['Bangers'] rtl:font-['Cairo']">1.0 BHD</span>
+                        <span class="text-[10px] text-gray-600 uppercase font-black tracking-[0.2em]">{{ _('del_flat_rate') or 'Flat Rate' }}</span>
+                    </div>
+                    <div class="group-hover:translate-y-[-2px] transition-transform duration-300 delay-75">
+                        <span class="block text-[#cc0000] text-4xl font-comic mb-1 ltr:font-['Bangers'] rtl:font-['Cairo']">1 HR</span>
+                        <span class="text-[10px] text-gray-600 uppercase font-black tracking-[0.2em]">{{ _('del_speed') or 'Max Delivery Time' }}</span>
+                    </div>
+                    <div class="group-hover:translate-y-[-2px] transition-transform duration-300 delay-150">
+                        <span class="block text-[#cc0000] text-4xl font-comic mb-1 ltr:font-['Bangers'] rtl:font-['Cairo']">100%</span>
+                        <span class="text-[10px] text-gray-600 uppercase font-black tracking-[0.2em]">{{ _('del_coverage') or 'Kingdom Coverage' }}</span>
+                    </div>
+                </div>
+
+                <div class="w-full h-1 bg-[#222] absolute bottom-0 left-0 group-hover:bg-[#cc0000] transition-colors duration-500"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="bg-[#111] py-20 border-t border-gray-900">
+    <div class="container mx-auto px-6">
+        <h2 class="text-4xl md:text-5xl font-comic text-[#cc0000] text-center mb-16 ltr:font-['Bangers'] rtl:font-['Cairo'] rtl:font-black">
+            {{ _('why_title') }}
+        </h2>
+        
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div class="flex flex-col items-center">
+                <div class="w-16 h-16 bg-[#1a1a1a] rounded-full flex items-center justify-center text-[#cc0000] mb-4 text-2xl border border-[#333]">★</div>
+                <h4 class="font-bold-heading text-xl text-white mb-1">{{ _('feat_rated') }}</h4>
+                <p class="text-xs text-gray-500 uppercase">{{ _('feat_rated_desc') }}</p>
+            </div>
+            <div class="flex flex-col items-center">
+                <div class="w-16 h-16 bg-[#1a1a1a] rounded-full flex items-center justify-center text-[#cc0000] mb-4 text-2xl border border-[#333]">⚡</div>
+                <h4 class="font-bold-heading text-xl text-white mb-1">{{ _('feat_delivery') }}</h4>
+                <p class="text-xs text-gray-500 uppercase">{{ _('feat_delivery_desc') }}</p>
+            </div>
+            <div class="flex flex-col items-center">
+                <div class="w-16 h-16 bg-[#1a1a1a] rounded-full flex items-center justify-center text-[#cc0000] mb-4 text-2xl border border-[#333]">💬</div>
+                <h4 class="font-bold-heading text-xl text-white mb-1">{{ _('feat_support') }}</h4>
+                <p class="text-xs text-gray-500 uppercase">{{ _('feat_support_desc') }}</p>
+            </div>
+            <div class="flex flex-col items-center">
+                <div class="w-16 h-16 bg-[#1a1a1a] rounded-full flex items-center justify-center text-[#cc0000] mb-4 text-2xl border border-[#333]">🛡️</div>
+                <h4 class="font-bold-heading text-xl text-white mb-1">{{ _('feat_trust') }}</h4>
+                <p class="text-xs text-gray-500 uppercase">{{ _('feat_trust_desc') }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="bg-[#cc0000] py-6 overflow-hidden relative">
+    <div class="whitespace-nowrap animate-marquee flex items-center gap-12 text-black font-black italic text-2xl uppercase tracking-tighter">
+        <span>SMART E-LIQUIDS</span> • <span>RIO</span> • <span>NAFAS</span> • <span>MAZAJ</span> • <span>GEEKVAPE</span> • 
+        <span>VAPORESSO</span> • <span>UWELL</span> • <span>ELFBAR</span> • <span>TUGBOAT</span> • <span>SMART E-LIQUIDS</span> • <span>RIO</span> • <span>NAFAS</span> • <span>MAZAJ</span>
+    </div>
+</div>
+<style>
+@keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+.animate-marquee { animation: marquee 20s linear infinite; }
+</style>
+
+<div class="bg-[#0a0a0a] py-24">
+    <div class="container mx-auto px-6">
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-24">
+            <div class="bg-[#111] p-8 border-l-4 border-[#cc0000]">
+                <h3 class="text-2xl font-comic text-white mb-3 ltr:font-['Bangers'] rtl:font-['Cairo']">{{ _('seo_dispo_title') }}</h3>
+                <p class="text-gray-500 text-sm leading-relaxed">{{ _('seo_dispo_desc') }}</p>
+            </div>
+            <div class="bg-[#111] p-8 border-l-4 border-white">
+                <h3 class="text-2xl font-comic text-white mb-3 ltr:font-['Bangers'] rtl:font-['Cairo']">{{ _('seo_liquid_title') }}</h3>
+                <p class="text-gray-500 text-sm leading-relaxed">{{ _('seo_liquid_desc') }}</p>
+            </div>
+            <div class="bg-[#111] p-8 border-l-4 border-[#cc0000]">
+                <h3 class="text-2xl font-comic text-white mb-3 ltr:font-['Bangers'] rtl:font-['Cairo']">{{ _('seo_device_title') }}</h3>
+                <p class="text-gray-500 text-sm leading-relaxed">{{ _('seo_device_desc') }}</p>
+            </div>
+        </div>
+
+        <h2 class="text-5xl font-comic text-center text-white mb-12 uppercase ltr:font-['Bangers'] rtl:font-['Cairo'] rtl:font-black">{{ _('testi_title') }}</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-[#141414] p-6 rounded-xl border border-[#222] relative">
+                <div class="text-[#cc0000] text-4xl font-serif absolute top-4 right-6 opacity-30">"</div>
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center font-bold">F</div>
+                    <div>
+                        <div class="text-sm font-bold text-white">{{ _('testi_1_name') }}</div>
+                        <div class="text-[#cc0000] text-xs">★★★★★</div>
+                    </div>
+                </div>
+                <p class="text-gray-400 text-sm italic">"{{ _('testi_1_text') }}"</p>
+            </div>
+             <div class="bg-[#141414] p-6 rounded-xl border border-[#222] relative">
+                <div class="text-[#cc0000] text-4xl font-serif absolute top-4 right-6 opacity-30">"</div>
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center font-bold">A</div>
+                    <div>
+                        <div class="text-sm font-bold text-white">{{ _('testi_2_name') }}</div>
+                        <div class="text-[#cc0000] text-xs">★★★★★</div>
+                    </div>
+                </div>
+                <p class="text-gray-400 text-sm italic">"{{ _('testi_2_text') }}"</p>
+            </div>
+             <div class="bg-[#141414] p-6 rounded-xl border border-[#222] relative">
+                <div class="text-[#cc0000] text-4xl font-serif absolute top-4 right-6 opacity-30">"</div>
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center font-bold">M</div>
+                    <div>
+                        <div class="text-sm font-bold text-white">{{ _('testi_3_name') }}</div>
+                        <div class="text-[#cc0000] text-xs">★★★★★</div>
+                    </div>
+                </div>
+                <p class="text-gray-400 text-sm italic">"{{ _('testi_3_text') }}"</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+<div class="bg-[#cc0000] py-24 relative overflow-hidden">
+    
+    <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#000 2px, transparent 2px); background-size: 30px 30px;"></div>
+
+    <div class="container mx-auto px-6 relative z-10">
+        
+        <div class="text-center mb-16">
+            <h2 class="text-5xl md:text-7xl font-comic text-white uppercase ltr:font-['Bangers'] rtl:font-['Cairo'] rtl:font-black drop-shadow-[0_5px_0_rgba(0,0,0,0.5)]">
+                {{ _('loc_title') }}
+            </h2>
+            <p class="text-black font-bold uppercase tracking-widest text-lg">{{ _('loc_subtitle') }}</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            
+            <div class="bg-black border-4 border-black p-8 transform hover:-rotate-1 transition-transform duration-300 shadow-[10px_10px_0px_rgba(0,0,0,0.3)] group">
+                <div class="flex items-start justify-between mb-6">
+                    <div>
+                        <h3 class="text-3xl font-comic text-white mb-1 ltr:font-['Bangers'] rtl:font-['Cairo']">{{ _('loc_riffa') }}</h3>
+                        <p class="text-gray-500 text-sm uppercase font-bold">{{ _('loc_riffa_desc') }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-[#cc0000] flex items-center justify-center text-white text-2xl font-bold skew-x-[-10deg]">
+                        R
+                    </div>
+                </div>
+                
+                <a href="https://maps.app.goo.gl/oTBhrMxYfatwR94EA?g_st=com.google.maps.preview.copy" target="_blank" class="block w-full bg-[#1a1a1a] hover:bg-white hover:text-black text-white text-center py-4 font-bold uppercase tracking-widest transition-colors border border-gray-800 hover:border-white">
+                    {{ _('btn_map') }} ➜
+                </a>
+            </div>
+
+            <div class="bg-black border-4 border-black p-8 transform hover:rotate-1 transition-transform duration-300 shadow-[10px_10px_0px_rgba(0,0,0,0.3)] group">
+                <div class="flex items-start justify-between mb-6">
+                    <div>
+                        <h3 class="text-3xl font-comic text-white mb-1 ltr:font-['Bangers'] rtl:font-['Cairo']">{{ _('loc_busaiteen') }}</h3>
+                        <p class="text-gray-500 text-sm uppercase font-bold">{{ _('loc_busaiteen_desc') }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-[#cc0000] flex items-center justify-center text-white text-2xl font-bold skew-x-[-10deg]">
+                        B
+                    </div>
+                </div>
+                
+                <a href="https://maps.app.goo.gl/qZ3Q5uGE43v6LWRJ8?g_st=com.google.maps.preview.copy" target="_blank" class="block w-full bg-[#1a1a1a] hover:bg-white hover:text-black text-white text-center py-4 font-bold uppercase tracking-widest transition-colors border border-gray-800 hover:border-white">
+                    {{ _('btn_map') }} ➜
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="bg-[#111] py-20 border-t border-gray-900">
+    <div class="container mx-auto px-6 max-w-3xl">
+        <h2 class="text-4xl font-comic text-[#cc0000] text-center mb-10 ltr:font-['Bangers'] rtl:font-['Cairo'] rtl:font-black">{{ _('faq_title') }}</h2>
+        
+        <div class="space-y-4">
+            <details class="bg-[#1a1a1a] border border-[#333] open:border-[#cc0000] transition-colors rounded">
+                <summary class="p-6 font-bold cursor-pointer text-white flex justify-between items-center hover:text-[#cc0000] transition">
+                    {{ _('q1') }} <span class="text-xl">+</span>
+                </summary>
+                <div class="px-6 pb-6 text-gray-400 text-sm">
+                    {{ _('a1') }}
+                </div>
+            </details>
+            <details class="bg-[#1a1a1a] border border-[#333] open:border-[#cc0000] transition-colors rounded">
+                <summary class="p-6 font-bold cursor-pointer text-white flex justify-between items-center hover:text-[#cc0000] transition">
+                    {{ _('q2') }} <span class="text-xl">+</span>
+                </summary>
+                <div class="px-6 pb-6 text-gray-400 text-sm">
+                    {{ _('a2') }}
+                </div>
+            </details>
+            <details class="bg-[#1a1a1a] border border-[#333] open:border-[#cc0000] transition-colors rounded">
+                <summary class="p-6 font-bold cursor-pointer text-white flex justify-between items-center hover:text-[#cc0000] transition">
+                    {{ _('q3') }} <span class="text-xl">+</span>
+                </summary>
+                <div class="px-6 pb-6 text-gray-400 text-sm">
+                    {{ _('a3') }}
+                </div>
+            </details>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

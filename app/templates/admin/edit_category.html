@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12">
+    <div class="max-w-xl mx-auto bg-white border border-[#2ff495]/20 shadow-xl relative rounded-3xl overflow-hidden">
+        
+        <div class="bg-[#897cef] text-white p-6 flex justify-between items-center">
+            <h2 class="text-3xl font-bold uppercase ltr:font-['Oswald'] rtl:font-['Cairo']">
+                {{ _('btn_edit') }} Collection
+            </h2>
+            <a href="{{ url_for('admin.dashboard') }}" class="text-white/70 hover:text-white text-sm uppercase font-bold hover:underline">
+                {{ _('admin_cancel') }}
+            </a>
+        </div>
+        
+        <form method="POST" enctype="multipart/form-data" class="p-8 space-y-8">
+            
+            <div>
+                <label class="block text-zinc-400 text-xs font-bold uppercase mb-2 ltr:tracking-widest rtl:tracking-normal">
+                    {{ _('lbl_parent_cat') }}
+                </label>
+                <div class="relative">
+                    <select id="parentSelect" name="parent_id" onchange="toggleSubFields()" class="w-full border border-zinc-200 p-4 bg-zinc-50 text-zinc-700 font-bold rounded-xl appearance-none cursor-pointer focus:outline-none focus:border-[#2ff495] focus:bg-white transition-colors">
+                        <option value="">-- {{ _('opt_no_parent') }} (Main Collection) --</option>
+                        {% for cat in categories %}
+                            {% if cat.id != category.id %}
+                                <option value="{{ cat.id }}" {% if category.parent_id == cat.id %}selected{% endif %}>
+                                    {{ cat.name }}
+                                </option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-zinc-400">
+                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <label id="nameLabel" class="block text-zinc-400 text-xs font-bold uppercase mb-2 ltr:tracking-widest rtl:tracking-normal">
+                    {{ _('lbl_cat_name') }}
+                </label>
+                <input type="text" id="nameInput" name="name" value="{{ category.name }}" class="w-full border border-zinc-200 p-4 bg-zinc-50 text-zinc-900 font-bold text-lg rounded-xl focus:outline-none focus:border-[#897cef] focus:bg-white transition-colors" required>
+            </div>
+
+            <div>
+                <label class="block text-zinc-400 text-xs font-bold uppercase mb-2 ltr:tracking-widest rtl:tracking-normal">
+                    {{ _('lbl_cat_image') }} 
+                </label>
+                
+                {% if category.image_url %}
+                <div class="mb-4 flex items-center gap-4 bg-zinc-50 p-3 rounded-xl border border-zinc-100">
+                    <img src="{{ url_for('uploaded_file', filename=category.image_url) }}" class="h-16 w-16 object-cover rounded-lg">
+                    <div>
+                        <p class="text-xs font-bold text-zinc-500 uppercase">Current Image</p>
+                        <p class="text-[10px] text-zinc-400">Upload new one below to replace</p>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="border-2 border-dashed border-[#2ff495]/40 bg-[#f5fbf7] p-6 text-center hover:bg-[#2ff495]/10 hover:border-[#2ff495] transition cursor-pointer relative rounded-2xl group">
+                    <input type="file" name="image" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/*" onchange="previewFile()">
+                    
+                    <div id="uploadPlaceholder">
+                        <div class="w-10 h-10 bg-white text-[#2ff495] rounded-full flex items-center justify-center mx-auto mb-2 shadow-sm group-hover:scale-110 transition-transform">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        </div>
+                        <span class="text-xs font-bold text-zinc-400 uppercase">{{ _('txt_upload_car_image') }}</span>
+                    </div>
+                    
+                    <div id="filePreview" class="hidden text-sm font-bold text-[#897cef]"></div>
+                </div>
+            </div>
+
+            <div id="subFields" class="{% if not category.parent_id %}hidden{% endif %} transition-all duration-300 animate-fade-in-up">
+                <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                    <label class="block text-amber-600 text-xs font-bold uppercase mb-2 ltr:tracking-widest rtl:tracking-normal">
+                        Collection Year / Description
+                    </label>
+                    <input type="text" name="model_years" value="{{ category.model_years or '' }}" class="w-full border border-white p-3 shadow-inner rounded-lg text-zinc-900 font-bold focus:outline-none focus:border-amber-500" placeholder="e.g. Winter 2025">
+                </div>
+            </div>
+
+            <div class="pt-6 border-t border-zinc-100 mt-8">
+                <button type="submit" class="w-full bg-[#897cef] text-white py-4 font-bold text-lg uppercase tracking-widest hover:bg-[#2ff495] hover:text-emerald-900 transition-all shadow-lg rounded-xl ltr:font-['Oswald'] rtl:font-['Cairo']">
+                    {{ _('btn_save_changes') }}
+                </button>
+            </div>
+            
+        </form>
+    </div>
+</div>
+
+<script>
+    function toggleSubFields() {
+        const select = document.getElementById('parentSelect');
+        const subFields = document.getElementById('subFields');
+        const nameLabel = document.getElementById('nameLabel');
+        
+        if (select.value !== "") {
+            subFields.classList.remove('hidden');
+            nameLabel.innerText = "Collection Name";
+        } else {
+            subFields.classList.add('hidden');
+            nameLabel.innerText = "{{ _('lbl_cat_name') }}";
+        }
+    }
+
+    function previewFile() {
+        const input = document.querySelector('input[type=file]');
+        const placeholder = document.getElementById('uploadPlaceholder');
+        const preview = document.getElementById('filePreview');
+        
+        if (input.files && input.files[0]) {
+            placeholder.classList.add('hidden');
+            preview.classList.remove('hidden');
+            preview.innerText = "Selected: " + input.files[0].name;
+        }
+    }
+    
+    // Ensure labels are correct on page load (in case of edit)
+    document.addEventListener("DOMContentLoaded", function() {
+        toggleSubFields();
+    });
+</script>
+{% endblock %}
