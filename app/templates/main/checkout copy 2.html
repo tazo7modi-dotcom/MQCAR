@@ -11,49 +11,7 @@
         <div class="flex flex-col lg:flex-row gap-12 lg:gap-20">
             
             <div class="lg:w-2/3">
-                
-                {% if not current_user.is_authenticated %}
-                <div id="checkout-gate" class="mb-12">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        
-                        <div class="bg-[#1a1a1a] p-10 border border-[#333] hover:border-[#cc0000] transition text-center group flex flex-col items-center justify-center shadow-lg">
-                            <div class="w-16 h-16 bg-[#222] rounded-full flex items-center justify-center text-[#cc0000] text-2xl mb-6 group-hover:scale-110 transition">
-                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
-                            </div>
-                            <h3 class="text-2xl font-bold text-white mb-2 font-comic uppercase">{{ _('gate_login_title') or 'Member Checkout' }}</h3>
-                            <p class="text-gray-500 text-sm mb-8 leading-relaxed">{{ _('gate_login_desc') or 'Access saved addresses, earn loyalty points, and track your order history.' }}</p>
-                            
-                            <a href="{{ url_for('auth.login', next=request.path) }}" class="w-full bg-[#333] text-white py-4 font-bold uppercase tracking-widest hover:bg-[#cc0000] transition shadow-md">
-                                {{ _('btn_login') or 'Login Now' }}
-                            </a>
-                        </div>
-
-                        <div class="bg-[#cc0000] p-1 relative overflow-hidden group">
-                            <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#000 2px, transparent 2px); background-size: 10px 10px;"></div>
-                            
-                            <div class="bg-[#1a1a1a] h-full p-10 flex flex-col items-center justify-center relative z-10 hover:bg-black transition">
-                                <div class="w-16 h-16 bg-[#cc0000] rounded-full flex items-center justify-center text-white text-2xl mb-6 shadow-[0_0_20px_rgba(204,0,0,0.4)] group-hover:scale-110 transition">
-                                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                                </div>
-                                <h3 class="text-2xl font-bold text-white mb-2 font-comic uppercase">{{ _('gate_guest_title') or 'Guest Checkout' }}</h3>
-                                <p class="text-gray-500 text-sm mb-8 leading-relaxed">{{ _('gate_guest_desc') or 'No account needed. Just fill in your shipping details and pay.' }}</p>
-                                
-                                <button type="button" onclick="enableGuestCheckout()" class="w-full bg-white text-black py-4 font-bold uppercase tracking-widest hover:bg-gray-200 transition shadow-md">
-                                    {{ _('btn_continue_guest') or 'Continue as Guest' }}
-                                </button>
-                            </div>
-                        </div>
-
-                    </div>
-                    
-                    <div class="mt-8 flex items-center gap-4">
-                         <div class="h-px bg-[#333] flex-1"></div>
-                         <span class="text-gray-600 text-xs uppercase tracking-widest font-bold">Secure Checkout</span>
-                         <div class="h-px bg-[#333] flex-1"></div>
-                    </div>
-                </div>
-                {% endif %}
-                <form method="POST" id="checkoutForm" class="transition-opacity duration-500 {% if not current_user.is_authenticated %}hidden opacity-0{% endif %}">
+                <form method="POST" id="checkoutForm">
                     
                     {% if addresses %}
                     <div class="mb-10">
@@ -92,11 +50,6 @@
                             </div>
 
                             <div>
-                                <label class="block text-gray-500 text-xs font-bold uppercase mb-2 ml-1 font-bold-heading">Email <span class="text-gray-600">(Optional)</span></label>
-                                <input type="email" name="email" class="new-addr-input w-full border-2 border-[#333] p-4 bg-black text-white focus:border-[#cc0000] transition outline-none placeholder-gray-700 font-bold" placeholder="name@example.com" value="{{ current_user.email if current_user.is_authenticated else '' }}">
-                            </div>
-
-                            <div class="md:col-span-2">
                                 <label class="block text-gray-500 text-xs font-bold uppercase mb-2 ml-1 font-bold-heading">{{ _('lbl_phone') }} <span class="text-[#cc0000]">*</span></label>
                                 <div class="flex" dir="ltr"> 
                                     <select name="phone_code" id="phoneCodeSelect" class="new-addr-input border-2 border-r-0 border-[#333] p-4 bg-[#222] text-white focus:border-[#cc0000] outline-none w-28 text-sm font-bold appearance-none text-center">
@@ -201,23 +154,6 @@
 {% set code = session.get('currency', 'BHD') %}
 {% set c_data = config['CURRENCY_RATES'].get(code, config['CURRENCY_RATES']['BHD']) %}
 <script>
-    // --- 1. NEW FUNCTION FOR GUEST CHECKOUT GATE ---
-    function enableGuestCheckout() {
-        const gate = document.getElementById('checkout-gate');
-        const form = document.getElementById('checkoutForm');
-        
-        // Hide gate smoothly
-        gate.style.display = 'none';
-        
-        // Show form smoothly
-        form.classList.remove('hidden');
-        // Small timeout to allow the 'display:block' to render before changing opacity (for transition)
-        setTimeout(() => {
-            form.classList.remove('opacity-0');
-        }, 50);
-    }
-
-    // --- YOUR EXISTING LOGIC BELOW ---
     const cartTotalBHD = {{ total }}; 
     const exchangeRate = {{ c_data.rate }};
     const symbol = "{{ c_data.symbol }}";
@@ -242,8 +178,10 @@
         'OMR': 'Oman',
     };
 
+    // --- UPDATED SHIPPING RATES: BAHRAIN ONLY, 1 BHD ---
     const SHIPPING_RATES = {
         'bahrain_normal': 1.65,
+        // Kept others but they won't trigger if country is locked to Bahrain
         'bahrain_fast': 3.0, 
         'gulf_flat': 15.0
     };
@@ -282,7 +220,9 @@
         setNewAddressRequired(false);
         const country = radio.getAttribute('data-country');
         
+        // Although we hid options, we set value just in case
         const sel = document.getElementById('countrySelect');
+        // Ensure options exist if using saved address from other country (legacy support)
         if (!Array.from(sel.options).some(option => option.value === country)) {
              let opt = document.createElement('option');
              opt.value = country;
@@ -297,9 +237,6 @@
 
     function setNewAddressRequired(isRequired) {
         document.querySelectorAll('.new-addr-input').forEach(inp => {
-            // Skip the optional email field when setting required
-            if (inp.name === 'email') return; 
-            
             if(isRequired) inp.setAttribute('required', 'true');
             else inp.removeAttribute('required');
         });
@@ -334,8 +271,10 @@
 
 
         if (country === 'Bahrain') {
+            
             container.innerHTML += createOptionHTML('normal', '{{_("delivery_1")}}', SHIPPING_RATES.bahrain_normal, true);
         } else {
+            // Fallback for saved addresses outside Bahrain (Legacy)
             container.innerHTML += createOptionHTML('gulf', 'International Shipping', SHIPPING_RATES.gulf_flat, true);
         }
         calculateTotal();
@@ -362,6 +301,7 @@
 
         const type = selectedOption.value;
         
+        // Ensure values match SHIPPING_RATES keys
         if (type === 'normal') currentShippingCostBHD = SHIPPING_RATES.bahrain_normal;
         else if (type === 'fast') currentShippingCostBHD = SHIPPING_RATES.bahrain_fast;
         else currentShippingCostBHD = SHIPPING_RATES.gulf_flat;
