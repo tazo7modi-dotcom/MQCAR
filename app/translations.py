@@ -454,7 +454,8 @@ dictionary = {
         'th_stock':'Quantity',
         'th_product_details':'Product Details',
         'lbl_flavors':'Flavor',
-        'lbl_nicotine':'Nicotine'
+        'lbl_nicotine':'Nicotine',
+        'btn_quick_view':'More Details'
         
 
        
@@ -916,7 +917,8 @@ dictionary = {
         'th_stock':'الكمية',
         'th_product_details':'تفاصيل المنتج',
         'lbl_flavors':'النكهات',
-        'lbl_nicotine':'النيكوتين'
+        'lbl_nicotine':'النيكوتين',
+        'btn_quick_view':'تفاصيل أكثر'
 
 
 
