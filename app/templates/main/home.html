@@ -1,6 +1,16 @@
 {% extends "base.html" %}
 
 {% block content %}
+<div id="site-preloader" class="fixed inset-0 z-[99999] bg-black flex flex-col items-center justify-center transition-opacity duration-700">
+    <div class="relative">
+        <div class="w-24 h-24 border-8 border-[#222] border-t-[#cc0000] rounded-full animate-spin"></div>
+        <div class="absolute inset-0 flex items-center justify-center text-[#cc0000] font-black text-2xl animate-pulse">
+            BV
+        </div>
+    </div>
+    <p class="text-white mt-6 font-bold uppercase tracking-[0.3em] text-sm animate-pulse">Loading Experience...</p>
+</div>
+
 
 <div class="relative w-full h-[600px] md:h-[80vh] flex items-center justify-center overflow-hidden bg-black">
     
@@ -304,5 +314,24 @@
         </div>
     </div>
 </div>
+
+<script>
+    window.addEventListener('load', function() {
+        const preloader = document.getElementById('site-preloader');
+        
+       
+        setTimeout(() => {
+            if(preloader) {
+            
+                preloader.style.opacity = '0';
+                
+               
+                setTimeout(() => {
+                    preloader.style.display = 'none';
+                }, 700); 
+            }
+        }, 1500); 
+    });
+</script>
 
 {% endblock %}
