@@ -386,7 +386,7 @@ dictionary = {
         'time_35_50': '35-50 MINS',
 
         # --- WHY CHOOSE US ---
-        'why_title': 'WHY CHOOSE THE DRAGON',
+        'why_title': 'WHY CHOOSE BAKU VAPE',
         'feat_rated': 'HIGHEST RATED',
         'feat_rated_desc': '4.6/5 Stars on Google. 600+ Reviews.',
         'feat_delivery': '1 HOUR DELIVERY',
