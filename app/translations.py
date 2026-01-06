@@ -394,7 +394,7 @@ dictionary = {
         'feat_support': '24/7 SUPPORT',
         'feat_support_desc': 'WhatsApp response in 5 minutes.',
         'feat_trust': 'EST. 2018',
-        'feat_trust_desc': '10+ Years of trusted service.',
+        'feat_trust_desc': '8+ Years of trusted service.',
 
         # --- SEO CONTENT ---
         'seo_dispo_title': 'DISPOSABLE VAPES',
