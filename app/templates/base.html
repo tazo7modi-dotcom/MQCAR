@@ -23,7 +23,67 @@
         ::-webkit-scrollbar-thumb { background: #cc0000; border-radius: 4px; }
     </style>
 
+<style>
+    /* --- AGE GATE STYLES --- */
+   
+    body.locked { overflow: hidden; }
 
+   
+    #age-gate {
+        position: fixed;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        background: url('https://i.postimg.cc/rw1C0pv3/back.png') no-repeat center center/cover;
+        display: flex; /* Block view immediately */
+        justify-content: center;
+        align-items: center;
+        z-index: 99999; /* Sit on top of everything */
+    }
+
+ 
+    #age-gate::before {
+        content: ''; position: absolute; top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(8px);
+        z-index: -1;
+    }
+
+  
+    .gate-card {
+        background: rgba(20, 20, 20, 0.95);
+        border: 2px solid #cc0000;
+        padding: 40px; border-radius: 12px;
+        text-align: center; color: white;
+        max-width: 500px; width: 90%;
+        position: relative;
+        font-family: sans-serif;
+        box-shadow: 0 0 50px rgba(204, 0, 0, 0.3);
+    }
+
+    .lang-switch {
+        position: absolute; top: 15px; right: 15px;
+        background: transparent; border: 1px solid #666; color: #aaa;
+        padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;
+    }
+    .lang-switch:hover { border-color: white; color: white; }
+
+    #gate-title { font-size: 2rem; margin-bottom: 10px; font-weight: 800; color: #fff; text-transform: uppercase; }
+    #gate-desc { font-size: 1rem; margin-bottom: 25px; color: #ccc; line-height: 1.5; }
+
+    .btn-group { display: flex; gap: 15px; justify-content: center; }
+    .action-btn { 
+        padding: 12px 30px; border-radius: 4px; border: none; cursor: pointer; 
+        font-weight: bold; text-transform: uppercase; letter-spacing: 1px;
+    }
+    #btn-yes { background: #cc0000; color: white; }
+    #btn-yes:hover { background: #ff0000; transform: scale(1.05); transition: 0.2s; }
+    #btn-no { background: transparent; border: 1px solid #444; color: #888; }
+    #btn-no:hover { border-color: white; color: white; }
+
+
+    body.rtl .gate-card { direction: rtl; }
+    body.rtl .lang-switch { right: auto; left: 15px; }
+</style>
 
 </head>
 <div id="flash-container" class="fixed bottom-5 right-5 z-[100] flex flex-col gap-3 pointer-events-none ltr:right-5 ltr:left-auto rtl:left-5 rtl:right-auto">
@@ -103,7 +163,17 @@
     }
 </script>
 <body class="bg-[#111] text-white flex flex-col min-h-screen antialiased selection:bg-[#cc0000] selection:text-white">
-
+<div id="age-gate">
+        <div class="gate-card">
+            <button class="lang-switch" id="lang-btn" type="button">العربية</button>
+            <h1 id="gate-title">Restricted Access</h1>
+            <p id="gate-desc">You must be 18 years or older to enter.</p>
+            <div class="btn-group">
+                <button id="btn-yes" class="action-btn">I am 18+</button>
+                <button id="btn-no" class="action-btn">Exit</button>
+            </div>
+        </div>
+    </div>
     <nav class="fixed w-full z-50 bg-black/90 backdrop-blur-md border-b border-[#cc0000] shadow-lg">
         <div class="container mx-auto px-6 h-20 flex justify-between items-center">
             
@@ -195,6 +265,79 @@
         <p class="text-[10px] uppercase tracking-widest text-gray-600">{{ _('footer_rights') }}</p>
     </div>
 </footer>
+<script>
+        document.addEventListener("DOMContentLoaded", function() {
+         
+            const isVerified = localStorage.getItem('ageVerified');
+            const ageGate = document.getElementById('age-gate');
+            const body = document.body;
 
+          
+            if (isVerified === 'true') {
+                ageGate.style.display = 'none';
+            } else {
+                
+                body.classList.add('locked');
+            }
+
+            
+            const content = {
+                en: {
+                    title: "Restricted Access",
+                    desc: "This website contains age-restricted content.<br>You must be 18 years or older to enter.",
+                    btnYes: "I AM 18+",
+                    btnNo: "EXIT",
+                    langBtn: "العربية"
+                },
+                ar: {
+                    title: "محتوى مقيد",
+                    desc: "هذا الموقع يحتوي على منتجات للبالغين.<br>يجب أن يكون عمرك 18 عاماً أو أكثر للدخول.",
+                    btnYes: "عمري فوق 18",
+                    btnNo: "خروج",
+                    langBtn: "English"
+                }
+            };
+            let currentLang = 'en';
+
+
+            const langBtn = document.getElementById('lang-btn');
+            if(langBtn) {
+                langBtn.addEventListener('click', function() {
+                    currentLang = currentLang === 'en' ? 'ar' : 'en';
+                    
+                    document.getElementById('gate-title').innerHTML = content[currentLang].title;
+                    document.getElementById('gate-desc').innerHTML = content[currentLang].desc;
+                    document.getElementById('btn-yes').innerHTML = content[currentLang].btnYes;
+                    document.getElementById('btn-no').innerHTML = content[currentLang].btnNo;
+                    this.innerHTML = content[currentLang].langBtn;
+                    
+                    if(currentLang === 'ar') body.classList.add('rtl');
+                    else body.classList.remove('rtl');
+                });
+            }
+
+        
+            const btnYes = document.getElementById('btn-yes');
+            if(btnYes) {
+                btnYes.addEventListener('click', function() {
+                    localStorage.setItem('ageVerified', 'true');
+                    
+                    ageGate.style.opacity = '0';
+                    setTimeout(() => {
+                        ageGate.style.display = 'none';
+                        body.classList.remove('locked');
+                    }, 300); 
+                });
+            }
+
+       
+            const btnNo = document.getElementById('btn-no');
+            if(btnNo) {
+                btnNo.addEventListener('click', function() {
+                    window.location.href = "https://www.google.com";
+                });
+            }
+        });
+    </script>
 </body>
 </html>
