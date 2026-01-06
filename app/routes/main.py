@@ -22,10 +22,14 @@ def product_detail(product_id):
     product = Product.query.get_or_404(product_id)
     return render_template('main/product.html', product=product)
 
+
+
+import uuid # Import this at the top of your file if not present
+
 @main_bp.route('/add_to_cart', methods=['POST'])
-@login_required
+# 1. REMOVED @login_required to allow Guests
 def add_to_cart():
-    # 1. Get Form Data
+    # --- A. COMMON LOGIC (Get Data & Calculate Price) ---
     product_id = request.form.get('product_id')
     quantity = int(request.form.get('quantity', 1))
     size = request.form.get('selected_size')
@@ -35,19 +39,19 @@ def add_to_cart():
     nicotine = request.form.get('nicotine')
     juice_flavor = request.form.get('juice_flavor')
 
-    # 2. Get Product & Price
+    # Get Product
     product = Product.query.get_or_404(product_id)
     final_price = product.get_price()
     
     extras_description = []
 
-    # 3. Handle Juice Mode (Free Options)
+    # Handle Juice Mode (Free Options)
     if nicotine:
         extras_description.append(f"Nicotine: {nicotine}")
     if juice_flavor:
         extras_description.append(f"Flavor: {juice_flavor}")
 
-    # 4. Handle Paid Extras
+    # Handle Paid Extras
     selected_extra_ids = request.form.getlist('extras')
     for extra_id in selected_extra_ids:
         extra = Extra.query.get(extra_id)
@@ -55,50 +59,131 @@ def add_to_cart():
             final_price += extra.price
             extras_description.append(f"{extra.name} (+{extra.price})")
     
-    # Create the description string (e.g. "Nicotine: 20mg | Flavor: Mango | Ice (+0.5)")
+    # Create the description string
     extras_str = " | ".join(extras_description)
 
-    # 5. Get or Create Cart
-    cart = current_user.cart
-    if not cart:
-        cart = Cart(user_id=current_user.id)
-        db.session.add(cart)
-        db.session.commit() # Ensure cart has an ID
-
-    # 6. Add Item to Cart
-    # FIX: Use 'cart=cart' instead of 'cart_id=cart.id' to avoid SQL errors
-    item = CartItem(
-        cart=cart, 
-        product_id=product.id,
-        quantity=quantity,
-        size=size,
-        color=color,
-        selected_extras=extras_str,
-        unit_price=final_price 
-    )
+    # --- B. BRANCHING LOGIC ---
     
-    db.session.add(item)
-    db.session.commit()
+    # 1. IF LOGGED IN: Save to Database (Your original logic)
+    if current_user.is_authenticated:
+        cart = current_user.cart
+        if not cart:
+            cart = Cart(user_id=current_user.id)
+            db.session.add(cart)
+            db.session.commit() 
+
+        item = CartItem(
+            cart=cart, 
+            product_id=product.id,
+            quantity=quantity,
+            size=size,
+            color=color,
+            selected_extras=extras_str,
+            unit_price=final_price 
+        )
+        db.session.add(item)
+        db.session.commit()
+
+    # 2. IF GUEST: Save to Session
+    else:
+        if 'cart' not in session:
+            session['cart'] = []
+        
+        # Create a dictionary (JSON compatible)
+        cart_item = {
+            'uuid': str(uuid.uuid4()), # Generate ID so we can delete it later
+            'product_id': product.id,
+            'quantity': quantity,
+            'size': size,
+            'color': color,
+            'selected_extras': extras_str,
+            'unit_price': float(final_price) # Make sure it's a number, not object
+        }
+        
+        # Save back to session
+        current_cart = session['cart']
+        current_cart.append(cart_item)
+        session['cart'] = current_cart
     
     flash("Added to cart successfully!")
     return redirect(url_for('main.cart_page'))
 
+
 @main_bp.route('/cart')
-@login_required
+# 1. REMOVED @login_required
 def cart_page():
-    cart = current_user.cart
-    items = cart.cart_items if cart else []
-    total = sum(item.unit_price * item.quantity for item in items)
+    items = []
+    total = 0.0
+
+    if current_user.is_authenticated:
+        # --- LOGGED IN: Get from Database ---
+        cart = current_user.cart
+        if cart:
+            items = cart.cart_items
+            total = sum(item.unit_price * item.quantity for item in items)
+            
+    else:
+        # --- GUEST: Get from Session ---
+        session_cart = session.get('cart', [])
+        
+
+        for s_item in session_cart:
+            product = Product.query.get(s_item['product_id'])
+            if product:
+
+                fake_item = type('CartItem', (object,), {
+                    'id': s_item['uuid'], 
+                    'product': product,   
+                    'quantity': s_item['quantity'],
+                    'unit_price': s_item['unit_price'],
+                    'size': s_item['size'],
+                    'color': s_item['color'],
+                    'selected_extras': s_item['selected_extras']
+                })
+                
+                items.append(fake_item)
+                total += (fake_item.unit_price * fake_item.quantity)
+
     return render_template('main/cart.html', cart_items=items, total=total)
 
-@main_bp.route('/remove_item/<int:item_id>')
-@login_required
+
+
+
+@main_bp.route('/remove_item/<item_id>') # Changed from <int:item_id> to <item_id> to accept Strings
+# @login_required <-- REMOVED
 def remove_item(item_id):
-    item = CartItem.query.get_or_404(item_id)
-    if item.cart.user_id == current_user.id:
-        db.session.delete(item)
-        db.session.commit()
+    
+    # --- LOGIC FOR LOGGED IN USERS (Database) ---
+    if current_user.is_authenticated:
+        try:
+            # We must try to convert the string 'item_id' to an integer
+            db_id = int(item_id)
+            
+            item = CartItem.query.get_or_404(db_id)
+            if item.cart.user_id == current_user.id:
+                db.session.delete(item)
+                db.session.commit()
+        except ValueError:
+            # If item_id is not a number (e.g. it's a UUID string), ignore it
+            pass
+
+    # --- LOGIC FOR GUESTS (Session) ---
+    else:
+        if 'cart' in session:
+            cart_list = session['cart']
+            
+            # Create a new list keeping everything EXCEPT the item with this UUID
+            # This effectively "deletes" the item
+            updated_list = [i for i in cart_list if i.get('uuid') != item_id]
+            
+            # Save the updated list back to the session
+            session['cart'] = updated_list
+
     return redirect(url_for('main.cart_page'))
+
+
+
+
 
 @main_bp.route('/set_language/<lang_code>')
 def set_language(lang_code):
@@ -106,26 +191,61 @@ def set_language(lang_code):
         session['language'] = lang_code
     return redirect(request.referrer or url_for('main.home'))
 
+
+
+
+# --- HELPER FUNCTION (Place this above checkout) ---
+def get_cart_data():
+    """Returns (list_of_items, total_price) for both Guests and Users"""
+    items = []
+    total = 0.0
+
+    if current_user.is_authenticated:
+        # DB Cart
+        cart = current_user.cart
+        if cart:
+            items = cart.cart_items
+            total = sum(item.unit_price * item.quantity for item in items)
+    else:
+        # Session Cart
+        session_cart = session.get('cart', [])
+        for s_item in session_cart:
+            product = Product.query.get(s_item['product_id'])
+            if product:
+                # Create mimic object
+                fake_item = type('CartItem', (object,), {
+                    'product_id': product.id,
+                    'product': product,
+                    'quantity': s_item['quantity'],
+                    'unit_price': s_item['unit_price'],
+                    'size': s_item['size'],
+                    'color': s_item['color'],
+                    'selected_extras': s_item['selected_extras']
+                })
+                items.append(fake_item)
+                total += (fake_item.unit_price * fake_item.quantity)
+    
+    return items, total
+
 # --- CHECKOUT ROUTE ---
 @main_bp.route('/checkout', methods=['GET', 'POST'])
-@login_required
+# 1. REMOVED @login_required
 def checkout():
-    cart = current_user.cart
-    if not cart or not cart.cart_items:
+    items, cart_total = get_cart_data()
+    
+    if not items:
         return redirect(url_for('main.cart_page'))
 
-    items = cart.cart_items
-    cart_total = sum(item.unit_price * item.quantity for item in items)
-    
-    addresses = current_user.addresses
+    # Get addresses only if logged in
+    addresses = current_user.addresses if current_user.is_authenticated else []
 
     if request.method == 'POST':
         address_id = request.form.get('selected_address')
         final_addr = None
         
         # --- Address Logic ---
-        if address_id:
-            # Existing Address
+        # Only check existing address if user is logged in AND selected one
+        if address_id and current_user.is_authenticated:
             final_addr = Address.query.get(address_id)
             if not final_addr or final_addr.user_id != current_user.id:
                 flash("Invalid address selected.", "error")
@@ -136,28 +256,39 @@ def checkout():
                 code = phone_parts[0]  
                 phone_clean = phone_parts[1].replace(" ", "") 
             except:
-                code = ""
+                code = "+973" # Default fallback
                 phone_clean = final_addr.phone
                 
         else:
-            # New Address
+            # New Address (For Guest OR User adding new)
             raw_phone = request.form.get('phone_number')
             code = request.form.get('phone_code')
             full_phone = f"{code} {raw_phone}"
             phone_clean = raw_phone
-
-            new_addr = Address(
-                user_id=current_user.id,
-                full_name=request.form.get('full_name'),
-                phone=full_phone,  
-                street_address=request.form.get('street_address'),
-                city=request.form.get('city'),
-                country=request.form.get('country'),
-                is_default=True
-            )
-            db.session.add(new_addr)
-            db.session.commit()
-            final_addr = new_addr
+            
+            if current_user.is_authenticated:
+                # Save to DB for User
+                new_addr = Address(
+                    user_id=current_user.id,
+                    full_name=request.form.get('full_name'),
+                    phone=full_phone,  
+                    street_address=request.form.get('street_address'),
+                    city=request.form.get('city'),
+                    country=request.form.get('country'),
+                    is_default=True
+                )
+                db.session.add(new_addr)
+                db.session.commit()
+                final_addr = new_addr
+            else:
+                # Create temporary object for Guest (Don't save to Address DB)
+                final_addr = type('Address', (object,), {
+                    'full_name': request.form.get('full_name'),
+                    'phone': full_phone,
+                    'street_address': request.form.get('street_address'),
+                    'city': request.form.get('city'),
+                    'country': request.form.get('country')
+                })
 
         # --- Shipping Logic ---
         country_check = final_addr.country.strip().lower()
@@ -176,8 +307,11 @@ def checkout():
         shipping_string = f"{final_addr.full_name}, {final_addr.street_address}, {final_addr.city}, {final_addr.country}, {final_addr.phone}"
 
         # --- Create Order ---
+        # If Guest, user_id is None
+        order_user_id = current_user.id if current_user.is_authenticated else None
+        
         order = Order(
-            user_id=current_user.id,
+            user_id=order_user_id,
             total_amount=final_total_bhd,
             status='Pending',
             payment_status='Unpaid',
@@ -209,11 +343,15 @@ def checkout():
         name_parts = final_addr.full_name.strip().split(' ', 1)
         first_name = name_parts[0]
         last_name = name_parts[1] if len(name_parts) > 1 else "Customer"
+        
+        # Get Email (User's email OR Guest placeholder/input)
+        # Ideally, add an email field to your checkout form for guests
+        customer_email = current_user.email if current_user.is_authenticated else request.form.get('email', 'guest@example.com')
 
         customer_info = {
             'first_name': first_name,
             'last_name': last_name,
-            'email': current_user.email,
+            'email': customer_email,
             'phone': {
                 'country_code': code,
                 'number': phone_clean
@@ -223,7 +361,7 @@ def checkout():
         try:
             tap_response = create_tap_charge(
                 total_amount=final_charge_amount,
-                currency=user_currency, # Changed param name to match function
+                currency=user_currency,
                 customer_info=customer_info,
                 order_id=order.id
             )
@@ -243,8 +381,10 @@ def checkout():
             return redirect(url_for('main.checkout'))
 
     return render_template('main/checkout.html', items=items, total=cart_total, addresses=addresses)
+
+
 @main_bp.route('/payment_success')
-@login_required
+# 1. REMOVED @login_required
 def payment_success():
     tap_id = request.args.get('tap_id') 
     
@@ -271,15 +411,15 @@ def payment_success():
     if data.get('status') == 'CAPTURED':
         is_paid = True
     
+    # --- IF PAYMENT SUCCESSFUL ---
     if order and is_paid and order.payment_status == 'Unpaid':
         order.payment_status = 'Paid'
         
-        # --- PREPARE LOYVERSE DATA ---
-        loyverse_updates = []
-        # You should preferably put this token in your config.py
-        LOYVERSE_TOKEN = "YOUR_ACCESS_TOKEN_HERE" 
         
-        # Deduct Inventory
+        loyverse_updates = []
+        LOYVERSE_TOKEN = "LOYVERSE_TOKEN" 
+        
+       
         for item in order.items:
             product = Product.query.get(item.product_id)
             if product:
@@ -293,7 +433,7 @@ def payment_success():
                 if product.loyverse_id:
                     loyverse_updates.append({
                         "variant_id": product.loyverse_id,
-                        "in_stock": float(product.quantity) # Send the NEW remaining amount
+                        "in_stock": float(product.quantity)
                     })
         
         # --- SEND TO LOYVERSE (Background Sync) ---
@@ -306,24 +446,33 @@ def payment_success():
                         "Authorization": f"Bearer {LOYVERSE_TOKEN}",
                         "Content-Type": "application/json"
                     },
-                    timeout=5 # Short timeout so user doesn't wait long
+                    timeout=5
                 )
                 print(f"✅ Synced {len(loyverse_updates)} items to Loyverse.")
             except Exception as e:
                 print(f"⚠️ Loyverse Sync Failed: {e}")
 
-        # Clear Cart
-        if current_user.cart:
-             CartItem.query.filter_by(cart_id=current_user.cart.id).delete()
+        # --- CLEAR CART LOGIC (UPDATED) ---
+        if current_user.is_authenticated:
+            # Clear Database Cart for Registered User
+            if current_user.cart:
+                 CartItem.query.filter_by(cart_id=current_user.cart.id).delete()
+        else:
+            # Clear Session Cart for Guest
+            session.pop('cart', None)
         
         db.session.commit()
         return render_template('main/success.html', order=order)
 
+    # --- IF ALREADY PAID (Refresh Page) ---
     elif order and order.payment_status == 'Paid':
         return render_template('main/success.html', order=order)
+        
+    # --- IF FAILED ---
     else:
         flash("Payment failed or cancelled.", "error")
         return redirect(url_for('main.cart_page'))
+
 
 @main_bp.route('/account')
 @login_required
