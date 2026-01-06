@@ -455,7 +455,14 @@ dictionary = {
         'th_product_details':'Product Details',
         'lbl_flavors':'Flavor',
         'lbl_nicotine':'Nicotine',
-        'btn_quick_view':'More Details'
+        'btn_quick_view':'More Details',
+        'gate_login_title': ' Pay after Logging in or Signing up  ',
+    'gate_login_desc': 'Use your saved addresses , and collect loyalty points to earn more ',
+    'btn_login': 'Log In',
+    
+    'gate_guest_title': 'Pay as a guest',
+    'gate_guest_desc': 'No need to create an account , you can buy from us as a guest',
+    'btn_continue_guest': 'Continue As a Guest',
         
 
        
@@ -918,7 +925,14 @@ dictionary = {
         'th_product_details':'تفاصيل المنتج',
         'lbl_flavors':'النكهات',
         'lbl_nicotine':'النيكوتين',
-        'btn_quick_view':'تفاصيل أكثر'
+        'btn_quick_view':'تفاصيل أكثر',
+        'gate_login_title': 'الدفع للأعضاء',
+    'gate_login_desc': 'استخدم عناوينك المحفوظة، واجمع نقاط الولاء، وتابع سجل طلباتك.',
+    'btn_login': 'تسجيل الدخول',
+    
+    'gate_guest_title': 'الدفع كزائر',
+    'gate_guest_desc': 'لا حاجة لإنشاء حساب. فقط أدخل بيانات التوصيل وأكمل الدفع.',
+    'btn_continue_guest': 'المتابعة كزائر',
 
 
 

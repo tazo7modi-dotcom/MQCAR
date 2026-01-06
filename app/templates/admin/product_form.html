@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="container mx-auto px-4 py-12">
-    <div class="max-w-3xl mx-auto bg-white border border-zinc-200 shadow-xl relative">
+    <div class="max-w-3xl mx-auto bg-white border border-zinc-200 shadow-xl relative text-zinc-900">
         
         <div class="bg-zinc-900 text-white p-6 border-b-4 border-amber-500 flex justify-between items-center">
             <h2 class="text-3xl font-bold uppercase ltr:font-['Oswald'] rtl:font-['Cairo']">
@@ -86,7 +86,7 @@
                     </label>
                     <div id="sizeSection" class="{% if not (product and product.has_sizes) %}hidden{% endif %} mt-4 pl-8 border-l-2 border-zinc-300">
                         <label class="text-xs text-zinc-500 font-bold uppercase">{{ _('help_sizes') }}</label>
-                        <input type="text" name="sizes_input" value="{{ product.available_sizes if product else '' }}" class="w-full border-2 border-zinc-200 p-2 mt-1 bg-white focus:outline-none focus:border-amber-500 font-mono text-sm" placeholder="e.g. S, M, L, XL">
+                        <input type="text" name="sizes_input" value="{{ product.available_sizes if product else '' }}" class="w-full border-2 border-zinc-200 p-2 mt-1 bg-white text-zinc-900 focus:outline-none focus:border-amber-500 font-mono text-sm" placeholder="e.g. S, M, L, XL">
                     </div>
                 </div>
 
@@ -104,7 +104,7 @@
                                     {% set parts = color_entry.split('|') %}
                                     <div class="flex items-center gap-2">
                                         <input type="color" name="color_code[]" value="{{ parts[1] }}" class="h-10 w-12 p-0 border-2 border-zinc-300 cursor-pointer">
-                                        <input type="text" name="color_name[]" value="{{ parts[0] }}" placeholder="{{ _('ph_color_name') }}" class="flex-1 border-2 border-zinc-200 p-2 text-sm focus:border-amber-500 focus:outline-none font-bold" required>
+                                        <input type="text" name="color_name[]" value="{{ parts[0] }}" placeholder="{{ _('ph_color_name') }}" class="flex-1 border-2 border-zinc-200 bg-zinc-50 text-zinc-900 p-2 text-sm focus:border-amber-500 focus:outline-none font-bold" required>
                                         <button type="button" onclick="this.parentElement.remove()" class="text-zinc-400 hover:text-red-600 transition">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                         </button>
@@ -133,14 +133,14 @@
                             <label class="text-xs text-zinc-500 font-bold uppercase mb-1 block">
                                 {{ _('lbl_flavors') or '1. Flavors List (Comma Separated)' }}
                             </label>
-                            <input type="text" name="juice_flavors" value="{{ product.juice_flavors if product else '' }}" class="w-full border-2 border-zinc-200 p-2 bg-gray-600 focus:outline-none focus:border-amber-500 font-mono text-sm font-bold" placeholder="Mango, Mint, Grape Ice, Tobacco">
+                            <input type="text" name="juice_flavors" value="{{ product.juice_flavors if product else '' }}" class="w-full border-2 border-zinc-200 p-2 bg-gray-600 text-white focus:outline-none focus:border-amber-500 font-mono text-sm font-bold" placeholder="Mango, Mint, Grape Ice, Tobacco">
                         </div>
 
                         <div>
                             <label class="text-xs text-zinc-500 font-bold uppercase mb-1 block">
                                 {{ _('lbl_nicotine') or '2. Nicotine Strengths (Comma Separated)' }}
                             </label>
-                            <input type="text" name="juice_nicotine" value="{{ product.juice_nicotine if product else '' }}" class="w-full border-2 border-zinc-200 p-2 bg-gray-600 focus:outline-none focus:border-amber-500 font-mono text-sm font-bold" placeholder="20mg, 30mg, 50mg">
+                            <input type="text" name="juice_nicotine" value="{{ product.juice_nicotine if product else '' }}" class="w-full border-2 border-zinc-200 p-2 bg-gray-600 text-white focus:outline-none focus:border-amber-500 font-mono text-sm font-bold" placeholder="20mg, 30mg, 50mg">
                         </div>
                         
                     </div>
@@ -152,8 +152,8 @@
                         {% if product and product.extras %}
                             {% for extra in product.extras %}
                             <div class="flex gap-2">
-                                <input type="text" name="extra_name[]" value="{{ extra.name }}" placeholder="{{ _('ph_extra_name') }}" class="w-2/3 border-2 border-zinc-200 p-2 text-sm focus:border-amber-500 focus:outline-none font-bold">
-                                <input type="number" step="0.001" name="extra_price[]" value="{{ extra.price }}" placeholder="{{ _('ph_price') }}" class="w-1/3 border-2 border-zinc-200 p-2 text-sm focus:border-amber-500 focus:outline-none font-bold">
+                                <input type="text" name="extra_name[]" value="{{ extra.name }}" placeholder="{{ _('ph_extra_name') }}" class="w-2/3 border-2 border-zinc-200 bg-zinc-50 text-zinc-900 p-2 text-sm focus:border-amber-500 focus:outline-none font-bold">
+                                <input type="number" step="0.001" name="extra_price[]" value="{{ extra.price }}" placeholder="{{ _('ph_price') }}" class="w-1/3 border-2 border-zinc-200 bg-zinc-50 text-zinc-900 p-2 text-sm focus:border-amber-500 focus:outline-none font-bold">
                                 <button type="button" onclick="this.parentElement.remove()" class="text-zinc-400 hover:text-red-600 transition">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                 </button>
@@ -189,9 +189,10 @@
     function addExtraField() {
         const div = document.createElement('div');
         div.className = "flex gap-2 mb-2";
+      
         div.innerHTML = `
-            <input type="text" name="extra_name[]" placeholder="{{ _('ph_extra_name') }}" class="w-2/3 border-2 border-zinc-200 p-2 text-sm focus:border-amber-500 focus:outline-none font-bold">
-            <input type="number" step="0.001" name="extra_price[]" placeholder="{{ _('ph_price') }}" class="w-1/3 border-2 border-zinc-200 p-2 text-sm focus:border-amber-500 focus:outline-none font-bold">
+            <input type="text" name="extra_name[]" placeholder="{{ _('ph_extra_name') }}" class="w-2/3 border-2 border-zinc-200 bg-zinc-50 text-zinc-900 p-2 text-sm focus:border-amber-500 focus:outline-none font-bold">
+            <input type="number" step="0.001" name="extra_price[]" placeholder="{{ _('ph_price') }}" class="w-1/3 border-2 border-zinc-200 bg-zinc-50 text-zinc-900 p-2 text-sm focus:border-amber-500 focus:outline-none font-bold">
             <button type="button" onclick="this.parentElement.remove()" class="text-zinc-400 hover:text-red-600 transition">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
@@ -202,9 +203,10 @@
     function addColorField() {
         const div = document.createElement('div');
         div.className = "flex items-center gap-2";
+       
         div.innerHTML = `
             <input type="color" name="color_code[]" class="h-10 w-12 p-0 border-2 border-zinc-300 cursor-pointer">
-            <input type="text" name="color_name[]" placeholder="{{ _('ph_color_name') }}" class="flex-1 border-2 border-zinc-200 p-2 text-sm focus:border-amber-500 focus:outline-none font-bold" required>
+            <input type="text" name="color_name[]" placeholder="{{ _('ph_color_name') }}" class="flex-1 border-2 border-zinc-200 bg-zinc-50 text-zinc-900 p-2 text-sm focus:border-amber-500 focus:outline-none font-bold" required>
             <button type="button" onclick="this.parentElement.remove()" class="text-zinc-400 hover:text-red-600 transition">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
