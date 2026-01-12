@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="container mx-auto px-4 py-12">
-    <div class="max-w-3xl mx-auto bg-white border border-zinc-200 shadow-xl relative text-zinc-900">
+    <div class="max-w-3xl mx-auto bg-white border border-zinc-200 shadow-xl relative">
         
         <div class="bg-zinc-900 text-white p-6 border-b-4 border-amber-500 flex justify-between items-center">
             <h2 class="text-3xl font-bold uppercase ltr:font-['Oswald'] rtl:font-['Cairo']">
@@ -15,6 +15,8 @@
         
         <form method="POST" enctype="multipart/form-data" class="p-8">
             
+            <input type="hidden" name="variants_json" id="variantsJson">
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
                     <label class="block text-zinc-500 text-xs font-bold uppercase mb-2 ltr:tracking-widest rtl:tracking-normal">{{ _('lbl_name') }}</label>
@@ -25,11 +27,6 @@
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-400 font-bold">$</span>
                         <input type="number" step="0.001" name="price" value="{{ product.price if product else '' }}" class="w-full border-2 border-zinc-200 p-3 pl-8 bg-zinc-50 text-zinc-900 focus:outline-none focus:border-amber-500 focus:bg-white transition-colors font-bold rounded-none font-mono" required>
-                    </div>
-
-                    <div class="mt-4">
-                        <label class="block text-zinc-500 text-xs font-bold uppercase mb-2 ltr:tracking-widest rtl:tracking-normal">{{ _('lbl_quantity') }}</label>
-                        <input type="number" name="quantity" value="{{ product.quantity if product else '10' }}" class="w-full border-2 border-zinc-200 p-3 bg-zinc-50 text-zinc-900 focus:outline-none focus:border-amber-500 focus:bg-white transition-colors font-bold rounded-none" required>
                     </div>
                 </div>
             </div>
@@ -49,8 +46,6 @@
                     <label class="block text-zinc-500 text-xs font-bold uppercase mb-2 ltr:tracking-widest rtl:tracking-normal">{{ _('lbl_product_tag') }}</label>
                     <input type="text" name="label" list="labelOptions" value="{{ product.label if product and product.label else '' }}" class="w-full border-2 border-zinc-200 p-3 bg-zinc-50 text-zinc-900 focus:outline-none focus:border-amber-500 focus:bg-white transition-colors font-bold rounded-none" placeholder="{{ _('ph_product_tag') }}">
                     <datalist id="labelOptions">
-                        <option value="اصلي">
-                        <option value="صيني درجة اولى">
                         <option value="Original">
                         <option value="Premium Copy">
                         <option value="Best Seller">
@@ -77,94 +72,51 @@
             </div>
 
             <div class="border-t-2 border-zinc-100 pt-6 mb-8">
-                <h3 class="text-xl font-bold uppercase text-zinc-900 mb-6 border-l-4 border-amber-500 pl-3 ltr:font-['Oswald'] rtl:font-['Cairo']">{{ _('hdr_options') }}</h3>
-
-                <div class="mb-6 bg-zinc-50 p-5 border border-zinc-200">
-                    <label class="inline-flex items-center cursor-pointer select-none">
-                        <input type="checkbox" name="enable_sizes" id="toggleSizes" class="w-5 h-5 text-amber-500 border-2 border-zinc-400 rounded-none focus:ring-0" onclick="toggleSection('sizeSection')" {% if product and product.has_sizes %}checked{% endif %}>
-                        <span class="ltr:ml-3 rtl:mr-3 text-zinc-900 font-bold uppercase text-sm">{{ _('lbl_enable_sizes') }}</span>
-                    </label>
-                    <div id="sizeSection" class="{% if not (product and product.has_sizes) %}hidden{% endif %} mt-4 pl-8 border-l-2 border-zinc-300">
-                        <label class="text-xs text-zinc-500 font-bold uppercase">{{ _('help_sizes') }}</label>
-                        <input type="text" name="sizes_input" value="{{ product.available_sizes if product else '' }}" class="w-full border-2 border-zinc-200 p-2 mt-1 bg-white text-zinc-900 focus:outline-none focus:border-amber-500 font-mono text-sm" placeholder="e.g. S, M, L, XL">
-                    </div>
-                </div>
-
-                <div class="mb-6 bg-zinc-50 p-5 border border-zinc-200">
-                    <label class="inline-flex items-center cursor-pointer select-none mb-4">
-                        <input type="checkbox" name="enable_colors" id="toggleColors" class="w-5 h-5 text-amber-500 border-2 border-zinc-400 rounded-none focus:ring-0" onclick="toggleSection('colorSection')" {% if product and product.has_colors %}checked{% endif %}>
-                        <span class="ltr:ml-3 rtl:mr-3 text-zinc-900 font-bold uppercase text-sm">{{ _('lbl_enable_colors') }}</span>
-                    </label>
+                <div class="flex justify-between items-center mb-6 border-l-4 border-amber-500 pl-3">
+                    <h3 class="text-xl font-bold uppercase text-zinc-900 ltr:font-['Oswald'] rtl:font-['Cairo']">
+                        {{ _('hdr_inventory') }}
+                    </h3>
                     
-                    <div id="colorSection" class="{% if not (product and product.has_colors) %}hidden{% endif %} pl-8 border-l-2 border-zinc-300">
-                        <p class="text-xs text-zinc-500 font-bold uppercase mb-3">{{ _('help_colors') }}</p>
-                        <div id="colorsContainer" class="space-y-3">
-                            {% if product and product.available_colors %}
-                                {% for color_entry in product.available_colors.split(',') %}
-                                    {% set parts = color_entry.split('|') %}
-                                    <div class="flex items-center gap-2">
-                                        <input type="color" name="color_code[]" value="{{ parts[1] }}" class="h-10 w-12 p-0 border-2 border-zinc-300 cursor-pointer">
-                                        <input type="text" name="color_name[]" value="{{ parts[0] }}" placeholder="{{ _('ph_color_name') }}" class="flex-1 border-2 border-zinc-200 bg-zinc-50 text-zinc-900 p-2 text-sm focus:border-amber-500 focus:outline-none font-bold" required>
-                                        <button type="button" onclick="this.parentElement.remove()" class="text-zinc-400 hover:text-red-600 transition">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                        </button>
-                                    </div>
-                                {% endfor %}
-                            {% endif %}
-                        </div>
-                        <button type="button" onclick="addColorField()" class="mt-4 text-xs font-bold uppercase tracking-wider flex items-center gap-2 bg-zinc-900 text-white px-4 py-2 hover:bg-amber-500 hover:text-black transition">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                            {{ _('btn_add_color') }}
-                        </button>
+                    <div id="simpleQtyContainer" class="flex items-center gap-2">
+                        <label class="text-xs font-bold uppercase text-zinc-500">{{"Global Qty:"|translate_dynamic}}</label>
+                        <input type="number" name="quantity" id="globalQty" value="{{ product.quantity if product else '0' }}" class="w-20 border-2 border-zinc-200 p-1 text-center font-bold">
                     </div>
                 </div>
+                
+                 <p class="text-xs text-zinc-500 mb-4 bg-blue-50 p-2 border border-blue-100 rounded">
+                    <strong>{{'Note:'| translate_dynamic}}</strong> {{_("note_quan")}}
+                </p>
 
-              <div class="mb-6 bg-zinc-50 p-5 border border-zinc-200">
-                    <label class="inline-flex items-center cursor-pointer select-none">
-                        <input type="checkbox" name="is_juice" id="toggleJuice" class="w-5 h-5 text-amber-500 border-2 border-zinc-400 rounded-none focus:ring-0" onclick="toggleSection('juiceSection')" {% if product and product.is_juice %}checked{% endif %}>
-                        <span class="ltr:ml-3 rtl:mr-3 text-zinc-900 font-bold uppercase text-sm">
-                            {{ _('lbl_enable_juice') or 'JUICE MODE' }}
-                        </span>
-                    </label>
-                    
-                    <div id="juiceSection" class="{% if not (product and product.is_juice) %}hidden{% endif %} mt-4 pl-8 border-l-2 border-zinc-300 space-y-4">
-                        
-                        <div>
-                            <label class="text-xs text-zinc-500 font-bold uppercase mb-1 block">
-                                {{ _('lbl_flavors') or '1. Flavors List (Comma Separated)' }}
-                            </label>
-                            <input type="text" name="juice_flavors" value="{{ product.juice_flavors if product else '' }}" class="w-full border-2 border-zinc-200 p-2 bg-gray-600 text-white focus:outline-none focus:border-amber-500 font-mono text-sm font-bold" placeholder="Mango, Mint, Grape Ice, Tobacco">
-                        </div>
-
-                        <div>
-                            <label class="text-xs text-zinc-500 font-bold uppercase mb-1 block">
-                                {{ _('lbl_nicotine') or '2. Nicotine Strengths (Comma Separated)' }}
-                            </label>
-                            <input type="text" name="juice_nicotine" value="{{ product.juice_nicotine if product else '' }}" class="w-full border-2 border-zinc-200 p-2 bg-gray-600 text-white focus:outline-none focus:border-amber-500 font-mono text-sm font-bold" placeholder="20mg, 30mg, 50mg">
-                        </div>
-                        
+                <div id="variantsContainer" class="space-y-6">
                     </div>
-                </div>
 
-                <div class="bg-zinc-50 p-5 border border-zinc-200">
-                    <h4 class="font-bold text-zinc-900 uppercase text-sm mb-4">{{ _('hdr_extras') }} (Paid Add-ons)</h4>
-                    <div id="extrasContainer" class="space-y-3">
-                        {% if product and product.extras %}
-                            {% for extra in product.extras %}
-                            <div class="flex gap-2">
-                                <input type="text" name="extra_name[]" value="{{ extra.name }}" placeholder="{{ _('ph_extra_name') }}" class="w-2/3 border-2 border-zinc-200 bg-zinc-50 text-zinc-900 p-2 text-sm focus:border-amber-500 focus:outline-none font-bold">
-                                <input type="number" step="0.001" name="extra_price[]" value="{{ extra.price }}" placeholder="{{ _('ph_price') }}" class="w-1/3 border-2 border-zinc-200 bg-zinc-50 text-zinc-900 p-2 text-sm focus:border-amber-500 focus:outline-none font-bold">
-                                <button type="button" onclick="this.parentElement.remove()" class="text-zinc-400 hover:text-red-600 transition">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                </button>
-                            </div>
-                            {% endfor %}
-                        {% endif %}
-                    </div>
-                    <button type="button" onclick="addExtraField()" class="mt-4 text-xs font-bold uppercase tracking-wider bg-white border-2 border-zinc-300 text-zinc-600 px-4 py-2 hover:border-amber-500 hover:text-amber-600 transition">
-                        + {{ _('btn_add_extra') }}
-                    </button>
+                <button type="button" onclick="addVariantGroup()" class="mt-6 w-full py-4 border-2 border-dashed border-zinc-300 text-zinc-500 font-bold uppercase hover:border-amber-500 hover:text-amber-600 hover:bg-amber-50 transition flex justify-center items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    {{ _('btn_add_color_variant') }}
+                </button>
+                
+                <input type="hidden" name="enable_colors" id="enableColorsFlag" value="0">
+                <input type="hidden" name="enable_sizes" id="enableSizesFlag" value="0">
+            </div>
+
+            <div class="bg-zinc-50 p-5 border border-zinc-200 mb-8">
+                <h4 class="font-bold text-zinc-900 uppercase text-sm mb-4">{{ _('hdr_extras') }}</h4>
+                <div id="extrasContainer" class="space-y-3">
+                    {% if product and product.extras %}
+                        {% for extra in product.extras %}
+                        <div class="flex gap-2">
+                            <input type="text" name="extra_name[]" value="{{ extra.name }}" placeholder="{{ _('ph_extra_name') }}" class="w-2/3 border-2 border-zinc-200 p-2 text-sm focus:border-amber-500 focus:outline-none font-bold">
+                            <input type="number" step="0.001" name="extra_price[]" value="{{ extra.price }}" placeholder="{{ _('ph_price') }}" class="w-1/3 border-2 border-zinc-200 p-2 text-sm focus:border-amber-500 focus:outline-none font-bold">
+                            <button type="button" onclick="this.parentElement.remove()" class="text-zinc-400 hover:text-red-600 transition">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            </button>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
                 </div>
+                <button type="button" onclick="addExtraField()" class="mt-4 text-xs font-bold uppercase tracking-wider bg-white border-2 border-zinc-300 text-zinc-600 px-4 py-2 hover:border-amber-500 hover:text-amber-600 transition">
+                    + {{ _('btn_add_extra') }}
+                </button>
             </div>
 
             <div class="mt-8 pt-6 border-t border-zinc-100">
@@ -177,45 +129,184 @@
 </div>
 
 <script>
-    function toggleSection(id) {
-        const el = document.getElementById(id);
-        if (el.classList.contains('hidden')) {
-            el.classList.remove('hidden');
+    // --- 1. INITIAL DATA LOADING ---
+    let variantsData = [];
+    
+    // Load existing data from Python (Jinja2)
+    {% if product and product.colors %}
+        variantsData = [
+            {% for color in product.colors %}
+            {
+                name: "{{ color.name }}",
+                code: "{{ color.code }}",
+                sizes: [
+                    {% for size in color.sizes %}
+                    { label: "{{ size.size_label }}", qty: {{ size.quantity }}, price: "{{ size.price if size.price is not none else '' }}" },
+                    {% endfor %}
+                ]
+            },
+            {% endfor %}
+        ];
+    {% endif %}
+
+    document.addEventListener('DOMContentLoaded', () => {
+        renderVariants();
+        // Check extra fields
+        if (document.getElementById('extrasContainer').children.length === 0) {
+            // Optional: Don't force add extra field
+        }
+    });
+
+    // --- 2. RENDER FUNCTIONS ---
+    function renderVariants() {
+        const container = document.getElementById('variantsContainer');
+        const simpleQtyDiv = document.getElementById('simpleQtyContainer');
+        const globalQtyInput = document.getElementById('globalQty');
+        
+        container.innerHTML = '';
+
+        // If we have variants, disable the global quantity input
+        if (variantsData.length > 0) {
+            simpleQtyDiv.style.opacity = '0.5';
+            globalQtyInput.disabled = true;
+            globalQtyInput.value = ''; // Clear it
+            document.getElementById('enableColorsFlag').value = "1";
+            document.getElementById('enableSizesFlag').value = "1";
         } else {
-            el.classList.add('hidden');
+            simpleQtyDiv.style.opacity = '1';
+            globalQtyInput.disabled = false;
+            document.getElementById('enableColorsFlag').value = "0";
+            document.getElementById('enableSizesFlag').value = "0";
+        }
+
+        variantsData.forEach((variant, vIndex) => {
+            // Generate HTML for Sizes
+            let sizesHtml = variant.sizes.map((size, sIndex) => `
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="w-1/3">
+                        <input type="text" value="${size.label}" oninput="updateSize(${vIndex}, ${sIndex}, 'label', this.value)" class="w-full border border-zinc-200 p-2 text-sm font-bold text-center bg-zinc-50 focus:bg-white focus:border-amber-500 outline-none" placeholder="Size (e.g. 42)">
+                    </div>
+                    <div class="w-1/3">
+                        <input type="number" value="${size.qty}" oninput="updateSize(${vIndex}, ${sIndex}, 'qty', this.value)" class="w-full border border-zinc-200 p-2 text-sm font-bold text-center bg-zinc-50 focus:bg-white focus:border-amber-500 outline-none" placeholder="Qty">
+                    </div>
+                    <div class="w-1/3 relative">
+                         <span class="absolute left-2 top-2 text-xs text-zinc-400 font-bold">$</span>
+                        <input type="number" step="0.001" value="${size.price || ''}" oninput="updateSize(${vIndex}, ${sIndex}, 'price', this.value)" class="w-full border border-zinc-200 p-2 pl-5 text-sm font-bold text-center bg-zinc-50 focus:bg-white focus:border-amber-500 outline-none" placeholder="Base Price">
+                    </div>
+                    <button type="button" onclick="removeSize(${vIndex}, ${sIndex})" class="p-2 text-zinc-300 hover:text-red-500 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+            `).join('');
+
+            // Generate HTML for the Variant Group
+            const variantHtml = `
+            <div class="bg-zinc-50 border border-zinc-300 p-4 relative shadow-sm group transition-all hover:border-amber-300">
+                <button type="button" onclick="removeVariant(${vIndex})" class="absolute top-2 right-2 text-zinc-400 hover:text-red-500 bg-white rounded-full p-1 shadow-sm border border-zinc-200">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+
+                <div class="flex gap-4 mb-4 items-end border-b border-zinc-200 pb-4">
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-zinc-400 mb-1">{{ _('lbl_color_code') }}</label>
+                        <input type="color" value="${variant.code}" onchange="updateVariant(${vIndex}, 'code', this.value)" class="h-10 w-16 p-0 border-2 border-zinc-300 cursor-pointer shadow-sm">
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-[10px] font-bold uppercase text-zinc-400 mb-1">{{ _('lbl_color_name') }}</label>
+                        <input type="text" value="${variant.name}" oninput="updateVariant(${vIndex}, 'name', this.value)" class="w-full border-2 border-zinc-200 p-2 text-sm font-bold focus:border-amber-500 outline-none bg-white" placeholder="e.g. Midnight Blue">
+                    </div>
+                </div>
+
+                <div class="bg-white border border-zinc-200 p-4">
+              <div class="flex mb-2 px-1 gap-2">
+    <span class="w-1/3 text-[10px] font-bold uppercase text-zinc-400 text-center">Size Label</span>
+    <span class="w-1/3 text-[10px] font-bold uppercase text-zinc-400 text-center">Stock Qty</span>
+    <span class="w-1/3 text-[10px] font-bold uppercase text-zinc-400 text-center">Price (Optional)</span>
+    <span class="w-8"></span> </div>
+                    
+                    <div class="space-y-2">
+                        ${sizesHtml}
+                    </div>
+
+                    <button type="button" onclick="addSize(${vIndex})" class="mt-3 text-xs font-bold uppercase text-amber-600 hover:text-amber-800 flex items-center gap-1 border border-amber-100 bg-amber-50 px-3 py-2 hover:bg-amber-100 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                        {{ _('btn_add_size_row') }}
+                    </button>
+                </div>
+
+
+<div class="flex gap-4 mb-4 items-end border-b border-zinc-200 pb-4">
+        <div class="w-24">
+            <label class="block text-[10px] font-bold uppercase text-zinc-400 mb-1">Image</label>
+            
+            <input type="hidden" value="${variant.image_url || ''}" oninput="updateVariant(${vIndex}, 'image_url', this.value)">
+            
+            <input type="file" name="variant_image_${vIndex}" class="text-[10px] text-zinc-500 file:mr-2 file:py-1 file:px-2 file:border-0 file:text-[10px] file:bg-zinc-200 hover:file:bg-zinc-300 w-full">
+            
+            ${variant.image_url ? `<img src="/uploads/${variant.image_url}" class="h-8 w-8 object-cover mt-1 border border-zinc-300">` : ''}
+        </div>
+    </div>
+
+            </div>
+            `;
+            container.insertAdjacentHTML('beforeend', variantHtml);
+        });
+
+        // UPDATE HIDDEN INPUT
+        document.getElementById('variantsJson').value = JSON.stringify(variantsData);
+    }
+
+    // --- 3. LOGIC FUNCTIONS ---
+
+    function addVariantGroup() {
+        // Default new variant
+        variantsData.push({ 
+            name: '', 
+            code: '#000000', 
+            sizes: [{label: '', qty: 1,price: ''}] // Start with one empty size row
+        });
+        renderVariants();
+    }
+
+    function removeVariant(index) {
+        if(confirm("Remove this color and all its sizes?")) {
+            variantsData.splice(index, 1);
+            renderVariants();
         }
     }
 
+    function updateVariant(index, field, value) {
+        variantsData[index][field] = value;
+        document.getElementById('variantsJson').value = JSON.stringify(variantsData);
+    }
+
+    function addSize(vIndex) {
+        variantsData[vIndex].sizes.push({ label: '', qty: 1 });
+        renderVariants();
+    }
+
+    function removeSize(vIndex, sIndex) {
+        variantsData[vIndex].sizes.splice(sIndex, 1);
+        renderVariants();
+    }
+
+    function updateSize(vIndex, sIndex, field, value) {
+        variantsData[vIndex].sizes[sIndex][field] = value;
+        document.getElementById('variantsJson').value = JSON.stringify(variantsData);
+    }
+
+    // --- EXTRAS LOGIC ---
     function addExtraField() {
         const div = document.createElement('div');
         div.className = "flex gap-2 mb-2";
-      
         div.innerHTML = `
-            <input type="text" name="extra_name[]" placeholder="{{ _('ph_extra_name') }}" class="w-2/3 border-2 border-zinc-200 bg-zinc-50 text-zinc-900 p-2 text-sm focus:border-amber-500 focus:outline-none font-bold">
-            <input type="number" step="0.001" name="extra_price[]" placeholder="{{ _('ph_price') }}" class="w-1/3 border-2 border-zinc-200 bg-zinc-50 text-zinc-900 p-2 text-sm focus:border-amber-500 focus:outline-none font-bold">
+            <input type="text" name="extra_name[]" placeholder="{{ _('ph_extra_name') }}" class="w-2/3 border-2 border-zinc-200 p-2 text-sm focus:border-amber-500 focus:outline-none font-bold">
+            <input type="number" step="0.001" name="extra_price[]" placeholder="{{ _('ph_price') }}" class="w-1/3 border-2 border-zinc-200 p-2 text-sm focus:border-amber-500 focus:outline-none font-bold">
             <button type="button" onclick="this.parentElement.remove()" class="text-zinc-400 hover:text-red-600 transition">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
         `;
         document.getElementById('extrasContainer').appendChild(div);
-    }
-    
-    function addColorField() {
-        const div = document.createElement('div');
-        div.className = "flex items-center gap-2";
-       
-        div.innerHTML = `
-            <input type="color" name="color_code[]" class="h-10 w-12 p-0 border-2 border-zinc-300 cursor-pointer">
-            <input type="text" name="color_name[]" placeholder="{{ _('ph_color_name') }}" class="flex-1 border-2 border-zinc-200 bg-zinc-50 text-zinc-900 p-2 text-sm focus:border-amber-500 focus:outline-none font-bold" required>
-            <button type="button" onclick="this.parentElement.remove()" class="text-zinc-400 hover:text-red-600 transition">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-        `;
-        document.getElementById('colorsContainer').appendChild(div);
-    }
-
-    if (document.getElementById('extrasContainer').children.length === 0) {
-        addExtraField(); 
     }
 </script>
 {% endblock %}

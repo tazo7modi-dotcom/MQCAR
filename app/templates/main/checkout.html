@@ -1,195 +1,211 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="min-h-screen bg-[#111] text-white">
-    <div class="container mx-auto px-4 py-16 max-w-6xl">
+<div class="min-h-screen bg-white text-zinc-900 font-sans selection:bg-amber-500 selection:text-black">
+    <div class="container mx-auto px-6 py-12 max-w-7xl">
         
-        <h1 class="text-4xl font-bold mb-12 text-white rtl:text-right font-comic ltr:font-['Bangers'] rtl:font-['Cairo'] uppercase tracking-wide">
-            {{ _('checkout_title') }}
-        </h1>
+        <div class="flex items-center gap-4 mb-12 border-b border-zinc-200 pb-6">
+            <h1 class="text-4xl font-bold uppercase ltr:font-['Oswald'] rtl:font-['Cairo'] tracking-widest text-zinc-900">
+                {{ _('checkout_title') }}
+            </h1>
+            <div class="h-px flex-1 bg-zinc-200"></div>
+            <div class="text-zinc-400 text-xs font-bold uppercase tracking-widest">
+                <span class="text-amber-600">{{ _('step_1') or 'Info' }}</span> &mdash; {{ _('step_2') or 'Payment' }}
+            </div>
+        </div>
         
-        <div class="flex flex-col lg:flex-row gap-12 lg:gap-20">
+        <div class="flex flex-col lg:flex-row gap-12 lg:gap-24 relative">
             
             <div class="lg:w-2/3">
                 
                 {% if not current_user.is_authenticated %}
-                <div id="checkout-gate" class="mb-12">
+                <div id="checkout-gate" class="transition-all duration-500 ease-in-out">
+                    <h2 class="text-xl font-bold mb-8 text-zinc-500 uppercase tracking-widest">{{ _('gate_title') or 'How would you like to proceed?' }}</h2>
+                    
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         
-                        <div class="bg-[#1a1a1a] p-10 border border-[#333] hover:border-[#cc0000] transition text-center group flex flex-col items-center justify-center shadow-lg">
-                            <div class="w-16 h-16 bg-[#222] rounded-full flex items-center justify-center text-[#cc0000] text-2xl mb-6 group-hover:scale-110 transition">
-                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+                        <a href="{{ url_for('auth.login', next=request.path) }}" class="group block bg-zinc-50 border border-zinc-200 p-8 hover:border-amber-500 transition-all duration-300 relative overflow-hidden shadow-sm hover:shadow-md">
+                            <div class="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                                <svg class="w-24 h-24 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
                             </div>
-                            <h3 class="text-2xl font-bold text-white mb-2 font-comic uppercase">{{ _('gate_login_title') or 'Member Checkout' }}</h3>
-                            <p class="text-gray-500 text-sm mb-8 leading-relaxed">{{ _('gate_login_desc') or 'Access saved addresses, earn loyalty points, and track your order history.' }}</p>
-                            
-                            <a href="{{ url_for('auth.login', next=request.path) }}" class="w-full bg-[#333] text-white py-4 font-bold uppercase tracking-widest hover:bg-[#cc0000] transition shadow-md">
-                                {{ _('btn_login') or 'Login Now' }}
-                            </a>
-                        </div>
+                            <h3 class="text-2xl font-bold text-zinc-900 mb-2 ltr:font-['Oswald'] rtl:font-['Cairo'] uppercase group-hover:text-amber-600 transition-colors">{{ _('gate_login_title') or 'Member Checkout' }}</h3>
+                            <p class="text-zinc-500 text-sm mb-6 leading-relaxed">{{ _('gate_login_desc') or 'Login to access saved addresses and loyalty points.' }}</p>
+                            <span class="inline-block text-xs font-bold uppercase tracking-widest text-zinc-900 border-b-2 border-amber-500 pb-1">{{ _('btn_login') or 'Login Now' }} &rarr;</span>
+                        </a>
 
-                        <div class="bg-[#cc0000] p-1 relative overflow-hidden group">
-                            <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#000 2px, transparent 2px); background-size: 10px 10px;"></div>
-                            
-                            <div class="bg-[#1a1a1a] h-full p-10 flex flex-col items-center justify-center relative z-10 hover:bg-black transition">
-                                <div class="w-16 h-16 bg-[#cc0000] rounded-full flex items-center justify-center text-white text-2xl mb-6 shadow-[0_0_20px_rgba(204,0,0,0.4)] group-hover:scale-110 transition">
-                                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                                </div>
-                                <h3 class="text-2xl font-bold text-white mb-2 font-comic uppercase">{{ _('gate_guest_title') or 'Guest Checkout' }}</h3>
-                                <p class="text-gray-500 text-sm mb-8 leading-relaxed">{{ _('gate_guest_desc') or 'No account needed. Just fill in your shipping details and pay.' }}</p>
-                                
-                                <button type="button" onclick="enableGuestCheckout()" class="w-full bg-white text-black py-4 font-bold uppercase tracking-widest hover:bg-gray-200 transition shadow-md">
-                                    {{ _('btn_continue_guest') or 'Continue as Guest' }}
-                                </button>
-                            </div>
-                        </div>
+                        <button onclick="enableGuestCheckout()" class="group block text-left w-full bg-white border border-zinc-200 p-8 hover:border-zinc-400 transition-all duration-300 relative shadow-sm hover:shadow-md">
+                            <h3 class="text-2xl font-bold text-zinc-900 mb-2 ltr:font-['Oswald'] rtl:font-['Cairo'] uppercase">{{ _('gate_guest_title') or 'Guest Checkout' }}</h3>
+                            <p class="text-zinc-500 text-sm mb-6 leading-relaxed">{{ _('gate_guest_desc') or 'No account needed. Just fill in details and pay.' }}</p>
+                            <span class="inline-block px-6 py-3 bg-zinc-900 text-white font-bold text-xs uppercase tracking-widest hover:bg-amber-500 hover:text-black transition-colors">
+                                {{ _('btn_continue_guest') or 'Continue as Guest' }}
+                            </span>
+                        </button>
 
-                    </div>
-                    
-                    <div class="mt-8 flex items-center gap-4">
-                         <div class="h-px bg-[#333] flex-1"></div>
-                         <span class="text-gray-600 text-xs uppercase tracking-widest font-bold">Secure Checkout</span>
-                         <div class="h-px bg-[#333] flex-1"></div>
                     </div>
                 </div>
                 {% endif %}
-                <form method="POST" id="checkoutForm" class="transition-opacity duration-500 {% if not current_user.is_authenticated %}hidden opacity-0{% endif %}">
+
+                <form method="POST" id="checkoutForm" class="space-y-12 transition-all duration-700 ease-in-out {% if not current_user.is_authenticated %}hidden opacity-0 translate-y-4{% endif %}">
                     
                     {% if addresses %}
-                    <div class="mb-10">
-                        <h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-[#cc0000] uppercase tracking-wider rtl:flex-row-reverse font-comic ltr:font-['Bangers'] rtl:font-['Cairo']">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    <div>
+                        <h2 class="text-lg font-bold mb-6 flex items-center gap-3 text-amber-600 uppercase tracking-widest ltr:font-['Oswald'] rtl:font-['Cairo']">
+                            <span class="w-6 h-6 border border-amber-600 rounded-full flex items-center justify-center text-xs">1</span>
                             {{ _('checkout_saved_addr') }}
                         </h2>
+                        
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {% for addr in addresses %}
-                            <label class="border-2 border-[#333] bg-[#1a1a1a] p-6 cursor-pointer hover:border-[#cc0000] transition relative group text-left rtl:text-right shadow-md group">
+                            <label class="cursor-pointer relative group">
                                 <input type="radio" name="selected_address" value="{{ addr.id }}" 
                                        data-country="{{ addr.country }}"
-                                       class="absolute top-6 ltr:right-6 rtl:left-6 accent-[#cc0000] w-5 h-5 saved-addr-radio"
+                                       class="peer sr-only saved-addr-radio"
                                        onchange="handleAddressChange(this)">
                                 
-                                <p class="font-bold text-white text-lg mb-1 group-hover:text-[#cc0000] transition">{{ addr.full_name }}</p>
-                                <p class="text-sm text-gray-400">{{ addr.street_address }}</p>
-                                <p class="text-sm text-gray-400 font-medium mt-1">{{ addr.city }}, {{ addr.country }}</p>
+                                <div class="bg-zinc-50 border border-zinc-200 p-6 transition-all peer-checked:border-amber-500 peer-checked:bg-white peer-checked:shadow-md group-hover:border-zinc-400">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <p class="font-bold text-zinc-900 uppercase tracking-wide">{{ addr.full_name }}</p>
+                                        <div class="w-4 h-4 rounded-full border border-zinc-300 peer-checked:bg-amber-500 peer-checked:border-amber-500 flex items-center justify-center">
+                                            <div class="w-1.5 h-1.5 bg-white rounded-full opacity-0 peer-checked:opacity-100"></div>
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-zinc-600">{{ addr.street_address }}</p>
+                                    <p class="text-xs text-zinc-400 mt-1 uppercase font-bold">{{ addr.city }}, {{ addr.country }}</p>
+                                </div>
                             </label>
                             {% endfor %}
                         </div>
                     </div>
                     {% endif %}
 
-                    <div class="mb-10 rtl:text-right">
-                        <h2 class="text-xl font-bold mb-6 flex items-center gap-2 text-[#cc0000] uppercase tracking-wider rtl:flex-row-reverse font-comic ltr:font-['Bangers'] rtl:font-['Cairo']">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <div>
+                        <h2 class="text-lg font-bold mb-6 flex items-center gap-3 text-amber-600 uppercase tracking-widest ltr:font-['Oswald'] rtl:font-['Cairo']">
+                            <span class="w-6 h-6 border border-amber-600 rounded-full flex items-center justify-center text-xs">{% if addresses %}2{% else %}1{% endif %}</span>
                             {% if addresses %}{{ _('checkout_new_addr') }}{% else %}{{ _('checkout_ship_details') }}{% endif %}
                         </h2>
                         
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-[#1a1a1a] p-8 border border-[#333] shadow-lg relative" id="newAddressContainer">
-                            
-                            <div>
-                                <label class="block text-gray-500 text-xs font-bold uppercase mb-2 ml-1 font-bold-heading">{{ _('lbl_fullname') }} <span class="text-[#cc0000]">*</span></label>
-                                <input type="text" name="full_name" class="new-addr-input w-full border-2 border-[#333] p-4 bg-black text-white focus:border-[#cc0000] transition outline-none placeholder-gray-700 font-bold" required placeholder="John Doe">
-                            </div>
-
-                            <div>
-                                <label class="block text-gray-500 text-xs font-bold uppercase mb-2 ml-1 font-bold-heading">Email <span class="text-gray-600">(Optional)</span></label>
-                                <input type="email" name="email" class="new-addr-input w-full border-2 border-[#333] p-4 bg-black text-white focus:border-[#cc0000] transition outline-none placeholder-gray-700 font-bold" placeholder="name@example.com" value="{{ current_user.email if current_user.is_authenticated else '' }}">
-                            </div>
-
-                            <div class="md:col-span-2">
-                                <label class="block text-gray-500 text-xs font-bold uppercase mb-2 ml-1 font-bold-heading">{{ _('lbl_phone') }} <span class="text-[#cc0000]">*</span></label>
-                                <div class="flex" dir="ltr"> 
-                                    <select name="phone_code" id="phoneCodeSelect" class="new-addr-input border-2 border-r-0 border-[#333] p-4 bg-[#222] text-white focus:border-[#cc0000] outline-none w-28 text-sm font-bold appearance-none text-center">
-                                        <option value="+973">🇧🇭 +973</option>
-                                        <option value="+966">🇸🇦 +966</option>
-                                        <option value="+971">🇦🇪 +971</option>
-                                        <option value="+965">🇰🇼 +965</option>
-                                        <option value="+974">🇶🇦 +974</option>
-                                        <option value="+968">🇴🇲 +968</option>
-                                    </select>
-                                    <input type="text" name="phone_number" class="new-addr-input w-full border-2 border-[#333] p-4 bg-black text-white focus:border-[#cc0000] transition outline-none placeholder-gray-700 font-bold" required placeholder="33000000">
+                        <div id="newAddressContainer" class="bg-zinc-50 border border-zinc-200 p-8 shadow-sm">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                
+                                <div class="group relative">
+                                    <input type="text" name="full_name" class="new-addr-input peer w-full bg-transparent border-b-2 border-zinc-200 py-3 text-zinc-900 focus:outline-none focus:border-amber-500 transition-colors placeholder-transparent font-bold" placeholder="Name" required>
+                                    <label class="absolute left-0 top-3 text-zinc-400 text-xs uppercase font-bold transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:text-zinc-500 peer-placeholder-shown:top-3 peer-focus:-top-2 peer-focus:text-amber-600 peer-focus:text-[10px] -top-2">{{ _('lbl_fullname') }} <span class="text-amber-600">*</span></label>
                                 </div>
-                            </div>
 
-                            <div class="md:col-span-2">
-                                <label class="block text-gray-500 text-xs font-bold uppercase mb-2 ml-1 font-bold-heading">{{ _('lbl_street') }} <span class="text-[#cc0000]">*</span></label>
-                                <input type="text" name="street_address" class="new-addr-input w-full border-2 border-[#333] p-4 bg-black text-white focus:border-[#cc0000] transition outline-none placeholder-gray-700 font-bold" required placeholder="Building 123, Road 456">
-                            </div>
+                                <div class="group relative">
+                                    <input type="email" name="email" value="{{ current_user.email if current_user.is_authenticated else '' }}" class="new-addr-input peer w-full bg-transparent border-b-2 border-zinc-200 py-3 text-zinc-900 focus:outline-none focus:border-amber-500 transition-colors placeholder-transparent font-bold" placeholder="Email">
+                                    <label class="absolute left-0 top-3 text-zinc-400 text-xs uppercase font-bold transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:text-zinc-500 peer-placeholder-shown:top-3 peer-focus:-top-2 peer-focus:text-amber-600 peer-focus:text-[10px] -top-2">Email</label>
+                                </div>
 
-                            <div>
-                                <label class="block text-gray-500 text-xs font-bold uppercase mb-2 ml-1 font-bold-heading">{{ _('lbl_city') }} <span class="text-[#cc0000]">*</span></label>
-                                <input type="text" name="city" class="new-addr-input w-full border-2 border-[#333] p-4 bg-black text-white focus:border-[#cc0000] transition outline-none placeholder-gray-700 font-bold" required placeholder="Manama">
-                            </div>
-
-                            <div>
-                                <label class="block text-gray-500 text-xs font-bold uppercase mb-2 ml-1 font-bold-heading">{{ _('lbl_country') }} <span class="text-[#cc0000]">*</span></label>
-                                <div class="relative">
-                                    <select name="country" id="countrySelect" 
-                                            class="new-addr-input w-full border-2 border-[#333] p-4 bg-black text-white focus:border-[#cc0000] transition outline-none appearance-none font-bold" 
-                                            required onchange="updateShippingOptions()">
-                                        <option value="Bahrain" selected>Bahrain (البحرين)</option>
+                                <div class="md:col-span-2 flex gap-4">
+                                    <div class="w-32 relative">
+                                        <label class="block text-[10px] font-bold uppercase text-zinc-400 mb-1">{{ _('lbl_code') }}</label>
+                                        <select name="phone_code" id="phoneCodeSelect" class="new-addr-input w-full bg-white border border-zinc-200 py-3 px-2 text-zinc-900 text-sm font-bold focus:border-amber-500 outline-none">
+                                            <option value="+973">🇧🇭 +973</option>
+                                            <option value="+966">🇸🇦 +966</option>
+                                            <option value="+971">🇦🇪 +971</option>
+                                            <option value="+965">🇰🇼 +965</option>
+                                            <option value="+974">🇶🇦 +974</option>
+                                            <option value="+968">🇴🇲 +968</option>
                                         </select>
-                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
-                                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
                                     </div>
+                                    <div class="flex-1 group relative mt-auto">
+                                        <input type="text" name="phone_number" class="new-addr-input peer w-full bg-transparent border-b-2 border-zinc-200 py-3 text-zinc-900 focus:outline-none focus:border-amber-500 transition-colors placeholder-transparent font-bold" placeholder="Phone" required>
+                                        <label class="absolute left-0 top-3 text-zinc-400 text-xs uppercase font-bold transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:text-zinc-500 peer-placeholder-shown:top-3 peer-focus:-top-2 peer-focus:text-amber-600 peer-focus:text-[10px] -top-2">{{ _('lbl_phone') }} <span class="text-amber-600">*</span></label>
+                                    </div>
+                                </div>
+
+                                <div class="md:col-span-2 group relative">
+                                    <input type="text" name="street_address" class="new-addr-input peer w-full bg-transparent border-b-2 border-zinc-200 py-3 text-zinc-900 focus:outline-none focus:border-amber-500 transition-colors placeholder-transparent font-bold" placeholder="Address" required>
+                                    <label class="absolute left-0 top-3 text-zinc-400 text-xs uppercase font-bold transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:text-zinc-500 peer-placeholder-shown:top-3 peer-focus:-top-2 peer-focus:text-amber-600 peer-focus:text-[10px] -top-2">{{ _('lbl_street') }} <span class="text-amber-600">*</span></label>
+                                </div>
+
+                                <div class="group relative">
+                                    <input type="text" name="city" class="new-addr-input peer w-full bg-transparent border-b-2 border-zinc-200 py-3 text-zinc-900 focus:outline-none focus:border-amber-500 transition-colors placeholder-transparent font-bold" placeholder="City" required>
+                                    <label class="absolute left-0 top-3 text-zinc-400 text-xs uppercase font-bold transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:text-zinc-500 peer-placeholder-shown:top-3 peer-focus:-top-2 peer-focus:text-amber-600 peer-focus:text-[10px] -top-2">{{ _('lbl_city') }} <span class="text-amber-600">*</span></label>
+                                </div>
+
+                                <div>
+                                    <label class="block text-[10px] font-bold uppercase text-zinc-400 mb-1">{{ _('lbl_country') }} <span class="text-amber-600">*</span></label>
+                                    <select name="country" id="countrySelect" 
+                                            class="new-addr-input w-full bg-white border border-zinc-200 py-3 px-4 text-zinc-900 font-bold focus:border-amber-500 outline-none" 
+                                            required onchange="updateShippingOptions()">
+                                        <option value="Bahrain" selected>Bahrain</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="mb-10 rtl:text-right">
-                        <h2 class="text-xl font-bold mb-6 text-[#cc0000] uppercase tracking-wider font-comic ltr:font-['Bangers'] rtl:font-['Cairo']">{{ _('checkout_ship_method') }}</h2>
-                        <div id="shippingOptionsContainer" class="space-y-4">
+                    <div>
+                        <h2 class="text-lg font-bold mb-6 flex items-center gap-3 text-amber-600 uppercase tracking-widest ltr:font-['Oswald'] rtl:font-['Cairo']">
+                            <span class="w-6 h-6 border border-amber-600 rounded-full flex items-center justify-center text-xs">{% if addresses %}3{% else %}2{% endif %}</span>
+                            {{ _('checkout_ship_method') }}
+                        </h2>
+                        
+                        <div id="shippingOptionsContainer" class="space-y-3">
                             </div>
                     </div>
 
-                    <button type="submit" class="w-full bg-[#cc0000] text-white py-5 font-bold text-2xl uppercase tracking-widest hover:bg-white hover:text-black transition shadow-[0_4px_0_rgba(0,0,0,0.5)] active:translate-y-1 active:shadow-none font-comic ltr:font-['Bangers'] rtl:font-['Cairo']">
+                    <button type="submit" class="w-full bg-zinc-900 text-white py-5 font-bold text-lg uppercase tracking-[0.2em] hover:bg-amber-500 hover:text-black transition-all duration-300 shadow-lg ltr:font-['Oswald'] rtl:font-['Cairo']">
                         {{ _('btn_pay_now') }}
                     </button>
+
                 </form>
             </div>
 
             <div class="lg:w-1/3">
-                <div class="bg-[#1a1a1a] p-8 sticky top-24 shadow-2xl border border-[#333] rtl:text-right relative">
-                    <div class="absolute top-0 left-0 w-full h-1 bg-[#cc0000]"></div>
-
-                    <h3 class="text-2xl font-bold mb-8 text-white font-comic ltr:font-['Bangers'] rtl:font-['Cairo'] uppercase tracking-wide">{{ _('checkout_summary') }}</h3>
+                <div class="bg-zinc-50 p-8 border border-zinc-200 sticky top-12 shadow-sm">
                     
-                    <div class="space-y-6 mb-8 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
+                    <h3 class="text-xl font-bold mb-8 text-zinc-900 ltr:font-['Oswald'] rtl:font-['Cairo'] uppercase tracking-widest border-b border-zinc-200 pb-4">
+                        {{ _('checkout_summary') }}
+                    </h3>
+                    
+                    <div class="space-y-6 mb-8 max-h-[400px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-zinc-300 scrollbar-track-zinc-100">
                         {% for item in items %}
-                        <div class="flex justify-between text-sm group border-b border-[#333] pb-4 last:border-0">
-                            <div class="w-2/3">
-                                <p class="font-bold text-white text-base">{{ item.quantity }}x {{ item.product.name }}</p>
-                                <p class="text-gray-500 text-xs mt-1 font-medium">
-                                    {% if item.size %}{{ item.size }} <span class="mx-1">|</span> {% endif %}
-                                    {% if item.color %}{{ item.color }}{% endif %}
-                                </p>
+                        <div class="flex gap-4 group">
+                            <div class="w-16 h-16 bg-white border border-zinc-200 flex-shrink-0 flex items-center justify-center">
+                                {% if item.product.image_url %}
+                                <img src="{{ url_for('uploaded_file', filename=item.product.image_url) if not item.product.image_url.startswith('http') else item.product.image_url }}" class="w-full h-full object-contain p-1 mix-blend-multiply">
+                                {% else %}
+                                <span class="text-[9px] uppercase text-zinc-400">No Img</span>
+                                {% endif %}
                             </div>
-                            <p class="font-bold text-[#cc0000] font-mono">{{ (item.unit_price * item.quantity) | currency }}</p>
+                            
+                            <div class="flex-1 flex justify-between">
+                                <div>
+                                    <p class="font-bold text-zinc-900 text-sm leading-tight mb-1">{{ item.product.name }}</p>
+                                    <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-wide">
+                                        Qty: {{ item.quantity }}
+                                        {% if item.size %} | {{ item.size }}{% endif %}
+                                    </p>
+                                </div>
+                                <p class="font-bold text-zinc-900 font-mono text-sm">{{ (item.unit_price * item.quantity) | currency }}</p>
+                            </div>
                         </div>
                         {% endfor %}
                     </div>
                     
-                    <div class="border-t border-[#333] pt-6 space-y-3">
-                        <div class="flex justify-between text-gray-400 text-sm font-bold uppercase">
+                    <div class="border-t border-zinc-200 pt-6 space-y-3">
+                        <div class="flex justify-between text-zinc-500 text-xs font-bold uppercase tracking-wider">
                             <span>{{ _('cart_subtotal') }}</span>
-                            <span class="font-bold font-mono text-white">{{ total | currency }}</span>
+                            <span class="text-zinc-900">{{ total | currency }}</span>
                         </div>
-                        <div class="flex justify-between text-gray-400 text-sm font-bold uppercase">
+                        <div class="flex justify-between text-zinc-500 text-xs font-bold uppercase tracking-wider">
                             <span>{{ _('cart_shipping') }}</span>
-                            <span id="shippingDisplay" class="font-bold text-[#cc0000]">--</span>
+                            <span id="shippingDisplay" class="text-amber-600">--</span>
                         </div>
                     </div>
 
-                    <div class="border-t border-[#333] pt-6 mt-6">
-                        <div class="flex justify-between items-baseline text-white">
-                            <span class="text-xl font-bold font-comic ltr:font-['Bangers'] rtl:font-['Cairo'] uppercase">{{ _('cart_total') }}</span>
-                            <span id="totalDisplay" class="text-3xl font-bold font-mono text-[#cc0000]">{{ total | currency }}</span>
+                    <div class="border-t-2 border-zinc-200 pt-6 mt-6">
+                        <div class="flex justify-between items-end">
+                            <span class="text-sm font-bold text-zinc-400 uppercase tracking-widest">{{ _('cart_total') }}</span>
+                            <span id="totalDisplay" class="text-3xl font-bold font-mono text-zinc-900">{{ total | currency }}</span>
                         </div>
                     </div>
                     
-                    <div class="mt-8 flex items-center justify-center gap-2 text-[10px] uppercase tracking-widest text-gray-600 font-bold">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                    <div class="mt-8 flex items-center justify-center gap-2 text-[9px] uppercase tracking-widest text-zinc-400 font-bold border-t border-zinc-200 pt-4">
+                        <svg class="w-3 h-3 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                         <p>{{ _('msg_secure_ssl') }}</p>
                     </div>
                 </div>
@@ -200,58 +216,39 @@
 
 {% set code = session.get('currency', 'BHD') %}
 {% set c_data = config['CURRENCY_RATES'].get(code, config['CURRENCY_RATES']['BHD']) %}
+
 <script>
-    // --- 1. NEW FUNCTION FOR GUEST CHECKOUT GATE ---
+    // --- GUEST ANIMATION LOGIC ---
     function enableGuestCheckout() {
         const gate = document.getElementById('checkout-gate');
         const form = document.getElementById('checkoutForm');
         
-        // Hide gate smoothly
-        gate.style.display = 'none';
+        gate.style.opacity = '0';
+        gate.style.transform = 'translateY(-10px)';
         
-        // Show form smoothly
-        form.classList.remove('hidden');
-        // Small timeout to allow the 'display:block' to render before changing opacity (for transition)
         setTimeout(() => {
-            form.classList.remove('opacity-0');
-        }, 50);
+            gate.style.display = 'none'; 
+            form.classList.remove('hidden');
+            void form.offsetWidth;
+            form.classList.remove('opacity-0', 'translate-y-4');
+        }, 300);
     }
 
-    // --- YOUR EXISTING LOGIC BELOW ---
+    // --- DATA & CALCULATIONS ---
     const cartTotalBHD = {{ total }}; 
     const exchangeRate = {{ c_data.rate }};
     const symbol = "{{ c_data.symbol }}";
     const decimals = {{ c_data.decimals }};
-    const currentCurrencyCode = "{{ current_currency }}"; 
     
     const COUNTRY_PHONE_MAP = {
-        'Bahrain': '+973',
-        'Saudi Arabia': '+966',
-        'UAE': '+971',
-        'Kuwait': '+965',
-        'Qatar': '+974',
-        'Oman': '+968'
+        'Bahrain': '+973', 'Saudi Arabia': '+966', 'UAE': '+971',
+        'Kuwait': '+965', 'Qatar': '+974', 'Oman': '+968'
     };
     
-    const CURRENCY_TO_COUNTRY_MAP = {
-        'BHD': 'Bahrain',
-        'SAR': 'Saudi Arabia',
-        'AED': 'UAE',
-        'KWD': 'Kuwait',
-        'QAR': 'Qatar',
-        'OMR': 'Oman',
-    };
-
     const SHIPPING_RATES = {
         'bahrain_normal': 1.65,
         'bahrain_fast': 3.0, 
         'gulf_flat': 15.0
-    };
-
-    const SHIPPING_LABELS = {
-        'normal': "{{ _('ship_std') }}",
-        'fast': "{{ _('ship_fast') }}",
-        'gulf': "{{ _('ship_intl') }}"
     };
 
     let currentShippingCostBHD = 0;
@@ -261,17 +258,16 @@
         const savedAddrRadio = document.querySelector('input[name="selected_address"]:checked');
 
         if (!savedAddrRadio) {
-            // Default to Bahrain for phone code
-            const mappedCountry = 'Bahrain'; 
-            countrySelect.value = mappedCountry;
-            updatePhoneCode(mappedCountry);
+            updatePhoneCode('Bahrain');
         }
 
         updateShippingOptions();
         
         document.querySelectorAll('.new-addr-input').forEach(input => {
             input.addEventListener('input', () => {
-                document.querySelectorAll('.saved-addr-radio').forEach(r => r.checked = false);
+                document.querySelectorAll('.saved-addr-radio').forEach(r => {
+                    r.checked = false;
+                });
                 setNewAddressRequired(true);
                 updateShippingOptions();
             });
@@ -297,9 +293,7 @@
 
     function setNewAddressRequired(isRequired) {
         document.querySelectorAll('.new-addr-input').forEach(inp => {
-            // Skip the optional email field when setting required
             if (inp.name === 'email') return; 
-            
             if(isRequired) inp.setAttribute('required', 'true');
             else inp.removeAttribute('required');
         });
@@ -316,15 +310,7 @@
         const countrySelect = document.getElementById('countrySelect');
         const savedRadio = document.querySelector('input[name="selected_address"]:checked');
         
-        let selectedCountry;
-
-        if (savedRadio) {
-            selectedCountry = savedRadio.getAttribute('data-country');
-        } else {
-            selectedCountry = countrySelect.value;
-        }
-
-        updatePhoneCode(selectedCountry);
+        let selectedCountry = savedRadio ? savedRadio.getAttribute('data-country') : countrySelect.value;
         renderShippingOptions(selectedCountry);
     }
 
@@ -332,9 +318,9 @@
         const container = document.getElementById('shippingOptionsContainer');
         container.innerHTML = ''; 
 
-
         if (country === 'Bahrain') {
-            container.innerHTML += createOptionHTML('normal', '{{_("delivery_1")}}', SHIPPING_RATES.bahrain_normal, true);
+            container.innerHTML += createOptionHTML('normal', '{{_("ship_std")}}', SHIPPING_RATES.bahrain_normal, true);
+            container.innerHTML += createOptionHTML('fast', '{{_("ship_fast")}}', SHIPPING_RATES.bahrain_fast, false);
         } else {
             container.innerHTML += createOptionHTML('gulf', 'International Shipping', SHIPPING_RATES.gulf_flat, true);
         }
@@ -346,12 +332,17 @@
         const checkedStr = isChecked ? 'checked' : '';
         
         return `
-        <label class="flex items-center justify-between p-6 border-2 border-[#333] bg-[#1a1a1a] cursor-pointer hover:border-[#cc0000] hover:bg-black transition relative shadow-md group">
+        <label class="flex items-center justify-between p-5 border border-zinc-200 bg-white cursor-pointer hover:border-amber-500 hover:shadow-sm transition-all relative group">
             <div class="flex items-center gap-4">
-                <input type="radio" name="shipping_option" value="${value}" ${checkedStr} onchange="calculateTotal()" class="accent-[#cc0000] w-5 h-5">
-                <span class="font-bold text-white text-sm md:text-base uppercase tracking-wider group-hover:text-[#cc0000] transition">${label}</span>
+                <input type="radio" name="shipping_option" value="${value}" ${checkedStr} onchange="calculateTotal()" class="peer sr-only">
+                
+                <div class="w-5 h-5 rounded-full border border-zinc-300 peer-checked:border-amber-500 peer-checked:bg-amber-500 flex items-center justify-center">
+                     <div class="w-2 h-2 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+                </div>
+
+                <span class="font-bold text-zinc-600 text-sm uppercase tracking-wider group-hover:text-black transition-colors">${label}</span>
             </div>
-            <span class="font-bold text-[#cc0000] font-mono text-lg">${symbol} ${costUser}</span>
+            <span class="font-bold text-amber-600 font-mono text-base">${symbol} ${costUser}</span>
         </label>
         `;
     }
@@ -361,7 +352,6 @@
         if (!selectedOption) return;
 
         const type = selectedOption.value;
-        
         if (type === 'normal') currentShippingCostBHD = SHIPPING_RATES.bahrain_normal;
         else if (type === 'fast') currentShippingCostBHD = SHIPPING_RATES.bahrain_fast;
         else currentShippingCostBHD = SHIPPING_RATES.gulf_flat;
@@ -375,4 +365,11 @@
         document.getElementById('totalDisplay').innerText = symbol + " " + totalUser.toFixed(decimals);
     }
 </script>
+
+<style>
+    /* Custom Scrollbar for the summary list */
+    .scrollbar-thin::-webkit-scrollbar { width: 4px; }
+    .scrollbar-thumb-zinc-300::-webkit-scrollbar-thumb { background-color: #d4d4d8; border-radius: 4px; }
+    .scrollbar-track-zinc-100::-webkit-scrollbar-track { background-color: #f4f4f5; }
+</style>
 {% endblock %}

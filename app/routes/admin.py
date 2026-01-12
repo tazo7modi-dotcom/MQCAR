@@ -6,8 +6,9 @@ from werkzeug.utils import secure_filename
 from sqlalchemy import func, extract
 from datetime import datetime, timedelta
 
-from app.models import db, Product, Category, Order, User, Extra, OrderItem
+from app.models import db, Product, Category, Order, User, Extra, OrderItem,ProductSize,ProductColor
 from app.translations import dictionary
+import json
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -115,70 +116,133 @@ def manage_product(product_id):
     if request.method == 'POST':
         # --- A. Basic Info ---
         product.name = request.form.get('name')
-        product.price = float(request.form.get('price'))
+        try:
+            product.price = float(request.form.get('price'))
+        except (ValueError, TypeError):
+            product.price = 0.0
+            
         cat_id = request.form.get('category_id')
-        product.label = request.form.get('label')
         product.category_id = int(cat_id) if cat_id else None
         product.description = request.form.get('description')
-        product.is_juice = True if request.form.get('is_juice') else False
+        product.label = request.form.get('label')
         
-        if product.is_juice:
-            product.juice_flavors = request.form.get('juice_flavors')
-            product.juice_nicotine = request.form.get('juice_nicotine') # <--- Add this line
-        else:
-            product.juice_flavors = None
-            product.juice_nicotine = None
-
-        db.session.add(product)
-        # --- B. Image Upload (PERSISTENT STORAGE) ---
+        # --- B. Main Product Image Upload ---
         if 'image' in request.files:
             file = request.files['image']
             if file and file.filename != '':
                 filename = secure_filename(file.filename)
-                
-                # 1. Define save directory (e.g., /var/data/products)
                 save_dir = os.path.join(BASE_UPLOAD_PATH, 'products')
                 os.makedirs(save_dir, exist_ok=True)
-                
-                # 2. Save the file
                 file.save(os.path.join(save_dir, filename))
-                
-                # 3. Store relative path in DB
                 product.image_url = f'products/{filename}'
 
-        # --- C. Dynamic Options (Sizes) ---
+        # --- C. INVENTORY VARIANTS (Colors & Sizes) ---
+        variants_json = request.form.get('variants_json')
+        
+        # Check UI toggles
         product.has_sizes = True if request.form.get('enable_sizes') else False
-        product.available_sizes = request.form.get('sizes_input') if product.has_sizes else None
-
-        # --- D. Dynamic Options (Colors) ---
         product.has_colors = True if request.form.get('enable_colors') else False
-        if product.has_colors:
-            c_names = request.form.getlist('color_name[]')
-            c_codes = request.form.getlist('color_code[]')
-            combined = []
-            for n, c in zip(c_names, c_codes):
-                if n.strip():
-                    combined.append(f"{n.strip()}|{c.strip()}")
-            product.available_colors = ",".join(combined)
+        
+        calculated_total_qty = 0
+
+        # Only process variants if JSON exists AND options are enabled
+        if variants_json and (product.has_colors or product.has_sizes):
+            try:
+                variants_data = json.loads(variants_json)
+                
+                # 1. DELETE OLD DATA (Clean slate for variants)
+                for old_color in product.colors:
+                    db.session.delete(old_color)
+                
+                # 2. FIX ZOMBIE ERROR (Clear memory list)
+                product.colors = []
+                
+                # 3. Process New Data
+                for i, v_data in enumerate(variants_data):
+                    # Create Color Object
+                    new_color = ProductColor(
+                        product_id=product.id, # Will be set below if new
+                        name=v_data.get('name', 'Standard'),
+                        code=v_data.get('code', '#000000'),
+                        image_url=v_data.get('image_url') # Keep existing URL by default
+                    )
+
+                    # Ensure Product ID exists (Required for file naming)
+                    if not product.id:
+                        db.session.add(product)
+                        db.session.flush() # Generate ID
+                        new_color.product_id = product.id
+
+                    # HANDLE VARIANT IMAGE UPLOAD
+                    image_key = f"variant_image_{i}"
+                    if image_key in request.files:
+                        file = request.files[image_key]
+                        if file and file.filename != '':
+                            filename = secure_filename(f"{product.id}_{i}_{file.filename}")
+                            save_dir = os.path.join(BASE_UPLOAD_PATH, 'products/variants')
+                            os.makedirs(save_dir, exist_ok=True)
+                            
+                            file.save(os.path.join(save_dir, filename))
+                            new_color.image_url = f'products/variants/{filename}'
+
+                    # Save Color
+                    db.session.add(new_color)
+                    db.session.flush() # Generate Color ID for sizes
+
+                    # Create Sizes for this Color
+                    for s_data in v_data.get('sizes', []):
+                        try:
+                            qty = int(s_data.get('qty', 0))
+                        except (ValueError, TypeError):
+                            qty = 0
+                        # --- NEW: Get Price ---
+                        size_price = s_data.get('price')
+                        if size_price and str(size_price).strip():
+                             try:
+                                 size_price = float(size_price)
+                             except ValueError:
+                                 size_price = None
+                        else:
+                            size_price = None
+
+                        new_size = ProductSize(
+                            color_id=new_color.id,
+                            size_label=s_data.get('label', 'Standard'),
+                            quantity=qty,
+                            price=size_price
+                        )
+                        db.session.add(new_size)
+                        calculated_total_qty += qty
+                        
+                
+                product.quantity = calculated_total_qty
+
+            except Exception as e:
+                print(f"JSON Error: {e}")
+                flash(f"Error saving variants: {str(e)}", "error")
         else:
-            product.available_colors = None
+            # Fallback for simple products (No variants)
+            try:
+                simple_qty = request.form.get('quantity')
+                product.quantity = int(simple_qty) if simple_qty else 0
+            except ValueError:
+                product.quantity = 0
 
-        db.session.add(product)
-        db.session.commit()
-
-        # --- E. Extras ---
+        # --- D. Extras ---
         Extra.query.filter_by(product_id=product.id).delete()
         ex_names = request.form.getlist('extra_name[]')
         ex_prices = request.form.getlist('extra_price[]')
         
         for n, p in zip(ex_names, ex_prices):
             if n.strip():
-                new_extra = Extra(name=n, price=float(p), product_id=product.id)
+                try:
+                    price_val = float(p)
+                except ValueError:
+                    price_val = 0.0
+                new_extra = Extra(name=n, price=price_val, product_id=product.id)
                 db.session.add(new_extra)
 
-        qty = request.form.get('quantity')
-        product.quantity = int(qty) if qty else 1
-        
+        db.session.add(product)
         db.session.commit()
         
         flash("Product saved successfully!", "success")
@@ -186,8 +250,6 @@ def manage_product(product_id):
 
     categories = Category.query.all()
     return render_template('admin/product_form.html', product=product, categories=categories)
-
-
 
 
 # --- 5. DELETE PRODUCT ---

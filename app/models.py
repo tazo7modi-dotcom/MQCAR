@@ -2,6 +2,7 @@ from .extensions import db
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+import json
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -53,7 +54,6 @@ class Category(db.Model):
     products = db.relationship('Product', backref='category', lazy=True)
     
 
-
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -64,10 +64,18 @@ class Product(db.Model):
     label = db.Column(db.String(100), nullable=True)
     discount_percentage = db.Column(db.Integer, default=0)
     quantity = db.Column(db.Integer, default=1)
-    loyverse_id = db.Column(db.String(100), unique=True, nullable=True)
-    is_juice = db.Column(db.Boolean, default=False)
-    juice_flavors = db.Column(db.String(500))
-    juice_nicotine = db.Column(db.String(500))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    colors = db.relationship('ProductColor', backref='product', cascade="all, delete-orphan", lazy=True)
+
+    @property
+    def total_quantity(self):
+        """Calculates total stock from all sizes in all colors"""
+        total = 0
+        for color in self.colors:
+            for size in color.sizes:
+                total += size.quantity
+        return total
+
 
     def get_price(self):
         """Returns the price AFTER discount"""
@@ -79,6 +87,31 @@ class Product(db.Model):
     def on_sale(self):
         """Helper to check if product is on sale"""
         return self.discount_percentage and self.discount_percentage > 0
+
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'price': self.price,
+            'image_url': self.image_url,
+            'quantity': self.quantity,
+            'category_id': self.category_id,
+            
+            # --- NESTED STRUCTURE FOR POS ---
+            'colors': [{
+                'id': c.id,
+                'name': c.name,
+                'code': c.code,
+                'image_url': c.image_url,
+                'sizes': [{
+                    'id': s.id,
+                    'label': s.size_label,
+                    'qty': s.quantity,
+                    'price': s.price if s.price is not None else self.price
+                } for s in c.sizes]
+            } for c in self.colors]
+        }
     
  
     has_sizes = db.Column(db.Boolean, default=False)
@@ -89,7 +122,6 @@ class Product(db.Model):
     
    
     extras = db.relationship('Extra', backref='product', cascade="all, delete-orphan", lazy=True)
-
 
 
 class Extra(db.Model):
@@ -139,7 +171,46 @@ class Order(db.Model):
     payment_status = db.Column(db.String(20), default='Unpaid') 
     tap_charge_id = db.Column(db.String(200))
     items = db.relationship('OrderItem', backref='order', lazy=True)
+    shipping_tracking_id = db.Column(db.String(100), nullable=True)
+    full_name = db.Column(db.String(100)) 
+    phone = db.Column(db.String(20))
+    street_address = db.Column(db.String(255))
+    city = db.Column(db.String(100))
+    country = db.Column(db.String(100))
+    delivery_status = db.Column(db.String(50), default='Processing')
     
 
     shipping_details = db.Column(db.Text) 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+
+
+class Review(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), nullable=False)
+    rating = db.Column(db.Integer, nullable=False)  # 1 to 5
+    comment = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=db.func.now())    
+
+
+
+
+
+class ProductColor(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    name = db.Column(db.String(50), nullable=False)  
+    code = db.Column(db.String(20), nullable=False)  
+    
+    image_url = db.Column(db.String(500), nullable=True)
+    sizes = db.relationship('ProductSize', backref='color', cascade="all, delete-orphan", lazy=True)  
+
+
+
+class ProductSize(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    color_id = db.Column(db.Integer, db.ForeignKey('product_color.id'), nullable=False)
+    size_label = db.Column(db.String(20), nullable=False) 
+    quantity = db.Column(db.Integer, default=0)
+    price = db.Column(db.Float, nullable=True)    

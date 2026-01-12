@@ -4,213 +4,96 @@
     <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ _('nav_home') }} | BAKU VAPE</title>
+    <title>{{ _('nav_home') }} | Dropi</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Oswald:wght@400;700&family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Cairo:wght@400;600;800&family=Oswald:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
-        body { font-family: 'Oswald', 'Cairo', sans-serif; background-color: #111; color: white; }
-        
-        /* Font Utilities */
-        .font-comic { font-family: 'Bangers', 'Cairo', cursive; }
-        .font-bold-heading { font-family: 'Oswald', 'Cairo', sans-serif; }
-        
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #111; }
-        ::-webkit-scrollbar-thumb { background: #cc0000; border-radius: 4px; }
-    </style>
-
-<style>
-    /* --- AGE GATE STYLES --- */
-   
-    body.locked { overflow: hidden; }
-
-   
-    #age-gate {
-        position: fixed;
-        top: 0; left: 0; width: 100vw; height: 100vh;
-        background: url('https://i.postimg.cc/rw1C0pv3/back.png') no-repeat center center/cover;
-        display: flex; /* Block view immediately */
-        justify-content: center;
-        align-items: center;
-        z-index: 99999; /* Sit on top of everything */
-    }
-
- 
-    #age-gate::before {
-        content: ''; position: absolute; top: 0; left: 0;
-        width: 100%; height: 100%;
-        background: rgba(0, 0, 0, 0.85);
-        backdrop-filter: blur(8px);
-        z-index: -1;
-    }
-
-  
-    .gate-card {
-        background: rgba(20, 20, 20, 0.95);
-        border: 2px solid #cc0000;
-        padding: 40px; border-radius: 12px;
-        text-align: center; color: white;
-        max-width: 500px; width: 90%;
-        position: relative;
-        font-family: sans-serif;
-        box-shadow: 0 0 50px rgba(204, 0, 0, 0.3);
-    }
-
-    .lang-switch {
-        position: absolute; top: 15px; right: 15px;
-        background: transparent; border: 1px solid #666; color: #aaa;
-        padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;
-    }
-    .lang-switch:hover { border-color: white; color: white; }
-
-    #gate-title { font-size: 2rem; margin-bottom: 10px; font-weight: 800; color: #fff; text-transform: uppercase; }
-    #gate-desc { font-size: 1rem; margin-bottom: 25px; color: #ccc; line-height: 1.5; }
-
-    .btn-group { display: flex; gap: 15px; justify-content: center; }
-    .action-btn { 
-        padding: 12px 30px; border-radius: 4px; border: none; cursor: pointer; 
-        font-weight: bold; text-transform: uppercase; letter-spacing: 1px;
-    }
-    #btn-yes { background: #cc0000; color: white; }
-    #btn-yes:hover { background: #ff0000; transform: scale(1.05); transition: 0.2s; }
-    #btn-no { background: transparent; border: 1px solid #444; color: #888; }
-    #btn-no:hover { border-color: white; color: white; }
-
-
-    body.rtl .gate-card { direction: rtl; }
-    body.rtl .lang-switch { right: auto; left: 15px; }
-</style>
-
-</head>
-<div id="flash-container" class="fixed bottom-5 right-5 z-[100] flex flex-col gap-3 pointer-events-none ltr:right-5 ltr:left-auto rtl:left-5 rtl:right-auto">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                
-                <div class="toast-item pointer-events-auto min-w-[320px] max-w-sm bg-[#1a1a1a] border-l-4 {{ 'border-[#cc0000]' if category == 'error' else 'border-green-600' }} text-white p-5 shadow-[0_5px_15px_rgba(0,0,0,0.5)] transform ltr:translate-x-[150%] rtl:-translate-x-[150%] transition-transform duration-500 ease-out flex items-start gap-3 group relative overflow-hidden">
-                    
-                    <div class="flex-shrink-0 pt-0.5">
-                        {% if category == 'error' %}
-                            <svg class="w-5 h-5 text-[#cc0000]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        {% else %}
-                            <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        {% endif %}
-                    </div>
-
-                    <div class="flex-1">
-                        <h4 class="font-bold uppercase tracking-wider text-xs {{ 'text-[#cc0000]' if category == 'error' else 'text-green-500' }} font-bold-heading">
-                            {{ 'Error' if category == 'error' else 'Success' }}
-                        </h4>
-                        <p class="text-sm text-gray-300 font-bold mt-1 leading-relaxed">{{ message | translate_dynamic }}</p>
-                    </div>
-
-                    <button onclick="closeToast(this.parentElement)" class="text-gray-600 hover:text-white transition -mt-1 -mr-1">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </button>
-
-                    <div class="absolute bottom-0 left-0 h-1 {{ 'bg-[#cc0000]' if category == 'error' else 'bg-green-600' }} w-full origin-left animate-shrink"></div>
-                </div>
-
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-</div>
-
-<style>
-    @keyframes shrinkWidth {
-        from { width: 100%; }
-        to { width: 0%; }
-    }
-    .animate-shrink {
-        animation: shrinkWidth 4s linear forwards;
-    }
-</style>
-
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const toasts = document.querySelectorAll('.toast-item');
-        
-        toasts.forEach((toast, index) => {
-            // 1. Slide In Animation
-            setTimeout(() => {
-                toast.classList.remove('ltr:translate-x-[150%]');
-                toast.classList.remove('rtl:-translate-x-[150%]');
-            }, index * 100);
-
-            // 2. Auto Dismiss after 4 seconds
-            setTimeout(() => {
-                closeToast(toast);
-            }, 4000 + (index * 100));
-        });
-    });
-
-    function closeToast(element) {
-        // Slide out based on direction
-        if(document.dir === 'rtl') {
-            element.classList.add('-translate-x-[150%]');
-        } else {
-            element.classList.add('translate-x-[150%]');
+        /* Base Theme: Clean White & Black */
+        body { 
+            font-family: 'Inter', 'Cairo', sans-serif; 
+            background-color: #ffffff; 
+            color: #1a1a1a; 
         }
         
-        // Remove from DOM after animation
-        setTimeout(() => {
-            element.remove();
-        }, 500);
-    }
-</script>
-<body class="bg-[#111] text-white flex flex-col min-h-screen antialiased selection:bg-[#cc0000] selection:text-white">
-<div id="age-gate">
-        <div class="gate-card">
-            <button class="lang-switch" id="lang-btn" type="button">العربية</button>
-            <h1 id="gate-title">Restricted Access</h1>
-            <p id="gate-desc">You must be 18 years or older to enter.</p>
-            <div class="btn-group">
-                <button id="btn-yes" class="action-btn">I am 18+</button>
-                <button id="btn-no" class="action-btn">Exit</button>
-            </div>
-        </div>
+        /* Typography Utilities */
+        .smart-heading { font-family: 'Oswald', 'Cairo', sans-serif; letter-spacing: 0.05em; text-transform: uppercase; }
+        .smart-body { font-family: 'Inter', 'Cairo', sans-serif; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 3px; }
+
+        /* Animation for Toast */
+        @keyframes shrinkWidth { from { width: 100%; } to { width: 0%; } }
+        .animate-shrink { animation: shrinkWidth 4s linear forwards; }
+    </style>
+</head>
+
+<body class="bg-white text-gray-900 flex flex-col min-h-screen antialiased selection:bg-black selection:text-white">
+
+    <div id="flash-container" class="fixed bottom-5 right-5 z-[100] flex flex-col gap-3 pointer-events-none ltr:right-5 ltr:left-auto rtl:left-5 rtl:right-auto">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="toast-item pointer-events-auto min-w-[300px] bg-white border border-gray-100 text-black p-4 shadow-[0_10px_40px_rgba(0,0,0,0.1)] transform transition-transform duration-500 flex items-start gap-3 relative overflow-hidden rounded-md">
+                        <div class="flex-shrink-0 pt-0.5">
+                            {% if category == 'error' %}
+                                <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            {% else %}
+                                <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            {% endif %}
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-medium leading-relaxed">{{ message | translate_dynamic }}</p>
+                        </div>
+                        <div class="absolute bottom-0 left-0 h-0.5 {{ 'bg-red-500' if category == 'error' else 'bg-green-500' }} w-full origin-left animate-shrink"></div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
     </div>
-    <nav class="fixed w-full z-50 bg-black/90 backdrop-blur-md border-b border-[#cc0000] shadow-lg">
+
+    <nav class="fixed w-full z-50 bg-white/90 backdrop-blur-md border-b border-gray-100">
         <div class="container mx-auto px-6 h-20 flex justify-between items-center">
             
             <a href="{{ url_for('main.home') }}" class="flex items-center gap-2">
-                <img src="/static/vapelogo.PNG" class="h-11 w-11 brightness-200"> 
-                <span class="text-2xl font-bold italic tracking-tighter text-white">BAKU<span class="text-[#cc0000]">VAPE</span></span>
+            <img style="width: 60px; height: 60px;" src="/static/Ddropi.PNG" >
             </a>
             
             <div class="flex items-center gap-6">
                 
-                <div class="flex items-center gap-2 text-sm font-bold">
-                    <a href="{{ url_for('main.set_language', lang_code='en') }}" class="hover:text-[#cc0000] transition {% if current_lang == 'en' %}text-[#cc0000]{% else %}text-gray-400{% endif %}">EN</a>
-                    <span class="text-gray-700">|</span>
-                    <a href="{{ url_for('main.set_language', lang_code='ar') }}" class="hover:text-[#cc0000] transition {% if current_lang == 'ar' %}text-[#cc0000]{% else %}text-gray-400{% endif %}">AR</a>
+                <div class="flex items-center gap-2 text-xs font-bold tracking-widest">
+                    <a href="{{ url_for('main.set_language', lang_code='en') }}" class="hover:text-black transition {% if current_lang == 'en' %}text-black border-b border-black{% else %}text-gray-400{% endif %}">EN</a>
+                    <span class="text-gray-300">|</span>
+                    <a href="{{ url_for('main.set_language', lang_code='ar') }}" class="hover:text-black transition {% if current_lang == 'ar' %}text-black border-b border-black{% else %}text-gray-400{% endif %}">AR</a>
                 </div>
 
                 {% if current_user.is_authenticated %}
-                    <a href="{{ url_for('main.account') }}" class="text-sm font-bold hover:text-[#cc0000] transition uppercase flex items-center gap-1">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                        <span class="hidden md:inline">{{ _('link_account') }}</span>
+                    <a href="{{ url_for('main.account') }}" class="text-sm font-medium hover:text-black text-gray-600 transition uppercase flex items-center gap-1">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                        <span class="hidden md:inline text-xs font-bold tracking-widest">{{ _('link_account') }}</span>
                     </a>
                 {% else %}
-                    <a href="{{ url_for('auth.login') }}" class="text-sm font-bold hover:text-[#cc0000] transition uppercase flex items-center gap-1">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
-                        <span>LOGIN</span>
+                    <a href="{{ url_for('auth.login') }}" class="text-sm font-medium hover:text-black text-gray-600 transition uppercase flex items-center gap-1">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+                        <span class="text-xs font-bold tracking-widest">LOGIN</span>
                     </a>
                 {% endif %}
 
-                <a href="{{ url_for('main.cart_page') }}" class="relative text-white hover:text-[#cc0000] transition group">
-                    <svg class="w-6 h-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                <a href="{{ url_for('main.cart_page') }}" class="relative text-gray-800 hover:text-black transition group">
+                    <svg class="w-6 h-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                     {% if cart_count > 0 %}
-                        <span class="absolute -top-2 -right-2 bg-[#cc0000] text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full shadow-md">{{ cart_count }}</span>
+                        <span class="absolute -top-1 -right-2 bg-black text-white text-[9px] font-bold w-4 h-4 flex items-center justify-center rounded-full">{{ cart_count }}</span>
                     {% endif %}
                 </a>
 
                 {% if current_user.is_authenticated and current_user.is_admin %}
-                    <a href="{{ url_for('admin.dashboard') }}" class="bg-[#cc0000] text-white px-3 py-1 text-xs rounded uppercase font-bold hover:bg-red-700 transition">Admin</a>
+                    <a href="{{ url_for('admin.dashboard') }}" class="bg-black text-white px-3 py-1 text-[10px] rounded-full uppercase font-bold tracking-widest hover:bg-gray-800 transition">Admin</a>
                 {% endif %}
             </div>
         </div>
@@ -219,125 +102,92 @@
     <main class="flex-grow pt-20">
         {% block content %}{% endblock %}
     </main>
-
-<footer class="bg-black border-t-4 border-[#cc0000] pt-16 pb-8 text-gray-400">
+<footer class="bg-[#fafafa] border-t border-gray-200 pt-16 pb-8 text-gray-600">
     <div class="container mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
         
         <div>
-            <h4 class="text-white font-bold-heading uppercase mb-4">{{ _('footer_about') }}</h4>
-            <p class="text-xs leading-relaxed mb-4">{{ _('footer_about_text') }}</p>
-            <div class="flex gap-4">
-                <a href="#" class="text-white hover:text-[#cc0000]"><i class="fab fa-instagram text-xl"></i></a>
-                <a href="#" class="text-white hover:text-[#cc0000]"><i class="fab fa-whatsapp text-xl"></i></a>
+            <h4 class="text-black smart-heading text-sm font-bold mb-6 uppercase tracking-wider">Dropi.</h4>
+            <p class="text-xs leading-relaxed mb-6 text-gray-500 max-w-xs">
+                {{ _('footer_about_text') }}
+            </p>
+            <div class="flex gap-4 items-center">
+                <a href="https://instagram.com" target="_blank" class="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-400 hover:text-white hover:bg-black hover:border-black transition-all duration-300">
+                    <i class="fab fa-instagram text-sm"></i>
+                </a>
+                <a href="https://wa.me/97333333333" target="_blank" class="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#25D366] hover:border-[#25D366] transition-all duration-300">
+                    <i class="fab fa-whatsapp text-sm"></i>
+                </a>
+                <a href="https://tiktok.com" target="_blank" class="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-400 hover:text-white hover:bg-black hover:border-black transition-all duration-300">
+                    <i class="fab fa-tiktok text-sm"></i>
+                </a>
             </div>
         </div>
 
         <div>
-            <h4 class="text-white font-bold-heading uppercase mb-4">{{ _('footer_quick') }}</h4>
-            <ul class="text-xs space-y-2 uppercase tracking-wide">
-                <li><a href="{{ url_for('main.home') }}" class="hover:text-[#cc0000]">{{ _('nav_home') }}</a></li>
-                <li><a href="/category/7" class="hover:text-[#cc0000]">{{ _('cat_disposables') }}</a></li>
-                <li><a href="/category/1" class="hover:text-[#cc0000]">{{ _('cat_saltnic') }}</a></li>
+            <h4 class="text-black smart-heading text-sm font-bold mb-6 uppercase tracking-wider">{{ _('footer_quick') }}</h4>
+            <ul class="text-xs space-y-3 font-medium tracking-wide">
+                <li><a href="{{ url_for('main.home') }}" class="hover:text-black transition-colors">{{ _('nav_home') }}</a></li>
+                <li><a href="#shop-all" class="hover:text-black transition-colors">{{ _('shop_now') }}</a></li>
+                <li><a href="/about" class="hover:text-black transition-colors">{{ _('footer_about') }}</a></li>
             </ul>
         </div>
 
         <div>
-            <h4 class="text-white font-bold-heading uppercase mb-4">{{ _('footer_contact') }}</h4>
-            <ul class="text-xs space-y-3">
+            <h4 class="text-black smart-heading text-sm font-bold mb-6 uppercase tracking-wider">{{ _('footer_contact') }}</h4>
+            <ul class="text-xs space-y-4 text-gray-500">
                 <li class="flex items-start gap-3">
-                    <span dir="ltr" class="text-[#cc0000]">📍</span> {{ _('footer_address') }}
+                    <span class="text-black text-sm">📍</span> 
+                    <span class="leading-relaxed">{{ _('footer_location_virtual') }}</span>
                 </li>
                 <li class="flex items-center gap-3">
-                    <span dir="ltr" class="text-[#cc0000]">📞</span><span dir="ltr">+973 37766466</span> 
+                    <span class="text-black text-sm">📞</span> 
+                    <a href="tel:+97333333333" dir="ltr" class="hover:text-black transition">+973 33333333</a>
                 </li>
                 <li class="flex items-center gap-3">
-                    <span class="text-[#cc0000]">🕒</span> 9:00 AM - 12:00 AM
+                    <span class="text-black text-sm">✉️</span> 
+                    <a href="mailto:hello@dropi.com" class="hover:text-black transition">hello@dropi.com</a>
                 </li>
             </ul>
         </div>
 
-        <div class="bg-[#111] border border-[#222] rounded flex items-center justify-center h-32">
-            <span class="text-xs uppercase font-bold text-gray-600">Map Loading...</span>
+        <div>
+            <h4 class="text-black smart-heading text-sm font-bold mb-4 uppercase tracking-wider">{{ _('newsletter_title') }}</h4>
+            <p class="text-xs text-gray-500 mb-4">{{ _('newsletter_desc') }}</p>
+            
+            <form action="#" class="flex flex-col gap-2">
+                <input type="email" placeholder="{{ _('newsletter_placeholder') }}" 
+                       class="w-full bg-white border border-gray-200 px-4 py-3 text-xs outline-none focus:border-black transition-colors placeholder-gray-300">
+                <button type="submit" class="w-full bg-black text-white px-4 py-3 text-xs font-bold uppercase tracking-widest hover:bg-[#333] transition-colors">
+                    {{ _('subscribe_btn') }}
+                </button>
+            </form>
         </div>
     </div>
 
-    <div class="border-t border-gray-900 pt-8 text-center">
-        <p class="text-[10px] uppercase tracking-widest text-gray-600">{{ _('footer_rights') }}</p>
+    <div class="border-t border-gray-200 pt-8 text-center px-6">
+        <p class="text-[10px] uppercase tracking-widest text-gray-400">
+            &copy; 2026 Dropi. {{ _('footer_rights') }}
+        </p>
     </div>
 </footer>
-<script>
-        document.addEventListener("DOMContentLoaded", function() {
-         
-            const isVerified = localStorage.getItem('ageVerified');
-            const ageGate = document.getElementById('age-gate');
-            const body = document.body;
 
-          
-            if (isVerified === 'true') {
-                ageGate.style.display = 'none';
-            } else {
-                
-                body.classList.add('locked');
-            }
-
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const toasts = document.querySelectorAll('.toast-item');
             
-            const content = {
-                en: {
-                    title: "Restricted Access",
-                    desc: "This website contains age-restricted content.<br>You must be 18 years or older to enter.",
-                    btnYes: "I AM 18+",
-                    btnNo: "EXIT",
-                    langBtn: "العربية"
-                },
-                ar: {
-                    title: "محتوى مقيد",
-                    desc: "هذا الموقع يحتوي على منتجات للبالغين.<br>يجب أن يكون عمرك 18 عاماً أو أكثر للدخول.",
-                    btnYes: "عمري فوق 18",
-                    btnNo: "خروج",
-                    langBtn: "English"
-                }
-            };
-            let currentLang = 'en';
-
-
-            const langBtn = document.getElementById('lang-btn');
-            if(langBtn) {
-                langBtn.addEventListener('click', function() {
-                    currentLang = currentLang === 'en' ? 'ar' : 'en';
-                    
-                    document.getElementById('gate-title').innerHTML = content[currentLang].title;
-                    document.getElementById('gate-desc').innerHTML = content[currentLang].desc;
-                    document.getElementById('btn-yes').innerHTML = content[currentLang].btnYes;
-                    document.getElementById('btn-no').innerHTML = content[currentLang].btnNo;
-                    this.innerHTML = content[currentLang].langBtn;
-                    
-                    if(currentLang === 'ar') body.classList.add('rtl');
-                    else body.classList.remove('rtl');
-                });
-            }
-
-        
-            const btnYes = document.getElementById('btn-yes');
-            if(btnYes) {
-                btnYes.addEventListener('click', function() {
-                    localStorage.setItem('ageVerified', 'true');
-                    
-                    ageGate.style.opacity = '0';
-                    setTimeout(() => {
-                        ageGate.style.display = 'none';
-                        body.classList.remove('locked');
-                    }, 300); 
-                });
-            }
-
-       
-            const btnNo = document.getElementById('btn-no');
-            if(btnNo) {
-                btnNo.addEventListener('click', function() {
-                    window.location.href = "https://www.google.com";
-                });
-            }
+            toasts.forEach((toast, index) => {
+                // Auto Dismiss after 4 seconds
+                setTimeout(() => {
+                    closeToast(toast);
+                }, 4000 + (index * 100));
+            });
         });
+
+        function closeToast(element) {
+            element.style.opacity = '0';
+            element.style.transform = document.dir === 'rtl' ? 'translateX(-20px)' : 'translateX(20px)';
+            setTimeout(() => { element.remove(); }, 500);
+        }
     </script>
 </body>
 </html>

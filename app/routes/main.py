@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app
 from flask_login import login_required, current_user
-from app.models import Product, Category, Cart, CartItem, Order, OrderItem, Extra, Address
+from app.models import Product, Category, Cart, CartItem, Order, OrderItem, Extra, Address,Review,ProductColor,ProductSize
 from app.extensions import db
 import requests
 from sqlalchemy import or_
@@ -15,7 +15,29 @@ def home():
     products = Product.query.limit(8).all()
     categories = Category.query.filter(Category.parent_id == None).all()
     uncategorized = Product.query.filter(Product.category_id == None).all()
-    return render_template("main/home.html", products=products, categories=categories, uncategorized=uncategorized)
+    reviews = Review.query.order_by(Review.created_at.desc()).limit(10).all()
+ 
+    return render_template("main/home.html", products=products, categories=categories, uncategorized=uncategorized,reviews=reviews)
+
+
+@main_bp.route('/submit-review', methods=['POST'])
+def submit_review():
+    name = request.form.get('name')
+    comment = request.form.get('comment')
+    rating = request.form.get('rating')
+
+    if name and comment and rating:
+        new_review = Review(name=name, comment=comment, rating=int(rating))
+        db.session.add(new_review)
+        db.session.commit()
+        flash('Thank you for your review!', 'success')
+    else:
+        flash('Please fill in all fields.', 'error')
+
+    return redirect(url_for('main.home'))
+
+
+
 
 @main_bp.route('/product/<int:product_id>')
 def product_detail(product_id):
@@ -25,15 +47,16 @@ def product_detail(product_id):
 
 
 import uuid # Import this at the top of your file if not present
-
 @main_bp.route('/add_to_cart', methods=['POST'])
 # 1. REMOVED @login_required to allow Guests
 def add_to_cart():
-    # --- A. COMMON LOGIC (Get Data & Calculate Price) ---
+    # --- A. COMMON LOGIC (Get Data) ---
     product_id = request.form.get('product_id')
     quantity = int(request.form.get('quantity', 1))
-    size = request.form.get('selected_size')
-    color = request.form.get('color')
+    
+    # NOTE: Your HTML sends 'color_id', so we grab that to find the variant
+    color_id = request.form.get('color_id') 
+    size_label = request.form.get('selected_size') # This is the size name (e.g. "500ml")
     
     # Get Juice Options
     nicotine = request.form.get('nicotine')
@@ -41,8 +64,28 @@ def add_to_cart():
 
     # Get Product
     product = Product.query.get_or_404(product_id)
+    
+    # Start with the base product price
     final_price = product.get_price()
     
+    # Get Color Name (for display in cart)
+    color_name = None
+    if color_id:
+        color_obj = ProductColor.query.get(color_id)
+        if color_obj:
+            color_name = color_obj.name
+
+            # --- INSERTED: SIZE PRICE CHECK ---
+            # We look inside the selected color to find the specific size and its price
+            if size_label:
+                for s in color_obj.sizes:
+                    if s.size_label == size_label:
+                        # If this size has a specific price, OVERRIDE the base price
+                        if s.price is not None:
+                            final_price = s.price
+                        break
+            # ----------------------------------
+
     extras_description = []
 
     # Handle Juice Mode (Free Options)
@@ -64,7 +107,7 @@ def add_to_cart():
 
     # --- B. BRANCHING LOGIC ---
     
-    # 1. IF LOGGED IN: Save to Database (Your original logic)
+    # 1. IF LOGGED IN: Save to Database
     if current_user.is_authenticated:
         cart = current_user.cart
         if not cart:
@@ -76,10 +119,10 @@ def add_to_cart():
             cart=cart, 
             product_id=product.id,
             quantity=quantity,
-            size=size,
-            color=color,
+            size=size_label,
+            color=color_name, # Save the name we found above
             selected_extras=extras_str,
-            unit_price=final_price 
+            unit_price=final_price # <--- This is now correct!
         )
         db.session.add(item)
         db.session.commit()
@@ -94,10 +137,10 @@ def add_to_cart():
             'uuid': str(uuid.uuid4()), # Generate ID so we can delete it later
             'product_id': product.id,
             'quantity': quantity,
-            'size': size,
-            'color': color,
+            'size': size_label,
+            'color': color_name, # Save the name
             'selected_extras': extras_str,
-            'unit_price': float(final_price) # Make sure it's a number, not object
+            'unit_price': float(final_price) # Make sure it's a number
         }
         
         # Save back to session
@@ -106,8 +149,7 @@ def add_to_cart():
         session['cart'] = current_cart
     
     flash("Added to cart successfully!")
-    return redirect(url_for('main.cart_page'))
-
+    return redirect(url_for('main.cart_page')) 
 
 @main_bp.route('/cart')
 # 1. REMOVED @login_required
@@ -226,8 +268,6 @@ def get_cart_data():
                 total += (fake_item.unit_price * fake_item.quantity)
     
     return items, total
-
-# --- CHECKOUT ROUTE ---
 @main_bp.route('/checkout', methods=['GET', 'POST'])
 # 1. REMOVED @login_required
 def checkout():
@@ -304,7 +344,12 @@ def checkout():
             shipping_cost = 15.0 
 
         final_total_bhd = cart_total + shipping_cost
-        shipping_string = f"{final_addr.full_name}, {final_addr.street_address}, {final_addr.city}, {final_addr.country}, {final_addr.phone}"
+
+        # Get Email (User's email OR Guest input)
+        customer_email = current_user.email if current_user.is_authenticated else request.form.get('email', 'guest@example.com')
+
+        # Create String for Dashboard (Now includes Email)
+        shipping_string = f"{final_addr.full_name}, {final_addr.street_address}, {final_addr.city}, {final_addr.country}, {final_addr.phone}, Email: {customer_email}"
 
         # --- Create Order ---
         # If Guest, user_id is None
@@ -315,6 +360,15 @@ def checkout():
             total_amount=final_total_bhd,
             status='Pending',
             payment_status='Unpaid',
+            
+            # --- UPDATED: Save Individual Fields for Shipping API ---
+            full_name=final_addr.full_name,
+            phone=final_addr.phone,
+            street_address=final_addr.street_address,
+            city=final_addr.city,
+            country=final_addr.country,
+            
+            # Keep string for dashboard display
             shipping_details=shipping_string,
         )
         db.session.add(order)
@@ -343,10 +397,6 @@ def checkout():
         name_parts = final_addr.full_name.strip().split(' ', 1)
         first_name = name_parts[0]
         last_name = name_parts[1] if len(name_parts) > 1 else "Customer"
-        
-        # Get Email (User's email OR Guest placeholder/input)
-        # Ideally, add an email field to your checkout form for guests
-        customer_email = current_user.email if current_user.is_authenticated else request.form.get('email', 'guest@example.com')
 
         customer_info = {
             'first_name': first_name,
@@ -382,7 +432,6 @@ def checkout():
 
     return render_template('main/checkout.html', items=items, total=cart_total, addresses=addresses)
 
-
 @main_bp.route('/payment_success')
 # 1. REMOVED @login_required
 def payment_success():
@@ -411,7 +460,7 @@ def payment_success():
     if data.get('status') == 'CAPTURED':
         is_paid = True
     
-    # --- IF PAYMENT SUCCESSFUL ---
+
     if order and is_paid and order.payment_status == 'Unpaid':
         order.payment_status = 'Paid'
         
@@ -423,20 +472,20 @@ def payment_success():
         for item in order.items:
             product = Product.query.get(item.product_id)
             if product:
-                # 1. Update Local Database
+            
                 if product.quantity >= item.quantity:
                     product.quantity -= item.quantity
                 else:
                     product.quantity = 0 
                 
-                # 2. Check for Loyverse ID and Prepare Update
+              
                 if product.loyverse_id:
                     loyverse_updates.append({
                         "variant_id": product.loyverse_id,
                         "in_stock": float(product.quantity)
                     })
         
-        # --- SEND TO LOYVERSE (Background Sync) ---
+       
         if loyverse_updates:
             try:
                 requests.post(
@@ -552,7 +601,7 @@ def set_currency(code):
     return redirect(request.referrer or url_for('main.home'))
 
 @main_bp.route('/help')
-def help_page():
+def help():
     return render_template('main/help.html')
 
 @main_bp.route('/contact', methods=['GET', 'POST'])
@@ -609,3 +658,10 @@ def search():
         current_label=label_filter,
         current_sort=sort_option
     )
+
+
+
+
+@main_bp.route('/about')
+def about():
+    return render_template('main/about.html')

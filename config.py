@@ -2,7 +2,7 @@ import os
 
 class Config:
    
-    SECRET_KEY = os.environ.get('SECRET_KEY')
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'your-secret-key-123'
 
 
     basedir = os.path.abspath(os.path.dirname(__file__))
@@ -33,3 +33,4 @@ class Config:
         'QAR': {'rate': 9.68,  'symbol': 'QAR', 'decimals': 2},
         'OMR': {'rate': 1.02,  'symbol': 'OMR', 'decimals': 3},
     }
+

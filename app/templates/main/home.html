@@ -1,336 +1,325 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div id="site-preloader" class="fixed inset-0 z-[99999] bg-black flex flex-col items-center justify-center transition-opacity duration-700">
+
+<div id="site-preloader" class="fixed inset-0 z-[99999] bg-white flex flex-col items-center justify-center transition-opacity duration-700">
     <div class="relative">
-        <div class="w-24 h-24 border-8 border-[#222] border-t-[#cc0000] rounded-full animate-spin"></div>
-        <div class="absolute inset-0 flex items-center justify-center text-[#cc0000] font-black text-2xl animate-pulse">
-            BV
-        </div>
-    </div>
-    <p class="text-white mt-6 font-bold uppercase tracking-[0.3em] text-sm animate-pulse">Loading Experience...</p>
-</div>
-
-
-<div class="relative w-full h-[600px] md:h-[80vh] flex items-center justify-center overflow-hidden bg-black">
-    
-    <img src="/static/back.png" 
-         class="absolute inset-0 w-full h-full object-cover opacity-60">
-    
-  <div class="absolute inset-0 bg-gradient-to-r rtl:bg-gradient-to-l from-black via-black/60 to-transparent"></div>
-
-    <div class="relative z-10 container mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-        
-        <div class="text-left rtl:text-right">
-<div class="flex items-center gap-3 md:gap-5 border-l-[6px] border-[#cc0000] pl-6 rtl:border-l-0 rtl:border-r-[6px] rtl:pl-0 rtl:pr-6 mb-8">
-    
-    <span class="text-[#cc0000] text-[10rem] md:text-[14rem] font-comic leading-[0.75] drop-shadow-[0_4px_0_rgba(0,0,0,0.5)] transform translate-y-2">
-        1
-    </span>
-
-    <h1 class="text-6xl md:text-8xl text-white font-comic uppercase leading-[0.85] drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]">
-        {{ _('hero_title')|safe }}
-    </h1>
-
-</div>
-
-            <p class="text-gray-300 text-lg md:text-xl font-bold uppercase tracking-wide mb-2 ltr:font-['Oswald'] rtl:font-['Cairo']">
-                {{ _('hero_location_tag') }}
-            </p>
-            
-            <p class="text-gray-400 text-sm max-w-md mb-8 leading-relaxed ltr:font-['Oswald'] rtl:font-['Cairo']">
-                {{ _('hero_subtitle') }}
-            </p>
-
-            <a href="https://wa.me/97337766466" class="inline-block bg-[#cc0000] hover:bg-red-700 text-white font-black text-lg px-8 py-4 uppercase tracking-widest skew-x-[-10deg] shadow-[5px_5px_0px_0px_rgba(255,255,255,0.2)] transition-all transform hover:translate-x-1 hover:translate-y-1 hover:shadow-none">
-                <span class="block skew-x-[10deg]">{{ _('hero_cta_whatsapp') }}</span>
-            </a>
-        </div>
-
-        <div class="hidden md:block relative">
-            </div>
-
+        <div class="w-16 h-16 border-4 border-gray-100 border-t-black rounded-full animate-spin"></div>
     </div>
 </div>
 
-<div class="container mx-auto px-6 py-24">
-    
-    <div class="grid grid-cols-2 md:grid-cols-3 gap-y-12 gap-x-6">
-        {% for category in categories %}
-        <a href="{{ url_for('main.category_view', category_id=category.id) }}" class="group relative flex items-center justify-center w-full aspect-square hover:scale-105 transition-transform duration-500">
-            
-            <div class="w-full h-full relative z-0">
-                {% if category.image_url %}
-                    <img src="{{ url_for('uploaded_file', filename=category.image_url) }}" 
-                         alt="{{ category.name }}" 
-                         class="w-full h-full object-contain drop-shadow-[0_15px_15px_rgba(0,0,0,0.5)]">
-                {% else %}
-                    <div class="w-full h-full flex items-center justify-center opacity-20">
-                        <svg class="w-20 h-20 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                    </div>
-                {% endif %}
-            </div>
+<div class="relative w-full h-[100vh] flex items-center justify-center overflow-hidden bg-[#F5F5F5]">
+    <div class="absolute inset-0 z-0">
+        <img src="/static/dropi.jpg" 
+             onerror="this.src='https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop'"
+             class="w-full h-full object-cover opacity-100">
+        <div class="absolute inset-0 bg-black/10"></div>
+    </div>
 
-            <div class="absolute bottom-4 left-0 w-full z-10 text-center pointer-events-none">
-                <h3 class="text-2xl md:text-4xl font-comic text-[#cc0000] uppercase tracking-wide ltr:font-['Bangers'] rtl:font-['Cairo'] rtl:font-black leading-none
-                           drop-shadow-[0_4px_0_rgba(0,0,0,1)] stroke-black 
-                           group-hover:text-white group-hover:drop-shadow-[0_4px_0_#cc0000] transition-all duration-300">
-                    {{ category.name | translate_dynamic }}
-                </h3>
-            </div>
-
+    <div class="relative z-10 container mx-auto px-6 text-center text-white">
+        <h1 class="text-5xl md:text-7xl font-bold mb-4 smart-heading drop-shadow-md">
+            {{ _('hero_title') or 'Timeless Essentials' }}
+        </h1>
+        <p style="margin-top: 43px;" class="text-lg md:text-xl font-medium mb-8 mt-2 smart-body drop-shadow-sm">
+            {{ _('hero_subtitle') or 'Discover our latest collection' }}
+        </p>
+        <a href="#shop-all" class="inline-block bg-white text-black px-8 py-3 font-bold uppercase tracking-widest text-sm hover:bg-black hover:text-white transition-colors duration-300">
+            {{ _('shop_now') }}
         </a>
-        {% endfor %}
+                <a href="/contact" class="inline-block bg-white text-black px-8 py-3 font-bold uppercase tracking-widest text-sm hover:bg-black hover:text-white transition-colors duration-300">
+            {{ _('contact') }}
+        </a>
     </div>
-
 </div>
-<div class="bg-[#0a0a0a] py-24 border-t border-gray-900 relative overflow-hidden">
-    <div class="container mx-auto px-6 relative z-10">
-        
-        <h2 class="text-5xl md:text-7xl font-comic text-white text-center mb-4 uppercase tracking-widest ltr:font-['Bangers'] rtl:font-['Cairo'] rtl:font-black">
-            {{ _('del_title') }}
-        </h2>
-        <p class="text-gray-500 text-center mb-16 font-bold uppercase tracking-widest">{{ _('del_subtitle') }}</p>
 
-        <div class="max-w-4xl mx-auto">
-            <div class="bg-[#111] border border-[#222] p-10 md:p-14 hover:border-[#cc0000] transition-all duration-300 group relative flex flex-col items-center text-center shadow-2xl">
-                
-                <div class="absolute top-0 right-0 bg-[#cc0000] text-white text-sm font-black px-6 py-2 uppercase skew-x-[-10deg] -mt-4 -mr-4 shadow-lg tracking-wider">
-                    {{ _('del_badge') or 'KINGDOM WIDE' }}
+<div id="shop-all" class="bg-white pb-24">
+    
+    <div class="container mx-auto px-6 py-16 border-b border-gray-100">
+        <div class="text-center mb-10">
+            <h3 class="text-2xl font-bold text-[#1a1a1a] smart-heading">{{ _('shop_by_category') }}</h3>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+            {% for category in categories %}
+            <a href="{{ url_for('main.category_view', category_id=category.id) }}" class="group flex flex-col items-center gap-4 cursor-pointer">
+                <div class="w-full aspect-square rounded-full overflow-hidden border border-gray-100 shadow-sm group-hover:shadow-md transition-all duration-300">
+                    {% if category.image_url %}
+                        <img src="{{ url_for('uploaded_file', filename=category.image_url) }}" 
+                             class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500">
+                    {% else %}
+                        <div class="w-full h-full bg-[#f0f0f0] flex items-center justify-center text-gray-300">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6z"></path></svg>
+                        </div>
+                    {% endif %}
                 </div>
-                
-                <div class="mb-8 text-[#cc0000] group-hover:scale-110 transition-transform duration-500">
-                    <svg class="w-20 h-20 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                </div>
-
-                <h3 class="text-4xl md:text-6xl font-comic text-white mb-4 ltr:font-['Bangers'] rtl:font-['Cairo'] uppercase tracking-wide">
-                    {{ _('del_all_bahrain') or 'All of Bahrain' }}
-                </h3>
-                
-                <p class="text-gray-500 text-lg mb-10 max-w-2xl font-bold-heading tracking-wide leading-relaxed">
-                    {{ _('del_all_bahrain_desc') or 'We provide fast, reliable, and secure delivery to every governorate in the Kingdom. From Manama to Zallaq, we have you covered.' }}
-                </p>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 w-full border-t border-[#222] pt-8 mt-2">
-                    <div class="group-hover:translate-y-[-2px] transition-transform duration-300">
-                        <span class="block text-[#cc0000] text-4xl font-comic mb-1 ltr:font-['Bangers'] rtl:font-['Cairo']">1.65 BHD</span>
-                        <span class="text-[10px] text-gray-600 uppercase font-black tracking-[0.2em]">{{ _('del_flat_rate') or 'Flat Rate' }}</span>
-                    </div>
-                    <div class="group-hover:translate-y-[-2px] transition-transform duration-300 delay-75">
-                        <span dir="ltr" class="block text-[#cc0000] text-4xl font-comic mb-1 ltr:font-['Bangers'] rtl:font-['Cairo']">1 HR</span>
-                        <span class="text-[10px] text-gray-600 uppercase font-black tracking-[0.2em]">{{ _('del_speed') or 'Max Delivery Time' }}</span>
-                    </div>
-                    <div class="group-hover:translate-y-[-2px] transition-transform duration-300 delay-150">
-                        <span class="block text-[#cc0000] text-4xl font-comic mb-1 ltr:font-['Bangers'] rtl:font-['Cairo']">100%</span>
-                        <span class="text-[10px] text-gray-600 uppercase font-black tracking-[0.2em]">{{ _('del_coverage') or 'Kingdom Coverage' }}</span>
-                    </div>
-                </div>
-
-                <div class="w-full h-1 bg-[#222] absolute bottom-0 left-0 group-hover:bg-[#cc0000] transition-colors duration-500"></div>
-            </div>
+                <span class="text-sm font-bold text-gray-800 group-hover:text-black uppercase tracking-wider text-center smart-body">
+                    {{ category.name | translate_dynamic }}
+                </span>
+            </a>
+            {% endfor %}
         </div>
     </div>
-</div>
 
-<div class="bg-[#111] py-20 border-t border-gray-900">
+    {% for category in categories %}
+        {% if category.products %}
+        <div class="container mx-auto px-6 py-16 border-b border-gray-50 last:border-0">
+            
+            <div class="flex justify-between items-end mb-8 rtl:flex-row-reverse">
+                <h2 class="text-3xl font-bold text-[#1a1a1a] smart-heading">{{ category.name | translate_dynamic }}</h2>
+                <a href="{{ url_for('main.category_view', category_id=category.id) }}" class="text-sm font-bold text-gray-500 hover:text-black border-b border-transparent hover:border-black transition-all pb-1 uppercase tracking-wider smart-body">
+                    {{ _('view_all') }}
+                </a>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+{% for item in (category.products|sort(attribute='created_at', reverse=True))[:4] %} <div class="group block relative">
+                    <a href="{{ url_for('main.product_detail', product_id=item.id) }}" class="block w-full aspect-square bg-[#F4F4F4] relative overflow-hidden mb-4 transition-colors hover:bg-[#eaeaea]">
+                        
+                        {% if item.quantity <= 0 %}
+                        <div class="absolute top-3 right-3 bg-white/90 backdrop-blur text-black text-[10px] font-bold px-2 py-1 uppercase tracking-widest z-10 shadow-sm border border-gray-100">
+                            {{ _('sold_out') }}
+                        </div>
+                        {% elif item.discount_percentage > 0 %}
+                        <div class="absolute top-3 right-3 bg-[#1a1a1a] text-white text-[10px] font-bold px-2 py-1 uppercase tracking-widest z-10">
+                            SALE
+                        </div>
+                        {% endif %}
+
+                        {% if item.image_url %}
+                            <img src="{{ url_for('uploaded_file', filename=item.image_url) }}" 
+                                 alt="{{ item.name }}" 
+                                 class="w-full h-full object-contain p-8 mix-blend-multiply transition-transform duration-500 group-hover:scale-105">
+                        {% else %}
+                            <div class="w-full h-full flex items-center justify-center text-gray-300">
+                                <span class="text-xs font-bold">NO IMAGE</span>
+                            </div>
+                        {% endif %}
+                    </a>
+
+                    <div class="text-left rtl:text-right">
+                        <h3 class="text-base font-medium text-[#1a1a1a] mb-1 smart-body leading-tight">
+                            <a href="{{ url_for('main.product_detail', product_id=item.id) }}">
+                                {{ item.name | translate_dynamic }}
+                            </a>
+                        </h3>
+                        
+                        <div class="flex items-center gap-2 smart-body text-sm">
+                            {% if item.discount_percentage > 0 %}
+                                <span class="text-[#cc0000] font-bold">{{ item.get_price() | currency }}</span>
+                                <span class="text-gray-400 line-through text-xs">{{ item.price | currency }}</span>
+                            {% else %}
+                                <span class="text-gray-600 font-bold">{{ item.price | currency }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+        </div>
+        {% endif %}
+    {% endfor %}
+
+</div>
+<div class="bg-white py-20 border-b border-gray-50">
     <div class="container mx-auto px-6">
-        <h2 class="text-4xl md:text-5xl font-comic text-[#cc0000] text-center mb-16 ltr:font-['Bangers'] rtl:font-['Cairo'] rtl:font-black">
-            {{ _('why_title') }}
-        </h2>
         
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <div class="flex flex-col items-center">
-                <div class="w-16 h-16 bg-[#1a1a1a] rounded-full flex items-center justify-center text-[#cc0000] mb-4 text-2xl border border-[#333]">★</div>
-                <h4 class="font-bold-heading text-xl text-white mb-1">{{ _('feat_rated') }}</h4>
-                <p class="text-xs text-gray-500 uppercase">{{ _('feat_rated_desc') }}</p>
+        <div class="text-center mb-16 max-w-2xl mx-auto">
+            <h2 class="text-3xl md:text-4xl font-bold text-[#1a1a1a] mb-4 smart-heading">
+                {{ _('why_dropi_title') }}
+            </h2>
+            <p class="text-gray-500 text-lg smart-body">
+                {{ _('why_dropi_subtitle') }}
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
+            
+            <div class="flex flex-col items-center group">
+                <div class="w-16 h-16 mb-6 flex items-center justify-center bg-[#F5F5F5] rounded-full group-hover:bg-black group-hover:text-white transition-colors duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-[#1a1a1a] mb-3 smart-heading">{{ _('feature_metal_title') }}</h3>
+                <p class="text-gray-500 leading-relaxed smart-body">
+                    {{ _('feature_metal_desc') }}
+                </p>
             </div>
-            <div class="flex flex-col items-center">
-                <div class="w-16 h-16 bg-[#1a1a1a] rounded-full flex items-center justify-center text-[#cc0000] mb-4 text-2xl border border-[#333]">⚡</div>
-                <h4 class="font-bold-heading text-xl text-white mb-1">{{ _('feat_delivery') }}</h4>
-                <p class="text-xs text-gray-500 uppercase">{{ _('feat_delivery_desc') }}</p>
+
+            <div class="flex flex-col items-center group">
+                <div class="w-16 h-16 mb-6 flex items-center justify-center bg-[#F5F5F5] rounded-full group-hover:bg-black group-hover:text-white transition-colors duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-[#1a1a1a] mb-3 smart-heading">{{ _('feature_temp_title') }}</h3>
+                <p class="text-gray-500 leading-relaxed smart-body">
+                    {{ _('feature_temp_desc') }}
+                </p>
             </div>
-            <div class="flex flex-col items-center">
-                <div class="w-16 h-16 bg-[#1a1a1a] rounded-full flex items-center justify-center text-[#cc0000] mb-4 text-2xl border border-[#333]">💬</div>
-                <h4 class="font-bold-heading text-xl text-white mb-1">{{ _('feat_support') }}</h4>
-                <p class="text-xs text-gray-500 uppercase">{{ _('feat_support_desc') }}</p>
+
+            <div class="flex flex-col items-center group">
+                <div class="w-16 h-16 mb-6 flex items-center justify-center bg-[#F5F5F5] rounded-full group-hover:bg-black group-hover:text-white transition-colors duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-[#1a1a1a] mb-3 smart-heading">{{ _('feature_eco_title') }}</h3>
+                <p class="text-gray-500 leading-relaxed smart-body">
+                    {{ _('feature_eco_desc') }}
+                </p>
             </div>
-            <div class="flex flex-col items-center">
-                <div class="w-16 h-16 bg-[#1a1a1a] rounded-full flex items-center justify-center text-[#cc0000] mb-4 text-2xl border border-[#333]">🛡️</div>
-                <h4 class="font-bold-heading text-xl text-white mb-1">{{ _('feat_trust') }}</h4>
-                <p class="text-xs text-gray-500 uppercase">{{ _('feat_trust_desc') }}</p>
-            </div>
+
         </div>
     </div>
 </div>
 
-<div class="bg-[#cc0000] py-6 overflow-hidden relative">
-    <div class="whitespace-nowrap animate-marquee flex items-center gap-12 text-black font-black italic text-2xl uppercase tracking-tighter">
-        <span>SMART E-LIQUIDS</span> • <span>RIO</span> • <span>NAFAS</span> • <span>MAZAJ</span> • <span>GEEKVAPE</span> • 
-        <span>VAPORESSO</span> • <span>UWELL</span> • <span>ELFBAR</span> • <span>TUGBOAT</span> • <span>SMART E-LIQUIDS</span> • <span>RIO</span> • <span>NAFAS</span> • <span>MAZAJ</span>
+<div class="bg-[#F9F9F9] py-20 border-b border-gray-100">
+    <div class="container mx-auto px-6">
+        
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-[#1a1a1a] mb-2 smart-heading">{{ _('reviews_title') }}</h2>
+            <p class="text-gray-500 smart-body">{{ _('reviews_subtitle') }}</p>
+        </div>
+
+        {% if reviews %}
+        <div class="flex overflow-x-auto gap-6 pb-8 mb-12 snap-x snap-mandatory hide-scrollbar">
+            {% for review in reviews %}
+            <div class="min-w-[300px] md:min-w-[400px] bg-white p-8 border border-gray-100 shadow-sm snap-center">
+                <div class="flex text-[#1a1a1a] mb-4">
+                    {% for i in range(review.rating) %}★{% endfor %}
+                    {% for i in range(5 - review.rating) %}<span class="text-gray-300">★</span>{% endfor %}
+                </div>
+                <p class="text-gray-600 mb-6 italic smart-body">"{{ review.comment }}"</p>
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center font-bold text-sm">
+                        {{ review.name[0] | upper }}
+                    </div>
+                    <div>
+                        <p class="font-bold text-sm text-[#1a1a1a]">{{ review.name }}</p>
+                        <p class="text-xs text-gray-400">{{ review.created_at.strftime('%Y-%m-%d') }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center text-gray-400 mb-12 italic">
+            {{ _('no_reviews_yet') }}
+        </div>
+        {% endif %}
+
+        <div class="max-w-2xl mx-auto bg-white p-8 md:p-12 border border-gray-100 shadow-lg">
+            <h3 class="text-xl font-bold mb-6 text-center smart-heading">{{ _('write_review_title') }}</h3>
+            
+            <form action="{{ url_for('main.submit_review') }}" method="POST" class="space-y-6">
+                
+                <div class="flex flex-col items-center gap-2">
+                    <label class="text-sm font-bold uppercase tracking-wider text-gray-500">{{ _('your_rating') }}</label>
+                    <div class="flex flex-row-reverse justify-center gap-1 group">
+                        <input type="radio" name="rating" value="5" id="star5" class="peer/5 hidden" required />
+                        <label for="star5" class="text-2xl text-gray-300 peer-checked/5:text-black hover:text-black cursor-pointer transition-colors">★</label>
+                        
+                        <input type="radio" name="rating" value="4" id="star4" class="peer/4 hidden" />
+                        <label for="star4" class="text-2xl text-gray-300 peer-checked/4:text-black peer-hover/5:text-black hover:text-black cursor-pointer transition-colors">★</label>
+                        
+                        <input type="radio" name="rating" value="3" id="star3" class="peer/3 hidden" />
+                        <label for="star3" class="text-2xl text-gray-300 peer-checked/3:text-black peer-hover/4:text-black peer-hover/5:text-black hover:text-black cursor-pointer transition-colors">★</label>
+                        
+                        <input type="radio" name="rating" value="2" id="star2" class="peer/2 hidden" />
+                        <label for="star2" class="text-2xl text-gray-300 peer-checked/2:text-black peer-hover/3:text-black peer-hover/4:text-black peer-hover/5:text-black hover:text-black cursor-pointer transition-colors">★</label>
+                        
+                        <input type="radio" name="rating" value="1" id="star1" class="peer/1 hidden" />
+                        <label for="star1" class="text-2xl text-gray-300 peer-checked/1:text-black peer-hover/2:text-black peer-hover/3:text-black peer-hover/4:text-black peer-hover/5:text-black hover:text-black cursor-pointer transition-colors">★</label>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-6">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">{{ _('your_name') }}</label>
+                        <input type="text" name="name" required class="w-full bg-[#F5F5F5] border-none p-4 text-sm focus:ring-1 focus:ring-black outline-none transition-all placeholder-gray-400" placeholder="{{_('rev_ph')}}">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">{{ _('your_comment') }}</label>
+                        <textarea name="comment" rows="4" required class="w-full bg-[#F5F5F5] border-none p-4 text-sm focus:ring-1 focus:ring-black outline-none transition-all placeholder-gray-400" placeholder="{{ _('comment_placeholder') }}"></textarea>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-black text-white py-4 font-bold uppercase tracking-widest text-sm hover:bg-[#333] transition-all">
+                    {{ _('submit_review_btn') }}
+                </button>
+            </form>
+        </div>
+
     </div>
 </div>
+
+
+
 <style>
-@keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-.animate-marquee { animation: marquee 20s linear infinite; }
+    /* Hide scrollbar for clean look */
+    .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
 </style>
 
-<div class="bg-[#0a0a0a] py-24">
-    <div class="container mx-auto px-6">
-        
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-24">
-            <div class="bg-[#111] p-8 border-l-4 border-[#cc0000]">
-                <h3 class="text-2xl font-comic text-white mb-3 ltr:font-['Bangers'] rtl:font-['Cairo']">{{ _('seo_dispo_title') }}</h3>
-                <p class="text-gray-500 text-sm leading-relaxed">{{ _('seo_dispo_desc') }}</p>
-            </div>
-            <div class="bg-[#111] p-8 border-l-4 border-white">
-                <h3 class="text-2xl font-comic text-white mb-3 ltr:font-['Bangers'] rtl:font-['Cairo']">{{ _('seo_liquid_title') }}</h3>
-                <p class="text-gray-500 text-sm leading-relaxed">{{ _('seo_liquid_desc') }}</p>
-            </div>
-            <div class="bg-[#111] p-8 border-l-4 border-[#cc0000]">
-                <h3 class="text-2xl font-comic text-white mb-3 ltr:font-['Bangers'] rtl:font-['Cairo']">{{ _('seo_device_title') }}</h3>
-                <p class="text-gray-500 text-sm leading-relaxed">{{ _('seo_device_desc') }}</p>
-            </div>
-        </div>
 
-        <h2 class="text-5xl font-comic text-center text-white mb-12 uppercase ltr:font-['Bangers'] rtl:font-['Cairo'] rtl:font-black">{{ _('testi_title') }}</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="bg-[#141414] p-6 rounded-xl border border-[#222] relative">
-                <div class="text-[#cc0000] text-4xl font-serif absolute top-4 right-6 opacity-30">"</div>
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center font-bold">F</div>
-                    <div>
-                        <div class="text-sm font-bold text-white">{{ _('testi_1_name') }}</div>
-                        <div class="text-[#cc0000] text-xs">★★★★★</div>
-                    </div>
-                </div>
-                <p class="text-gray-400 text-sm italic">"{{ _('testi_1_text') }}"</p>
-            </div>
-             <div class="bg-[#141414] p-6 rounded-xl border border-[#222] relative">
-                <div class="text-[#cc0000] text-4xl font-serif absolute top-4 right-6 opacity-30">"</div>
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center font-bold">A</div>
-                    <div>
-                        <div class="text-sm font-bold text-white">{{ _('testi_2_name') }}</div>
-                        <div class="text-[#cc0000] text-xs">★★★★★</div>
-                    </div>
-                </div>
-                <p class="text-gray-400 text-sm italic">"{{ _('testi_2_text') }}"</p>
-            </div>
-             <div class="bg-[#141414] p-6 rounded-xl border border-[#222] relative">
-                <div class="text-[#cc0000] text-4xl font-serif absolute top-4 right-6 opacity-30">"</div>
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center font-bold">M</div>
-                    <div>
-                        <div class="text-sm font-bold text-white">{{ _('testi_3_name') }}</div>
-                        <div class="text-[#cc0000] text-xs">★★★★★</div>
-                    </div>
-                </div>
-                <p class="text-gray-400 text-sm italic">"{{ _('testi_3_text') }}"</p>
-            </div>
-        </div>
-
-    </div>
-</div>
-<div class="bg-[#cc0000] py-24 relative overflow-hidden">
-    
-    <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#000 2px, transparent 2px); background-size: 30px 30px;"></div>
-
-    <div class="container mx-auto px-6 relative z-10">
-        
-        <div class="text-center mb-16">
-            <h2 class="text-5xl md:text-7xl font-comic text-white uppercase ltr:font-['Bangers'] rtl:font-['Cairo'] rtl:font-black drop-shadow-[0_5px_0_rgba(0,0,0,0.5)]">
-                {{ _('loc_title') }}
-            </h2>
-            <p class="text-black font-bold uppercase tracking-widest text-lg">{{ _('loc_subtitle') }}</p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+<div class="border-y border-zinc-100 bg-zinc-50">
+    <div class="container mx-auto px-6 max-w-7xl">
+        <div class="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-zinc-200 rtl:divide-x-reverse">
             
-            <div class="bg-black border-4 border-black p-8 transform hover:-rotate-1 transition-transform duration-300 shadow-[10px_10px_0px_rgba(0,0,0,0.3)] group">
-                <div class="flex items-start justify-between mb-6">
-                    <div>
-                        <h3 class="text-3xl font-comic text-white mb-1 ltr:font-['Bangers'] rtl:font-['Cairo']">{{ _('loc_riffa') }}</h3>
-                        <p class="text-gray-500 text-sm uppercase font-bold">{{ _('loc_riffa_desc') }}</p>
-                    </div>
-                    <div class="w-12 h-12 bg-[#cc0000] flex items-center justify-center text-white text-2xl font-bold skew-x-[-10deg]">
-                        R
-                    </div>
+            <div class="py-8 flex items-center justify-center gap-4 group cursor-pointer" onclick="window.location.href='{{ url_for('main.help') }}#shipping'">
+                <div class="w-12 h-12 bg-white border border-zinc-200 rounded-full flex items-center justify-center text-zinc-400 group-hover:text-amber-500 group-hover:border-amber-500 transition-all duration-300">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                 </div>
-                
-                <a href="https://maps.app.goo.gl/oTBhrMxYfatwR94EA?g_st=com.google.maps.preview.copy" target="_blank" class="block w-full bg-[#1a1a1a] hover:bg-white hover:text-black text-white text-center py-4 font-bold uppercase tracking-widest transition-colors border border-gray-800 hover:border-white">
-                    {{ _('btn_map') }} ➜
-                </a>
+                <div>
+                    <h3 class="font-bold text-zinc-900 uppercase ltr:font-['Oswald'] rtl:font-['Cairo'] tracking-wide text-sm">{{ _('home_policy_ship') }}</h3>
+                    <p class="text-xs text-zinc-500 font-bold uppercase tracking-wider mt-1">{{ _('home_policy_ship_sub') }}</p>
+                </div>
             </div>
 
-            <div class="bg-black border-4 border-black p-8 transform hover:rotate-1 transition-transform duration-300 shadow-[10px_10px_0px_rgba(0,0,0,0.3)] group">
-                <div class="flex items-start justify-between mb-6">
-                    <div>
-                        <h3 class="text-3xl font-comic text-white mb-1 ltr:font-['Bangers'] rtl:font-['Cairo']">{{ _('loc_busaiteen') }}</h3>
-                        <p class="text-gray-500 text-sm uppercase font-bold">{{ _('loc_busaiteen_desc') }}</p>
-                    </div>
-                    <div class="w-12 h-12 bg-[#cc0000] flex items-center justify-center text-white text-2xl font-bold skew-x-[-10deg]">
-                        B
-                    </div>
+            <div class="py-8 flex items-center justify-center gap-4 group cursor-pointer" onclick="window.location.href='{{ url_for('main.help') }}#refunds'">
+                <div class="w-12 h-12 bg-white border border-zinc-200 rounded-full flex items-center justify-center text-zinc-400 group-hover:text-amber-500 group-hover:border-amber-500 transition-all duration-300">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                 </div>
-                
-                <a href="https://maps.app.goo.gl/qZ3Q5uGE43v6LWRJ8?g_st=com.google.maps.preview.copy" target="_blank" class="block w-full bg-[#1a1a1a] hover:bg-white hover:text-black text-white text-center py-4 font-bold uppercase tracking-widest transition-colors border border-gray-800 hover:border-white">
-                    {{ _('btn_map') }} ➜
-                </a>
+                <div>
+                    <h3 class="font-bold text-zinc-900 uppercase ltr:font-['Oswald'] rtl:font-['Cairo'] tracking-wide text-sm">{{ _('home_policy_return') }}</h3>
+                    <p class="text-xs text-zinc-500 font-bold uppercase tracking-wider mt-1 group-hover:text-amber-600 transition-colors">{{ _('home_policy_return_sub') }}</p>
+                </div>
+            </div>
+
+            <div class="py-8 flex items-center justify-center gap-4 group cursor-pointer" onclick="window.location.href='{{ url_for('main.help') }}'">
+                <div class="w-12 h-12 bg-white border border-zinc-200 rounded-full flex items-center justify-center text-zinc-400 group-hover:text-amber-500 group-hover:border-amber-500 transition-all duration-300">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                </div>
+                <div>
+                    <h3 class="font-bold text-zinc-900 uppercase ltr:font-['Oswald'] rtl:font-['Cairo'] tracking-wide text-sm">{{ _('home_policy_secure') }}</h3>
+                    <a href="{{ url_for('main.help') }}" class="text-xs text-amber-600 font-bold uppercase tracking-wider mt-1 hover:underline underline-offset-4">
+                        {{ _('btn_view_policies') }} &rarr;
+                    </a>
+                </div>
             </div>
 
         </div>
     </div>
 </div>
-
-<div class="bg-[#111] py-20 border-t border-gray-900">
-    <div class="container mx-auto px-6 max-w-3xl">
-        <h2 class="text-4xl font-comic text-[#cc0000] text-center mb-10 ltr:font-['Bangers'] rtl:font-['Cairo'] rtl:font-black">{{ _('faq_title') }}</h2>
-        
-        <div class="space-y-4">
-            <details class="bg-[#1a1a1a] border border-[#333] open:border-[#cc0000] transition-colors rounded">
-                <summary class="p-6 font-bold cursor-pointer text-white flex justify-between items-center hover:text-[#cc0000] transition">
-                    {{ _('q1') }} <span class="text-xl">+</span>
-                </summary>
-                <div class="px-6 pb-6 text-gray-400 text-sm">
-                    {{ _('a1') }}
-                </div>
-            </details>
-            <details class="bg-[#1a1a1a] border border-[#333] open:border-[#cc0000] transition-colors rounded">
-                <summary class="p-6 font-bold cursor-pointer text-white flex justify-between items-center hover:text-[#cc0000] transition">
-                    {{ _('q2') }} <span class="text-xl">+</span>
-                </summary>
-                <div class="px-6 pb-6 text-gray-400 text-sm">
-                    {{ _('a2') }}
-                </div>
-            </details>
-            <details class="bg-[#1a1a1a] border border-[#333] open:border-[#cc0000] transition-colors rounded">
-                <summary class="p-6 font-bold cursor-pointer text-white flex justify-between items-center hover:text-[#cc0000] transition">
-                    {{ _('q3') }} <span class="text-xl">+</span>
-                </summary>
-                <div class="px-6 pb-6 text-gray-400 text-sm">
-                    {{ _('a3') }}
-                </div>
-            </details>
-        </div>
-    </div>
-</div>
-
 <script>
     window.addEventListener('load', function() {
         const preloader = document.getElementById('site-preloader');
-        
-       
         setTimeout(() => {
             if(preloader) {
-            
                 preloader.style.opacity = '0';
-                
-               
                 setTimeout(() => {
                     preloader.style.display = 'none';
                 }, 700); 
             }
-        }, 1500); 
+        }, 800); 
     });
 </script>
 
