@@ -225,12 +225,12 @@ dictionary = {
         'prod_ship_time': 'You will find detialed info of shipping in payment gate',
         
         # Payment Success
-        'success_title': 'Payment Successful!',
+        'success_title': 'Order Successful!',
         'success_msg': 'Thank you for your purchase. Your order has been confirmed.',
         'success_receipt': 'Receipt Details',
         'success_order_num': 'Order Number',
         'success_pay_status': 'Payment Status',
-        'success_amount': 'Amount Paid',
+        'success_amount': 'Amount ',
         'success_ref': 'Transaction Ref',
         'btn_view_order': 'View Order Status',
         
@@ -773,12 +773,12 @@ dictionary = {
         'prod_ship_time': 'تتواجد تفاصيل التوصيل في صفحة الدفع',
 
         # Payment Success
-        'success_title': 'تم الدفع بنجاح!',
+        'success_title': 'تم الطلب بنجاح!',
         'success_msg': 'شكراً لتسوقك معنا. تم تأكيد طلبك بنجاح.',
         'success_receipt': 'تفاصيل الفاتورة',
         'success_order_num': 'رقم الطلب',
         'success_pay_status': 'حالة الدفع',
-        'success_amount': 'المبلغ المدفوع',
+        'success_amount': 'المبلغ ',
         'success_ref': 'رقم المعاملة',
         'btn_view_order': 'عرض حالة الطلب',
         'tag_paid': 'تم الدفع',

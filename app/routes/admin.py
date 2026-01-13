@@ -40,22 +40,24 @@ def admin_required(f):
 @admin_required
 def dashboard():
     product_count = Product.query.count()
-    order_count = Order.query.filter_by(payment_status='Paid').count()
-    
-    # Total Revenue (Paid orders only)
+
+    order_count = Order.query.filter(Order.payment_status.in_(['Paid', 'COD'])).count()
+
     total_revenue = db.session.query(func.sum(Order.total_amount))\
         .filter_by(payment_status='Paid').scalar() or 0
 
-    recent_orders = Order.query.order_by(Order.created_at.desc()).limit(10).all()
+    recent_orders = Order.query.filter(
+    Order.payment_status.in_(['Paid', 'COD'])
+).order_by(Order.created_at.desc()).limit(50).all()
     products = Product.query.all()
     all_categories = Category.query.all()
 
     search_query = request.args.get('q')
     if search_query:
-        # Filter by name (case-insensitive)
+      
         products = Product.query.filter(Product.name.ilike(f'%{search_query}%')).all()
     else:
-        # Show all if no search
+      
         products = Product.query.all()
 
     labels = [o.created_at.strftime("%d %b") for o in recent_orders[:7]][::-1]

@@ -147,9 +147,61 @@
                             </div>
                     </div>
 
-                    <button type="submit" class="w-full bg-zinc-900 text-white py-5 font-bold text-lg uppercase tracking-[0.2em] hover:bg-amber-500 hover:text-black transition-all duration-300 shadow-lg ltr:font-['Oswald'] rtl:font-['Cairo']">
-                        {{ _('btn_pay_now') }}
-                    </button>
+<div class="mt-8 border-t border-zinc-100 pt-8">
+    <h3 class="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-4 ltr:font-['Oswald'] rtl:font-['Cairo']">
+        {{ 'Payment Methods' |translate_dynamic }}
+    </h3>
+
+    <div class="grid grid-cols-1 gap-4">
+        
+        <button type="submit" name="payment_method" value="online" 
+            class="group relative flex items-center justify-between w-full p-5 border border-zinc-200 rounded-lg hover:border-black hover:bg-zinc-50 transition-all duration-200 text-left">
+            
+            <div class="flex items-center gap-4">
+                <div class="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center group-hover:bg-blue-100 transition">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                </div>
+                
+                <div>
+                    <span class="block text-sm font-bold text-zinc-900 uppercase tracking-wide">{{"Pay Online"|translate_dynamic }}</span>
+                    <span class="block text-[10px] text-zinc-500 font-medium mt-0.5">Benefit / {{"Credit Card"|translate_dynamic }}</span>
+                </div>
+            </div>
+
+            <div class="text-zinc-300 group-hover:text-black transition">
+                <svg class="w-5 h-5 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </div>
+            
+            <span class="absolute top-0 ltr:right-0 rtl:left-0 -mt-2 ltr:mr-4 rtl:ml-4 bg-black text-white text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
+                {{"Recommended" |translate_dynamic }}
+            </span>
+        </button>
+
+        <button type="submit" name="payment_method" value="cod" 
+            class="group flex items-center justify-between w-full p-5 border border-zinc-200 rounded-lg hover:border-amber-500 hover:bg-amber-50/50 transition-all duration-200 text-left">
+            
+            <div class="flex items-center gap-4">
+                <div class="h-10 w-10 rounded-full bg-zinc-100 flex items-center justify-center group-hover:bg-amber-200 transition">
+                    <svg class="w-5 h-5 text-zinc-600 group-hover:text-amber-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                </div>
+                
+                <div>
+                    <span class="block text-sm font-bold text-zinc-900 uppercase tracking-wide">{{"Cash on Delivery"|translate_dynamic }}</span>
+                    <span class="block text-[10px] text-zinc-500 font-medium mt-0.5">{{"Pay when you receive it"|translate_dynamic }}</span>
+                </div>
+            </div>
+
+            <div class="text-zinc-300 group-hover:text-amber-600 transition">
+                <svg class="w-5 h-5 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </div>
+        </button>
+
+    </div>
+    
+    <p class="text-[10px] text-zinc-400 text-center mt-6">
+        {{"By placing this order, you agree to our"|translate_dynamic }} <a href="#" class="underline hover:text-black">{{"Terms of Service"|translate_dynamic }}</a>.
+    </p>
+</div>
 
                 </form>
             </div>

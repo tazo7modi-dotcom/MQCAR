@@ -112,7 +112,7 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50 text-sm">
-                    {% for order in recent_orders | selectattr('payment_status', 'equalto', 'Paid') %}
+                    {% for order in recent_orders  %}
                     <tr class="hover:bg-gray-50 transition group">
                         <td class="px-8 py-4 font-bold text-black">
                             <a href="{{ url_for('admin.view_order', order_id=order.id) }}" class="underline decoration-gray-300 hover:decoration-black hover:text-blue-600 transition">
@@ -145,8 +145,12 @@
                             {% endif %}
                         </td>
                         <td class="px-8 py-4">
+                            {%if order.payment_status=='Paid'%}
                             <span class="text-black bg-gray-100 border border-gray-200 px-2 py-1 text-[10px] font-bold uppercase tracking-wider">{{ _('tag_paid') }}</span>
+                             {%else %}
+                             <span class="text-black bg-gray-100 border border-gray-200 px-2 py-1 text-[10px] font-bold uppercase tracking-wider">{{ 'Cash on delivery'|translate_dynamic }}</span>
                         </td>
+                        {%endif%}
                         <td class="px-8 py-4 font-bold text-black">{{ order.total_amount | currency }}</td>
                         <td class="px-8 py-4 text-gray-400 text-xs">{{ order.created_at.strftime('%Y-%m-%d') }}</td>
                     </tr>

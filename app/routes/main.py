@@ -269,22 +269,19 @@ def get_cart_data():
     
     return items, total
 @main_bp.route('/checkout', methods=['GET', 'POST'])
-# 1. REMOVED @login_required
 def checkout():
     items, cart_total = get_cart_data()
     
     if not items:
         return redirect(url_for('main.cart_page'))
 
-    # Get addresses only if logged in
     addresses = current_user.addresses if current_user.is_authenticated else []
 
     if request.method == 'POST':
+        # --- 1. Address & Guest Logic (Kept exactly as yours) ---
         address_id = request.form.get('selected_address')
         final_addr = None
         
-        # --- Address Logic ---
-        # Only check existing address if user is logged in AND selected one
         if address_id and current_user.is_authenticated:
             final_addr = Address.query.get(address_id)
             if not final_addr or final_addr.user_id != current_user.id:
@@ -296,18 +293,15 @@ def checkout():
                 code = phone_parts[0]  
                 phone_clean = phone_parts[1].replace(" ", "") 
             except:
-                code = "+973" # Default fallback
+                code = "+973" 
                 phone_clean = final_addr.phone
-                
         else:
-            # New Address (For Guest OR User adding new)
             raw_phone = request.form.get('phone_number')
             code = request.form.get('phone_code')
             full_phone = f"{code} {raw_phone}"
             phone_clean = raw_phone
             
             if current_user.is_authenticated:
-                # Save to DB for User
                 new_addr = Address(
                     user_id=current_user.id,
                     full_name=request.form.get('full_name'),
@@ -321,7 +315,6 @@ def checkout():
                 db.session.commit()
                 final_addr = new_addr
             else:
-                # Create temporary object for Guest (Don't save to Address DB)
                 final_addr = type('Address', (object,), {
                     'full_name': request.form.get('full_name'),
                     'phone': full_phone,
@@ -330,51 +323,38 @@ def checkout():
                     'country': request.form.get('country')
                 })
 
-        # --- Shipping Logic ---
+        # --- 2. Shipping Logic (Kept exactly as yours) ---
         country_check = final_addr.country.strip().lower()
         shipping_option = request.form.get('shipping_option', 'normal') 
         shipping_cost = 0.0
 
         if country_check == 'bahrain':
-            if shipping_option == 'fast':
-                shipping_cost = 3.0
-            else:
-                shipping_cost = 1.0 
+            shipping_cost = 3.0 if shipping_option == 'fast' else 1.0 
         else:
             shipping_cost = 15.0 
 
         final_total_bhd = cart_total + shipping_cost
-
-        # Get Email (User's email OR Guest input)
         customer_email = current_user.email if current_user.is_authenticated else request.form.get('email', 'guest@example.com')
-
-        # Create String for Dashboard (Now includes Email)
         shipping_string = f"{final_addr.full_name}, {final_addr.street_address}, {final_addr.city}, {final_addr.country}, {final_addr.phone}, Email: {customer_email}"
 
-        # --- Create Order ---
-        # If Guest, user_id is None
+        # --- 3. Create Order (Kept exactly as yours) ---
         order_user_id = current_user.id if current_user.is_authenticated else None
         
         order = Order(
             user_id=order_user_id,
             total_amount=final_total_bhd,
             status='Pending',
-            payment_status='Unpaid',
-            
-            # --- UPDATED: Save Individual Fields for Shipping API ---
+            payment_status='Unpaid', # Default
             full_name=final_addr.full_name,
             phone=final_addr.phone,
             street_address=final_addr.street_address,
             city=final_addr.city,
             country=final_addr.country,
-            
-            # Keep string for dashboard display
             shipping_details=shipping_string,
         )
         db.session.add(order)
         db.session.commit()
 
-        # --- Add Items ---
         for cart_item in items:
             order_item = OrderItem(
                 order_id=order.id,
@@ -388,61 +368,106 @@ def checkout():
             db.session.add(order_item)
         db.session.commit()
 
-        # --- Payment Preparation ---
-        user_currency = get_user_currency()
-        currency_data = current_app.config['CURRENCY_RATES'].get(user_currency)
-        exchange_rate = currency_data['rate'] if currency_data else 1.0
-        final_charge_amount = final_total_bhd * exchange_rate
-        
-        name_parts = final_addr.full_name.strip().split(' ', 1)
-        first_name = name_parts[0]
-        last_name = name_parts[1] if len(name_parts) > 1 else "Customer"
+        # ======================================================
+        #  NEW: CHECK PAYMENT METHOD (COD vs ONLINE)
+        # ======================================================
+        payment_method = request.form.get('payment_method') # 'cod' or 'online'
 
-        customer_info = {
-            'first_name': first_name,
-            'last_name': last_name,
-            'email': customer_email,
-            'phone': {
-                'country_code': code,
-                'number': phone_clean
-            }
-        }
-
-        try:
-            tap_response = create_tap_charge(
-                total_amount=final_charge_amount,
-                currency=user_currency,
-                customer_info=customer_info,
-                order_id=order.id
-            )
+        if payment_method == 'cod':
+            # --- OPTION A: CASH ON DELIVERY ---
+            order.payment_status = 'COD'
             
-            if tap_response and 'transaction' in tap_response and 'url' in tap_response['transaction']:
-                charge_id = tap_response.get('id')
-                order.tap_charge_id = charge_id
-                db.session.commit()
-                return redirect(tap_response['transaction']['url'])
+            # 1. Clear Cart IMMEDIATELY (Since there's no payment callback)
+            if current_user.is_authenticated:
+                cart = Cart.query.filter_by(user_id=current_user.id).first()
+                if cart:
+                    CartItem.query.filter_by(cart_id=cart.id).delete()
             else:
-                flash("Payment Gateway Error: Could not generate link.", "error")
-                return redirect(url_for('main.checkout'))
+                session.pop('cart', None) # Clear guest session cart
+            
+            db.session.commit()
+            
+            # 2. Redirect to Success
+            flash(f"Order placed! Please pay {final_total_bhd} BD upon delivery.", "success")
+            return redirect(url_for('main.order_success', order_id=order.id))
+
+        else:
+            # --- OPTION B: ONLINE PAYMENT (Tap Logic) ---
+            user_currency = get_user_currency()
+            currency_data = current_app.config['CURRENCY_RATES'].get(user_currency)
+            exchange_rate = currency_data['rate'] if currency_data else 1.0
+            final_charge_amount = final_total_bhd * exchange_rate
+            
+            name_parts = final_addr.full_name.strip().split(' ', 1)
+            first_name = name_parts[0]
+            last_name = name_parts[1] if len(name_parts) > 1 else "Customer"
+
+            customer_info = {
+                'first_name': first_name,
+                'last_name': last_name,
+                'email': customer_email,
+                'phone': {
+                    'country_code': code,
+                    'number': phone_clean
+                }
+            }
+
+            try:
+                tap_response = create_tap_charge(
+                    total_amount=final_charge_amount,
+                    currency=user_currency,
+                    customer_info=customer_info,
+                    order_id=order.id
+                )
                 
-        except Exception as e:
-            print(f"Payment Error: {e}")
-            flash("Connection error with Payment Provider.", "error")
-            return redirect(url_for('main.checkout'))
+                if tap_response and 'transaction' in tap_response and 'url' in tap_response['transaction']:
+                    charge_id = tap_response.get('id')
+                    order.tap_charge_id = charge_id
+                    db.session.commit()
+                    return redirect(tap_response['transaction']['url'])
+                else:
+                    flash("Payment Gateway Error: Could not generate link.", "error")
+                    return redirect(url_for('main.checkout'))
+                    
+            except Exception as e:
+                print(f"Payment Error: {e}")
+                flash("Connection error with Payment Provider.", "error")
+                return redirect(url_for('main.checkout'))
 
     return render_template('main/checkout.html', items=items, total=cart_total, addresses=addresses)
 
-@main_bp.route('/payment_success')
-# 1. REMOVED @login_required
-def payment_success():
-    tap_id = request.args.get('tap_id') 
+
+
+
+
+@main_bp.route('/order-success/<int:order_id>') 
+# ^^^ CHANGED: We now accept order_id in the URL so we can find COD orders
+def order_success(order_id):
+    # 1. Find the order safely
+    order = Order.query.get_or_404(order_id)
+    
+    # ---------------------------------------------------------
+    # SCENARIO A: Cash on Delivery (COD) -> Just show Success
+    # ---------------------------------------------------------
+    if order.payment_status == 'COD':
+        return render_template('main/success.html', order=order)
+
+    # ---------------------------------------------------------
+    # SCENARIO B: Already Paid -> Just show Success
+    # ---------------------------------------------------------
+    if order.payment_status == 'Paid':
+        return render_template('main/success.html', order=order)
+
+    # ---------------------------------------------------------
+    # SCENARIO C: Online Payment Verification (Requires Tap ID)
+    # ---------------------------------------------------------
+    # Get Tap ID from URL (callback) OR from the database
+    tap_id = request.args.get('tap_id') or order.tap_charge_id
     
     if not tap_id:
-        flash("Invalid payment identifier.", "error")
-        return redirect(url_for('main.home'))
+        flash("Order incomplete or payment failed.", "error")
+        return redirect(url_for('main.cart_page'))
 
-    order = Order.query.filter_by(tap_charge_id=tap_id).first()
-    
     # Verify with Tap API
     url = f"https://api.tap.company/v2/charges/{tap_id}"
     headers = {
@@ -453,39 +478,34 @@ def payment_success():
         response = requests.get(url, headers=headers)
         data = response.json()
     except Exception:
-        flash("Could not verify payment.", "error")
+        flash("Connection error: Could not verify payment.", "error")
         return redirect(url_for('main.cart_page'))
     
-    is_paid = False
-    if data.get('status') == 'CAPTURED':
-        is_paid = True
-    
-
-    if order and is_paid and order.payment_status == 'Unpaid':
+    # Check if CAPTURED
+    if data.get('status') == 'CAPTURED' and order.payment_status == 'Unpaid':
         order.payment_status = 'Paid'
         
-        
+        # --- STOCK DEDUCTION (Loyverse) ---
         loyverse_updates = []
-        LOYVERSE_TOKEN = "LOYVERSE_TOKEN" 
+        LOYVERSE_TOKEN = "YOUR_LOYVERSE_TOKEN_HERE" # Make sure to set this
         
-       
         for item in order.items:
             product = Product.query.get(item.product_id)
             if product:
-            
+                # Deduct Local Stock
                 if product.quantity >= item.quantity:
                     product.quantity -= item.quantity
                 else:
                     product.quantity = 0 
                 
-              
+                # Prepare Loyverse Update
                 if product.loyverse_id:
                     loyverse_updates.append({
                         "variant_id": product.loyverse_id,
                         "in_stock": float(product.quantity)
                     })
         
-       
+        # Send to Loyverse
         if loyverse_updates:
             try:
                 requests.post(
@@ -501,27 +521,19 @@ def payment_success():
             except Exception as e:
                 print(f"⚠️ Loyverse Sync Failed: {e}")
 
-        # --- CLEAR CART LOGIC (UPDATED) ---
+        # --- CLEAR CART ---
         if current_user.is_authenticated:
-            # Clear Database Cart for Registered User
             if current_user.cart:
                  CartItem.query.filter_by(cart_id=current_user.cart.id).delete()
         else:
-            # Clear Session Cart for Guest
             session.pop('cart', None)
         
         db.session.commit()
         return render_template('main/success.html', order=order)
 
-    # --- IF ALREADY PAID (Refresh Page) ---
-    elif order and order.payment_status == 'Paid':
-        return render_template('main/success.html', order=order)
-        
-    # --- IF FAILED ---
-    else:
-        flash("Payment failed or cancelled.", "error")
-        return redirect(url_for('main.cart_page'))
-
+    # If we got here, payment failed or wasn't captured
+    flash("Payment failed or cancelled.", "error")
+    return redirect(url_for('main.cart_page'))
 
 @main_bp.route('/account')
 @login_required

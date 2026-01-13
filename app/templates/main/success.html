@@ -22,11 +22,18 @@
             <span class="font-mono font-bold text-gray-900">#{{ order.id }}</span>
         </div>
         
-        <div class="flex justify-between items-center py-2">
+<div class="flex justify-between items-center py-2">
             <span class="text-gray-600 text-sm">{{ _('success_pay_status') }}</span>
-            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-green-100 text-green-800">
-                {{ _('tag_paid') }}
-            </span>
+            
+            {% if order.payment_status == 'COD' %}
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-yellow-100 text-yellow-800">
+                    CASH ON DELIVERY
+                </span>
+            {% else %}
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-green-100 text-green-800">
+                    {{ _('tag_paid') }}
+                </span>
+            {% endif %}
         </div>
 
         <div class="flex justify-between items-center py-3 mt-2 border-t border-dashed border-gray-200">

@@ -25,7 +25,7 @@ def create_tap_charge(total_amount, currency, customer_info, order_id):
     rounded_amount = round(float(total_amount), decimals)
 
 
-    redirect_url = url_for('main.payment_success', _external=True)
+    redirect_url = url_for('main.order_success', _external=True)
 
     payload = {
         "amount": rounded_amount,
