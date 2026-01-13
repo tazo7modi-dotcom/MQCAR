@@ -11,8 +11,8 @@ with app.app_context():
     existing_admin = User.query.filter_by(email="admin@dropi.com").first()
     
     if not existing_admin:
-        admin = User(username="Boss", email="admin@store.com", is_admin=True)
-        admin.set_password("123456") 
+        admin = User(username="Boss", email="admin@dropi.com", is_admin=True)
+        admin.set_password("DropiAa1223Aa") 
         db.session.add(admin)
         db.session.commit()
         print("✅ Success! Admin account created.")
