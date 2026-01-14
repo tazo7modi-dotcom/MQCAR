@@ -542,6 +542,12 @@ dictionary = {
         'home_policy_secure': "Secure Checkout",
         'home_policy_secure_sub': "100% Payment Protection",
         'btn_view_policies': "View Policies",
+        # --- SHOP ALL BANNER ---
+    'shop_all_pretitle': "Discover Everything",
+    'shop_all_title': "The Complete Collection",
+    'shop_all_desc': "Explore our full range of premium products. From our signature items to the latest arrivals, find exactly what you are looking for.",
+    'shop_all_btn': "Shop All Products",
+    'cat_all_products': "All Products",
         
 
        
@@ -1109,6 +1115,12 @@ dictionary = {
         'home_policy_secure': "دفع آمن",
         'home_policy_secure_sub': "حماية 100% للمدفوعات",
         'btn_view_policies': "عرض السياسات",
+        # --- SHOP ALL BANNER ---
+    'shop_all_pretitle': "اكتشف كل شيء",
+    'shop_all_title': "المجموعة الكاملة",
+    'shop_all_desc': "تصفح مجموعتنا الكاملة من المنتجات المميزة. من التشكيلات الحصرية إلى أحدث الإصدارات، ستجد هنا كل ما تبحث عنه.",
+    'shop_all_btn': "تسوق كل المنتجات",
+    'cat_all_products': "جميع المنتجات",
 
 
 

@@ -344,7 +344,7 @@ def checkout():
             user_id=order_user_id,
             total_amount=final_total_bhd,
             status='Pending',
-            payment_status='Unpaid', # Default
+            payment_status='Unpaid', 
             full_name=final_addr.full_name,
             phone=final_addr.phone,
             street_address=final_addr.street_address,
@@ -677,3 +677,49 @@ def search():
 @main_bp.route('/about')
 def about():
     return render_template('main/about.html')
+
+
+
+
+
+@main_bp.route('/products/all')
+def all_products_view():
+    # 1. Create a "Fake" Category object 
+    # This ensures your existing 'category_view.html' template works without errors
+    # because it expects a variable named 'category' with a .name attribute.
+    fake_category = type('Category', (object,), {'name': 'All Products', 'id': 0})
+
+    # 2. Get Sorting and Filtering Parameters (Same as your category_view)
+    sort_option = request.args.get('sort', 'newest')
+    min_price = request.args.get('min_price')
+    max_price = request.args.get('max_price')
+
+    # 3. Start query with ALL products (No category filter)
+    query = Product.query
+
+    # 4. Apply Price Filters
+    if min_price and min_price.isdigit():
+        query = query.filter(Product.price >= float(min_price))
+    if max_price and max_price.isdigit():
+        query = query.filter(Product.price <= float(max_price))
+
+  
+    if sort_option == 'price_asc':
+        query = query.order_by(Product.price.asc())
+    elif sort_option == 'price_desc':
+        query = query.order_by(Product.price.desc())
+    else:
+     
+        query = query.order_by(Product.id.desc())
+
+    filtered_products = query.all()
+
+   
+    return render_template(
+        'main/category_view.html', 
+        category=fake_category, 
+        products=filtered_products, 
+        current_sort=sort_option,
+        min_price=min_price,
+        max_price=max_price
+    )

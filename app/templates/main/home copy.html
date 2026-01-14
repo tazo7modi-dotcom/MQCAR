@@ -32,49 +32,33 @@
     </div>
 </div>
 
-<div id="shop-all" class="w-full bg-white pb-24 pt-12">
-    <div class="container mx-auto px-6">
-        
-        <div class="relative w-full bg-[#F5F5DC] overflow-hidden group">
-            <div class="flex flex-col md:flex-row h-auto md:h-[400px]">
-                
-                <div class="w-full md:w-1/2 p-10 md:p-16 flex flex-col justify-center items-start z-10 relative">
-                    
-                    <span class="text-xs font-bold tracking-[0.2em] text-gray-500 mb-4 uppercase">
-                        {{ _('shop_all_pretitle') }}
-                    </span>
-                    
-                    <h2 class="text-3xl md:text-5xl font-bold text-[#1a1a1a] mb-6 smart-heading leading-tight">
-                        {{ _('shop_all_title') }}
-                    </h2>
-                    
-                    <p class="text-gray-600 mb-8 max-w-md smart-body text-base md:text-lg">
-                        {{ _('shop_all_desc') }}
-                    </p>
-
-                    <a href="{{ url_for('main.all_products_view') }}" 
-                       class="inline-flex items-center gap-3 bg-[#1a1a1a] text-white px-8 py-4 text-sm font-bold uppercase tracking-widest hover:bg-gray-800 transition-colors duration-300">
-                        {{ _('shop_all_btn') }}
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                        </svg>
-                    </a>
-                </div>
-
-                <div class="w-full md:w-1/2 relative min-h-[300px] md:min-h-full bg-gray-200">
-                    <div class="absolute inset-0 bg-[#E8E4D9] flex items-center justify-center overflow-hidden">
-                        <span class="text-[200px] font-bold text-white opacity-40 select-none leading-none -rotate-12 transform translate-x-10 translate-y-10">
-                            ALL
-                        </span>
-                        <img src="https://i.postimg.cc/fWJ5xGZc/B4043617-7C9C-4C09-8A32-C6EEDC514276.png" alt="" class="absolute inset-0 w-full h-full object-contain opacity-60 mix-blend-multiply">
-                    </div>
-                </div>
-
-            </div>
+<div id="shop-all" class="bg-white pb-24">
+    
+    <div class="container mx-auto px-6 py-16 border-b border-gray-100">
+        <div class="text-center mb-10">
+            <h3 class="text-2xl font-bold text-[#1a1a1a] smart-heading">{{ _('shop_by_category') }}</h3>
         </div>
 
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+            {% for category in categories %}
+            <a href="{{ url_for('main.category_view', category_id=category.id) }}" class="group flex flex-col items-center gap-4 cursor-pointer">
+                <div class="w-full aspect-square rounded-full overflow-hidden border border-gray-100 shadow-sm group-hover:shadow-md transition-all duration-300">
+                    {% if category.image_url %}
+                        <img src="{{ url_for('uploaded_file', filename=category.image_url) }}" 
+                             class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500">
+                    {% else %}
+                        <div class="w-full h-full bg-[#f0f0f0] flex items-center justify-center text-gray-300">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6z"></path></svg>
+                        </div>
+                    {% endif %}
+                </div>
+                <span class="text-sm font-bold text-gray-800 group-hover:text-black uppercase tracking-wider text-center smart-body">
+                    {{ category.name | translate_dynamic }}
+                </span>
+            </a>
+            {% endfor %}
+        </div>
     </div>
-</div>
 
     {% for category in categories %}
         {% if category.products %}

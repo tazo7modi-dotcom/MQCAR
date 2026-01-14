@@ -53,8 +53,13 @@
                         {{ product.price | currency }}
                     </span>
                 {% endif %}
+                
             </div>
-
+            {% if product.description %}
+            <div class="mb-8 text-gray-600 text-sm leading-7 smart-body">
+                {{ product.description | translate_dynamic }}
+            </div>
+            {% endif %}
             <form action="{{ url_for('main.add_to_cart') }}" method="POST" class="space-y-8">
                 <input type="hidden" name="product_id" value="{{ product.id }}">
                 
