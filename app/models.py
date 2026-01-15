@@ -66,6 +66,8 @@ class Product(db.Model):
     quantity = db.Column(db.Integer, default=1)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     colors = db.relationship('ProductColor', backref='product', cascade="all, delete-orphan", lazy=True)
+    images = db.relationship('ProductImage', backref='product', cascade="all, delete-orphan", lazy=True)
+    colors = db.relationship('ProductColor', backref='product', cascade="all, delete-orphan", lazy=True)
 
     @property
     def total_quantity(self):
@@ -205,7 +207,7 @@ class ProductColor(db.Model):
     
     image_url = db.Column(db.String(500), nullable=True)
     sizes = db.relationship('ProductSize', backref='color', cascade="all, delete-orphan", lazy=True)  
-
+    images = db.relationship('ColorImage', backref='color', cascade="all, delete-orphan", lazy=True)
 
 
 class ProductSize(db.Model):
@@ -214,3 +216,22 @@ class ProductSize(db.Model):
     size_label = db.Column(db.String(20), nullable=False) 
     quantity = db.Column(db.Integer, default=0)
     price = db.Column(db.Float, nullable=True)    
+
+
+
+class ProductImage(db.Model):
+    """Additional images for the main product gallery"""
+    id = db.Column(db.Integer, primary_key=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    image_url = db.Column(db.String(500), nullable=False)   
+
+
+
+
+
+
+class ColorImage(db.Model):
+    """Images specific to a color variant (e.g., Red Bottle angles)"""
+    id = db.Column(db.Integer, primary_key=True)
+    color_id = db.Column(db.Integer, db.ForeignKey('product_color.id'), nullable=False)
+    image_url = db.Column(db.String(500), nullable=False)     

@@ -72,7 +72,7 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-{% for item in (category.products|sort(attribute='created_at', reverse=True))[:4] %} <div class="group block relative">
+{% for item in (category.products|sort(attribute='id', reverse=True))[:4] %} <div class="group block relative">
                     <a href="{{ url_for('main.product_detail', product_id=item.id) }}" class="block w-full aspect-square bg-[#F4F4F4] relative overflow-hidden mb-4 transition-colors hover:bg-[#eaeaea]">
                         
                         {% if item.quantity <= 0 %}
@@ -88,7 +88,7 @@
                         {% if item.image_url %}
                             <img src="{{ url_for('uploaded_file', filename=item.image_url) }}" 
                                  alt="{{ item.name }}" 
-                                 class="w-full h-full object-contain p-8 mix-blend-multiply transition-transform duration-500 group-hover:scale-105">
+                                 class="w-full h-full object-cover p-8 mix-blend-multiply transition-transform duration-500 group-hover:scale-105">
                         {% else %}
                             <div class="w-full h-full flex items-center justify-center text-gray-300">
                                 <span class="text-xs font-bold">NO IMAGE</span>

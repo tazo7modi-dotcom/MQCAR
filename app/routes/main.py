@@ -268,6 +268,8 @@ def get_cart_data():
                 total += (fake_item.unit_price * fake_item.quantity)
     
     return items, total
+
+
 @main_bp.route('/checkout', methods=['GET', 'POST'])
 def checkout():
     items, cart_total = get_cart_data()
@@ -278,7 +280,7 @@ def checkout():
     addresses = current_user.addresses if current_user.is_authenticated else []
 
     if request.method == 'POST':
-        # --- 1. Address & Guest Logic (Kept exactly as yours) ---
+        # --- 1. Address & Guest Logic ---
         address_id = request.form.get('selected_address')
         final_addr = None
         
@@ -287,7 +289,6 @@ def checkout():
             if not final_addr or final_addr.user_id != current_user.id:
                 flash("Invalid address selected.", "error")
                 return redirect(url_for('main.checkout'))
-            
             try:
                 phone_parts = final_addr.phone.split(' ', 1)
                 code = phone_parts[0]  
@@ -323,7 +324,7 @@ def checkout():
                     'country': request.form.get('country')
                 })
 
-        # --- 2. Shipping Logic (Kept exactly as yours) ---
+        # --- 2. Shipping Logic ---
         country_check = final_addr.country.strip().lower()
         shipping_option = request.form.get('shipping_option', 'normal') 
         shipping_cost = 0.0
@@ -337,7 +338,7 @@ def checkout():
         customer_email = current_user.email if current_user.is_authenticated else request.form.get('email', 'guest@example.com')
         shipping_string = f"{final_addr.full_name}, {final_addr.street_address}, {final_addr.city}, {final_addr.country}, {final_addr.phone}, Email: {customer_email}"
 
-        # --- 3. Create Order (Kept exactly as yours) ---
+        # --- 3. Create Order ---
         order_user_id = current_user.id if current_user.is_authenticated else None
         
         order = Order(
@@ -369,30 +370,75 @@ def checkout():
         db.session.commit()
 
         # ======================================================
-        #  NEW: CHECK PAYMENT METHOD (COD vs ONLINE)
+        #  4. PROCESS PAYMENT & INVENTORY
         # ======================================================
-        payment_method = request.form.get('payment_method') # 'cod' or 'online'
+        payment_method = request.form.get('payment_method') 
 
         if payment_method == 'cod':
             # --- OPTION A: CASH ON DELIVERY ---
             order.payment_status = 'COD'
             
-            # 1. Clear Cart IMMEDIATELY (Since there's no payment callback)
+            # ---------------------------------------------------
+            # NEW: DEDUCT INVENTORY LOGIC (Only for COD here)
+            # ---------------------------------------------------
+            try:
+                for cart_item in items:
+                    product = Product.query.get(cart_item.product_id)
+                    
+                    # A. Handle Variant Products (Color + Size)
+                    if cart_item.color and cart_item.size:
+                        # Find the specific size row in DB
+                        variant_size = ProductSize.query.join(ProductColor).filter(
+                            ProductColor.product_id == product.id,
+                            ProductColor.name == cart_item.color,
+                            ProductSize.size_label == cart_item.size
+                        ).first()
+                        
+                        if variant_size:
+                            if variant_size.quantity < cart_item.quantity:
+                                raise Exception(f"Out of stock: {product.name} ({cart_item.size})")
+                            
+                            # Deduct specific size
+                            variant_size.quantity -= cart_item.quantity
+                            # Deduct from main product total
+                            product.quantity -= cart_item.quantity
+                            
+                    # B. Handle Simple Products (No variants)
+                    else:
+                        if product.quantity < cart_item.quantity:
+                            raise Exception(f"Out of stock: {product.name}")
+                        product.quantity -= cart_item.quantity
+                        
+                db.session.commit()
+                
+            except Exception as e:
+                db.session.rollback()
+                # Delete the order we just made since stock failed
+                db.session.delete(order)
+                db.session.commit()
+                flash(str(e), "error")
+                return redirect(url_for('main.cart_page'))
+            # ---------------------------------------------------
+
+            # Clear Cart
             if current_user.is_authenticated:
                 cart = Cart.query.filter_by(user_id=current_user.id).first()
                 if cart:
                     CartItem.query.filter_by(cart_id=cart.id).delete()
             else:
-                session.pop('cart', None) # Clear guest session cart
+                session.pop('cart', None) 
             
             db.session.commit()
             
-            # 2. Redirect to Success
             flash(f"Order placed! Please pay {final_total_bhd} BD upon delivery.", "success")
             return redirect(url_for('main.order_success', order_id=order.id))
 
         else:
-            # --- OPTION B: ONLINE PAYMENT (Tap Logic) ---
+            # --- OPTION B: ONLINE PAYMENT ---
+            # NOTE: Do NOT deduct inventory here for Online Payment.
+            # If you deduct here and the user cancels on the Tap page, you lose stock.
+            # You must put the "Deduct Inventory Logic" inside your 'payment_success' route.
+            
             user_currency = get_user_currency()
             currency_data = current_app.config['CURRENCY_RATES'].get(user_currency)
             exchange_rate = currency_data['rate'] if currency_data else 1.0
@@ -438,10 +484,7 @@ def checkout():
 
 
 
-
-
 @main_bp.route('/order-success/<int:order_id>') 
-# ^^^ CHANGED: We now accept order_id in the URL so we can find COD orders
 def order_success(order_id):
     # 1. Find the order safely
     order = Order.query.get_or_404(order_id)
@@ -461,7 +504,6 @@ def order_success(order_id):
     # ---------------------------------------------------------
     # SCENARIO C: Online Payment Verification (Requires Tap ID)
     # ---------------------------------------------------------
-    # Get Tap ID from URL (callback) OR from the database
     tap_id = request.args.get('tap_id') or order.tap_charge_id
     
     if not tap_id:
@@ -485,55 +527,53 @@ def order_success(order_id):
     if data.get('status') == 'CAPTURED' and order.payment_status == 'Unpaid':
         order.payment_status = 'Paid'
         
-        # --- STOCK DEDUCTION (Loyverse) ---
-        loyverse_updates = []
-        LOYVERSE_TOKEN = "YOUR_LOYVERSE_TOKEN_HERE" # Make sure to set this
-        
-        for item in order.items:
-            product = Product.query.get(item.product_id)
-            if product:
-                # Deduct Local Stock
-                if product.quantity >= item.quantity:
-                    product.quantity -= item.quantity
-                else:
-                    product.quantity = 0 
+        # --- 1. INVENTORY DEDUCTION (The Fix) ---
+        try:
+            for item in order.items:
+                product = Product.query.get(item.product_id)
                 
-                # Prepare Loyverse Update
-                if product.loyverse_id:
-                    loyverse_updates.append({
-                        "variant_id": product.loyverse_id,
-                        "in_stock": float(product.quantity)
-                    })
-        
-        # Send to Loyverse
-        if loyverse_updates:
-            try:
-                requests.post(
-                    "https://api.loyverse.com/v1.0/inventory",
-                    json={"inventory_levels": loyverse_updates},
-                    headers={
-                        "Authorization": f"Bearer {LOYVERSE_TOKEN}",
-                        "Content-Type": "application/json"
-                    },
-                    timeout=5
-                )
-                print(f"✅ Synced {len(loyverse_updates)} items to Loyverse.")
-            except Exception as e:
-                print(f"⚠️ Loyverse Sync Failed: {e}")
+                if product:
+                    # A. Handle Variant Products (Color + Size)
+                    if item.color and item.size:
+                        # Find the specific variant row
+                        variant_size = ProductSize.query.join(ProductColor).filter(
+                            ProductColor.product_id == product.id,
+                            ProductColor.name == item.color,
+                            ProductSize.size_label == item.size
+                        ).first()
+                        
+                        if variant_size:
+                            # Subtract from specific size
+                            variant_size.quantity -= item.quantity
+                            # Subtract from master product total
+                            product.quantity -= item.quantity
+                            
+                    # B. Handle Simple Products
+                    else:
+                        product.quantity -= item.quantity
 
-        # --- CLEAR CART ---
+        except Exception as e:
+            # Log the error, but don't stop the user since they already paid
+            print(f"⚠️ Inventory Update Error for Order {order.id}: {e}")
+
+        # --- 2. CLEAR CART ---
         if current_user.is_authenticated:
-            if current_user.cart:
-                 CartItem.query.filter_by(cart_id=current_user.cart.id).delete()
+            cart = Cart.query.filter_by(user_id=current_user.id).first()
+            if cart:
+                CartItem.query.filter_by(cart_id=cart.id).delete()
         else:
             session.pop('cart', None)
         
+        # --- 3. SAVE EVERYTHING ---
         db.session.commit()
+        
         return render_template('main/success.html', order=order)
 
     # If we got here, payment failed or wasn't captured
     flash("Payment failed or cancelled.", "error")
     return redirect(url_for('main.cart_page'))
+
+
 
 @main_bp.route('/account')
 @login_required

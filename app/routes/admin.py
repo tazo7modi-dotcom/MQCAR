@@ -6,7 +6,7 @@ from werkzeug.utils import secure_filename
 from sqlalchemy import func, extract
 from datetime import datetime, timedelta
 
-from app.models import db, Product, Category, Order, User, Extra, OrderItem,ProductSize,ProductColor
+from app.models import db, Product, Category, Order, User, Extra, OrderItem,ProductSize,ProductColor,ProductImage, ColorImage
 from app.translations import dictionary
 import json
 
@@ -106,8 +106,6 @@ def api_add_category():
     db.session.commit()
     
     return jsonify({'id': new_cat.id, 'name': new_cat.name})
-
-# --- 4. MANAGE PRODUCT (Updated for Persistent Disk) ---
 @admin_bp.route('/product/new', defaults={'product_id': None}, methods=['GET', 'POST'])
 @admin_bp.route('/product/edit/<int:product_id>', methods=['GET', 'POST'])
 @login_required
@@ -116,7 +114,9 @@ def manage_product(product_id):
     product = Product.query.get_or_404(product_id) if product_id else Product()
     
     if request.method == 'POST':
-        # --- A. Basic Info ---
+        # ==========================================
+        # 1. BASIC INFO
+        # ==========================================
         product.name = request.form.get('name')
         try:
             product.price = float(request.form.get('price'))
@@ -128,109 +128,143 @@ def manage_product(product_id):
         product.description = request.form.get('description')
         product.label = request.form.get('label')
         
-        # --- B. Main Product Image Upload ---
-        if 'image' in request.files:
-            file = request.files['image']
+        # Ensure product is in session to generate ID (needed for image filenames)
+        if not product.id:
+            db.session.add(product)
+            db.session.flush()
+
+        # ==========================================
+        # 2. MAIN GALLERY (Multiple Images)
+        # ==========================================
+        
+        # A. Handle New Uploads
+        main_files = request.files.getlist('main_images[]')
+        for file in main_files:
             if file and file.filename != '':
-                filename = secure_filename(file.filename)
+                filename = secure_filename(f"main_{product.id}_{file.filename}")
                 save_dir = os.path.join(BASE_UPLOAD_PATH, 'products')
                 os.makedirs(save_dir, exist_ok=True)
                 file.save(os.path.join(save_dir, filename))
-                product.image_url = f'products/{filename}'
+                
+                db_path = f'products/{filename}'
+                
+                # Logic: If no cover image, first one becomes cover. Others go to gallery.
+                if not product.image_url:
+                    product.image_url = db_path
+                else:
+                    new_img = ProductImage(product_id=product.id, image_url=db_path)
+                    db.session.add(new_img)
 
-        # --- C. INVENTORY VARIANTS (Colors & Sizes) ---
+        # B. Handle Deletions (Checkboxes from UI)
+        delete_main_ids = request.form.getlist('delete_main_image[]')
+        if delete_main_ids:
+            # Optional: Add logic here to delete actual file from disk if you want
+            ProductImage.query.filter(ProductImage.id.in_(delete_main_ids)).delete(synchronize_session=False)
+
+
+        # ==========================================
+        # 3. VARIANTS (Colors, Sizes, Images)
+        # ==========================================
         variants_json = request.form.get('variants_json')
         
-        # Check UI toggles
-        product.has_sizes = True if request.form.get('enable_sizes') else False
-        product.has_colors = True if request.form.get('enable_colors') else False
+        # Flags
+        product.has_colors = True # Force true if using the new form logic
+        product.has_sizes = True 
         
-        calculated_total_qty = 0
+        total_calculated_qty = 0
+        kept_color_ids = [] # To track which colors remain active
 
-        # Only process variants if JSON exists AND options are enabled
-        if variants_json and (product.has_colors or product.has_sizes):
+        if variants_json:
             try:
                 variants_data = json.loads(variants_json)
-                
-                # 1. DELETE OLD DATA (Clean slate for variants)
-                for old_color in product.colors:
-                    db.session.delete(old_color)
-                
-                # 2. FIX ZOMBIE ERROR (Clear memory list)
-                product.colors = []
-                
-                # 3. Process New Data
+
                 for i, v_data in enumerate(variants_data):
-                    # Create Color Object
-                    new_color = ProductColor(
-                        product_id=product.id, # Will be set below if new
-                        name=v_data.get('name', 'Standard'),
-                        code=v_data.get('code', '#000000'),
-                        image_url=v_data.get('image_url') # Keep existing URL by default
-                    )
+                    # --- A. Manage ProductColor ---
+                    color = None
+                    # If ID exists, we update. If not, we create.
+                    if v_data.get('id'):
+                        color = ProductColor.query.get(v_data['id'])
+                    
+                    if not color:
+                        color = ProductColor(product_id=product.id)
+                        db.session.add(color)
+                    
+                    color.name = v_data.get('name', 'Standard')
+                    color.code = v_data.get('code', '#000000')
+                    
+                    db.session.flush() # Ensure we have color.id
+                    kept_color_ids.append(color.id)
 
-                    # Ensure Product ID exists (Required for file naming)
-                    if not product.id:
-                        db.session.add(product)
-                        db.session.flush() # Generate ID
-                        new_color.product_id = product.id
-
-                    # HANDLE VARIANT IMAGE UPLOAD
-                    image_key = f"variant_image_{i}"
-                    if image_key in request.files:
-                        file = request.files[image_key]
-                        if file and file.filename != '':
-                            filename = secure_filename(f"{product.id}_{i}_{file.filename}")
-                            save_dir = os.path.join(BASE_UPLOAD_PATH, 'products/variants')
-                            os.makedirs(save_dir, exist_ok=True)
-                            
-                            file.save(os.path.join(save_dir, filename))
-                            new_color.image_url = f'products/variants/{filename}'
-
-                    # Save Color
-                    db.session.add(new_color)
-                    db.session.flush() # Generate Color ID for sizes
-
-                    # Create Sizes for this Color
+                    # --- B. Manage Sizes (Bottles) ---
+                    # Strategy: Delete old sizes for this color and re-add (cleanest)
+                    ProductSize.query.filter_by(color_id=color.id).delete()
+                    
                     for s_data in v_data.get('sizes', []):
                         try:
                             qty = int(s_data.get('qty', 0))
-                        except (ValueError, TypeError):
+                        except:
                             qty = 0
-                        # --- NEW: Get Price ---
-                        size_price = s_data.get('price')
-                        if size_price and str(size_price).strip():
-                             try:
-                                 size_price = float(size_price)
-                             except ValueError:
-                                 size_price = None
-                        else:
-                            size_price = None
+                        
+                        try:
+                            s_price = float(s_data.get('price')) if s_data.get('price') else None
+                        except:
+                            s_price = None
 
                         new_size = ProductSize(
-                            color_id=new_color.id,
-                            size_label=s_data.get('label', 'Standard'),
+                            color_id=color.id,
+                            size_label=s_data.get('label', '500ml'),
                             quantity=qty,
-                            price=size_price
+                            price=s_price
                         )
                         db.session.add(new_size)
-                        calculated_total_qty += qty
-                        
-                
-                product.quantity = calculated_total_qty
+                        total_calculated_qty += qty
+
+                    # --- C. Manage Variant Images (Uploads) ---
+                    # The form sends files with name="variant_images_0[]", "variant_images_1[]", etc.
+                    # 'i' comes from the loop index
+                    file_key = f'variant_images_{i}[]'
+                    v_files = request.files.getlist(file_key)
+                    
+                    for v_file in v_files:
+                        if v_file and v_file.filename != '':
+                            # Naming: prodID_colorID_filename
+                            fname = secure_filename(f"v_{product.id}_{color.id}_{v_file.filename}")
+                            v_save_dir = os.path.join(BASE_UPLOAD_PATH, 'products/variants')
+                            os.makedirs(v_save_dir, exist_ok=True)
+                            v_file.save(os.path.join(v_save_dir, fname))
+                            
+                            new_col_img = ColorImage(color_id=color.id, image_url=f'products/variants/{fname}')
+                            db.session.add(new_col_img)
+
+                    # --- D. Manage Variant Images (Deletions) ---
+                    if v_data.get('id'):
+                        del_col_imgs = request.form.getlist(f'delete_color_image_{v_data["id"]}[]')
+                        if del_col_imgs:
+                            ColorImage.query.filter(ColorImage.id.in_(del_col_imgs)).delete(synchronize_session=False)
+
+                # --- E. Cleanup Removed Colors ---
+                # If a color was in DB but not in the JSON submission, delete it
+                if kept_color_ids:
+                    ProductColor.query.filter(
+                        ProductColor.product_id == product.id,
+                        ~ProductColor.id.in_(kept_color_ids)
+                    ).delete(synchronize_session=False)
+                else:
+                    # If JSON was empty/valid but had no items, delete all colors? 
+                    # Usually better to check if variants_data was not empty
+                    pass
+
+                product.quantity = total_calculated_qty
 
             except Exception as e:
-                print(f"JSON Error: {e}")
-                flash(f"Error saving variants: {str(e)}", "error")
-        else:
-            # Fallback for simple products (No variants)
-            try:
-                simple_qty = request.form.get('quantity')
-                product.quantity = int(simple_qty) if simple_qty else 0
-            except ValueError:
-                product.quantity = 0
+                print(f"Variant Error: {e}")
+                db.session.rollback()
+                flash("Error saving variants. Please check data.", "error")
+                return redirect(request.url)
 
-        # --- D. Extras ---
+        # ==========================================
+        # 4. EXTRAS
+        # ==========================================
         Extra.query.filter_by(product_id=product.id).delete()
         ex_names = request.form.getlist('extra_name[]')
         ex_prices = request.form.getlist('extra_price[]')
@@ -239,12 +273,11 @@ def manage_product(product_id):
             if n.strip():
                 try:
                     price_val = float(p)
-                except ValueError:
+                except:
                     price_val = 0.0
                 new_extra = Extra(name=n, price=price_val, product_id=product.id)
                 db.session.add(new_extra)
 
-        db.session.add(product)
         db.session.commit()
         
         flash("Product saved successfully!", "success")
@@ -252,6 +285,8 @@ def manage_product(product_id):
 
     categories = Category.query.all()
     return render_template('admin/product_form.html', product=product, categories=categories)
+
+
 
 
 # --- 5. DELETE PRODUCT ---
@@ -382,8 +417,9 @@ def deals():
 def view_order(order_id):
     order = Order.query.get_or_404(order_id)
     return render_template('admin/order_detail.html', order=order)
+from sqlalchemy import or_
+# Make sure you import ProductSize and ProductColor if not already imported
 
-# --- 11. ANALYTICS ---
 @admin_bp.route('/analytics')
 @login_required
 @admin_required
@@ -392,37 +428,68 @@ def analytics():
     current_month = now.month
     current_year = now.year
     
+    # --- 1. REVENUE (Includes 'Paid' AND 'COD') ---
+    # We filter for orders that are NOT 'Unpaid' or 'Pending' (adjust based on your exact statuses)
+    # Or specifically: status IN ['Paid', 'COD']
+    valid_statuses = ['Paid', 'COD']
+    
     monthly_revenue = db.session.query(func.sum(Order.total_amount))\
         .filter(extract('month', Order.created_at) == current_month)\
         .filter(extract('year', Order.created_at) == current_year)\
-        .filter(Order.payment_status == 'Paid').scalar() or 0
+        .filter(Order.payment_status.in_(valid_statuses)).scalar() or 0
 
     last_month_date = now.replace(day=1) - timedelta(days=1)
     last_month_revenue = db.session.query(func.sum(Order.total_amount))\
         .filter(extract('month', Order.created_at) == last_month_date.month)\
         .filter(extract('year', Order.created_at) == last_month_date.year)\
-        .filter(Order.payment_status == 'Paid').scalar() or 0
+        .filter(Order.payment_status.in_(valid_statuses)).scalar() or 0
     
     growth_percent = 0
     if last_month_revenue > 0:
         growth_percent = ((monthly_revenue - last_month_revenue) / last_month_revenue) * 100
 
+    # --- 2. TOP PRODUCTS (Includes 'COD') ---
     top_products = db.session.query(
         Product.name, 
         Product.image_url,
         func.sum(OrderItem.quantity).label('total_sold'),
         func.sum(OrderItem.price * OrderItem.quantity).label('total_earned')
-    ).join(OrderItem).join(Order).filter(Order.payment_status == 'Paid')\
+    ).join(OrderItem).join(Order).filter(Order.payment_status.in_(valid_statuses))\
      .group_by(Product.id).order_by(func.sum(OrderItem.quantity).desc()).limit(5).all()
 
-    low_stock = Product.query.filter(Product.quantity < 5).all()
+    # --- 3. LOW STOCK (Check Variants Too) ---
+    low_stock_alerts = []
+    
+    # A. Check Main Products (for simple products without variants)
+    simple_low = Product.query.filter(Product.has_colors == False, Product.quantity < 5).all()
+    for p in simple_low:
+        low_stock_alerts.append({
+            'id': p.id,
+            'name': p.name,
+            'variant': 'General Stock',
+            'qty': p.quantity
+        })
+
+    # B. Check Specific Variants (Colors/Sizes)
+    # We join ProductSize -> ProductColor -> Product to get the names
+    variant_low = db.session.query(Product.id, Product.name, ProductColor.name, ProductSize.size_label, ProductSize.quantity)\
+        .join(ProductColor, ProductColor.product_id == Product.id)\
+        .join(ProductSize, ProductSize.color_id == ProductColor.id)\
+        .filter(ProductSize.quantity < 5).all()
+
+    for p_id, p_name, c_name, s_label, qty in variant_low:
+        low_stock_alerts.append({
+            'id': p_id,
+            'name': p_name,
+            'variant': f"{c_name} - {s_label}",
+            'qty': qty
+        })
 
     return render_template('admin/analytics.html', 
                            monthly_revenue=monthly_revenue,
                            growth_percent=growth_percent,
                            top_products=top_products,
-                           low_stock=low_stock)
-
+                           low_stock=low_stock_alerts)
 
 import requests
 from app.models import Product

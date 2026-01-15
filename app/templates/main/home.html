@@ -10,9 +10,9 @@
 
 <div class="relative w-full h-[100vh] flex items-center justify-center overflow-hidden bg-[#F5F5F5]">
     <div class="absolute inset-0 z-0">
-        <img src="/static/dropi.jpg" 
+        <img src="https://i.postimg.cc/P5FdvJwS/PHOTO-2026-01-14-23-53-49.jpg" 
              onerror="this.src='https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop'"
-             class="w-full h-full object-cover opacity-100">
+             class="w-full h-full object-cover opacity-100 object-[center_30%]">
         <div class="absolute inset-0 bg-black/10"></div>
     </div>
 
@@ -66,7 +66,7 @@
                         <span class="text-[200px] font-bold text-white opacity-40 select-none leading-none -rotate-12 transform translate-x-10 translate-y-10">
                             ALL
                         </span>
-                        <img src="https://i.postimg.cc/fWJ5xGZc/B4043617-7C9C-4C09-8A32-C6EEDC514276.png" alt="" class="absolute inset-0 w-full h-full object-contain opacity-60 mix-blend-multiply">
+                        <img src="/static/llogo.PNG" alt="" class="absolute inset-0 w-full h-full object-contain opacity-60 mix-blend-multiply">
                     </div>
                 </div>
 
@@ -88,7 +88,7 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-{% for item in (category.products|sort(attribute='created_at', reverse=True))[:4] %} <div class="group block relative">
+{% for item in (category.products|sort(attribute='id', reverse=True))[:4] %} <div class="group block relative">
                     <a href="{{ url_for('main.product_detail', product_id=item.id) }}" class="block w-full aspect-square bg-[#F4F4F4] relative overflow-hidden mb-4 transition-colors hover:bg-[#eaeaea]">
                         
                         {% if item.quantity <= 0 %}
@@ -104,7 +104,7 @@
                         {% if item.image_url %}
                             <img src="{{ url_for('uploaded_file', filename=item.image_url) }}" 
                                  alt="{{ item.name }}" 
-                                 class="w-full h-full object-contain p-8 mix-blend-multiply transition-transform duration-500 group-hover:scale-105">
+                                 class="w-full h-full object-cover  mix-blend-multiply transition-transform duration-500 group-hover:scale-105">
                         {% else %}
                             <div class="w-full h-full flex items-center justify-center text-gray-300">
                                 <span class="text-xs font-bold">NO IMAGE</span>

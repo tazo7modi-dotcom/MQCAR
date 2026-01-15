@@ -240,7 +240,7 @@ dictionary = {
         'policy_return_title': 'Returns & Exchanges',
         'policy_return_text': 'You have 14 days from the shipping date to return your parts. Items must be unused and in original packaging.',
         'policy_ship_title': 'Shipping Information',
-        'policy_ship_text': 'We offer express delivery within Bahrain (Same Day) and Standard Shipping to GCC countries (3-5 Business Days) via DHL.',
+        'policy_ship_text': 'We offer express delivery within Bahrain (Same Day) , Shipping to GGC is still unavailable.',
         'policy_payment_title': 'Payment Methods',
         'policy_payment_text': 'We accept all major credit cards (Visa, MasterCard), BenefitPay, and Apple Pay. All transactions are encrypted and secure.',
         'policy_contact_title': 'Need more help?',
@@ -493,7 +493,7 @@ dictionary = {
     "footer_contact": "Contact",
     "footer_rights": "All Rights Reserved.",
     
-    "footer_location_virtual": "Virtual Store based in Bahrain. Shipping Worldwide.",
+    "footer_location_virtual": "Virtual Store based in Bahrain, 100% Bahraini Team",
     
     "newsletter_title": "Stay Updated",
     "newsletter_desc": "Subscribe for exclusive drops and offers.",
@@ -551,7 +551,16 @@ dictionary = {
        'lbl_color_name':'Color Name',
     'lbl_color_code':'Choose Color',
     'lbl_cost':'Cost',
-    'lbl_internal_only':'Internal Data'
+    'lbl_internal_only':'Internal Data',
+   
+    'btn_back_home':'Back',
+    'prod_auth_guarantee':'Guranteed Quality',
+    'lbl_base_price':'Main Price',
+    'hdr_bottle_variants':'Bottle Variants',
+    'btn_create_product':'Finalize Product',
+    'lbl_upload_main_photos':'Upload main Images',
+    'lbl_main_gallery':'Main Gallery',
+    'Product_Inventory':'Product Inventory'
         
 
        
@@ -799,7 +808,7 @@ dictionary = {
         'policy_return_title': 'الإسترجاع والإستبدال',
         'policy_return_text': 'لديك 14 يوماً من تاريخ الشحن لإرجاع مشترياتك. يجب أن تكون القطع غير مستخدمة وفي تغليفها الأصلي.',
         'policy_ship_title': 'معلومات الشحن',
-        'policy_ship_text': 'نقدم خدمة التوصيل السريع داخل البحرين (نفس اليوم) والشحن القياسي لدول الخليج (3-5 أيام عمل) عبر DHL.',
+        'policy_ship_text': 'نقدم خدمة التوصيل السريع داخل البحرين (نفس اليوم)، الشحن لخارج البحرين غير متوفر حالياً',
         'policy_payment_title': 'طرق الدفع',
         'policy_payment_text': 'نقبل جميع البطاقات الائتمانية (فيزا، ماستركارد)، بنفت بي، وأبل باي. جميع المعاملات مشفرة وآمنة.',
         'policy_contact_title': 'تحتاج مساعدة إضافية؟',
@@ -1052,7 +1061,7 @@ dictionary = {
     "footer_contact": "تواصل معنا",
     "footer_rights": "جميع الحقوق محفوظة.",
     
-    "footer_location_virtual": "متجر إلكتروني - البحرين. نوصل لكل العالم.",
+    "footer_location_virtual": "، متجر إلكتروني - البحرين ، فريق العمل بحريني 100%.",
     
     "newsletter_title": "خلك متابع",
     "newsletter_desc": "اشترك عشان توصلك آخر العروض والحصريات.",
@@ -1128,7 +1137,15 @@ dictionary = {
     'lbl_color_name':'اسم اللون',
     'lbl_color_code':'اختر اللون',
     'lbl_cost':'التكلفة',
-    'lbl_internal_only':'بيانات داخلية فقط'
+    'lbl_internal_only':'بيانات داخلية فقط',
+     'btn_back_home':'العودة',
+     'prod_auth_guarantee':'جودة مضمونة',
+         'lbl_base_price':'السعر الأصلي',
+    'hdr_bottle_variants':'تعداد العبوّات وانواعها',
+    'btn_create_product':'حفظ ',
+    'lbl_upload_main_photos':'تحميل الصور الأساسية',
+    'lbl_main_gallery':'الصور الأساسية',
+    'Product_Inventory':'ادارة المخزون'
 
 
 

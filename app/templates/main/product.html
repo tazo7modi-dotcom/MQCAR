@@ -1,6 +1,24 @@
 {% extends "base.html" %}
 
 {% block content %}
+<style>
+   
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
+    .scrollbar-hide {
+        -ms-overflow-style: none;  
+        scrollbar-width: none; 
+    }
+    
+    .snap-x {
+        scroll-snap-type: x mandatory;
+    }
+    .snap-center {
+        scroll-snap-align: center;
+    }
+</style>
+
 <div class="container mx-auto px-6 py-16 max-w-7xl">
     
     <div class="mb-8">
@@ -15,20 +33,19 @@
         <div class="w-full lg:w-1/2">
             <div class="aspect-square w-full overflow-hidden bg-gray-50 border border-gray-100 relative group">
                 
-                <img id="mainImage" 
-                     src="{{ url_for('uploaded_file', filename=product.image_url) if product.image_url else '' }}" 
-                     class="w-full h-full object-contain p-12 transition-transform duration-700 hover:scale-105 relative z-10"
-                     style="display: {{ 'block' if product.image_url else 'none' }};"
-                     onerror="handleImageError()">
+                <div id="imageSlider" class="flex w-full h-full overflow-x-auto snap-x snap-mandatory scrollbar-hide z-10 relative">
+                    </div>
+
+                <div id="sliderDots" class="absolute bottom-4 left-0 right-0 flex justify-center gap-2 z-20">
+                    </div>
                 
                 <div id="noImagePlaceholder" 
-                     class="absolute inset-0 flex items-center justify-center text-gray-300 text-xs uppercase tracking-widest font-bold z-0"
-                     style="display: {{ 'none' if product.image_url else 'flex' }};">
+                     class="absolute inset-0 flex items-center justify-center text-gray-300 text-xs uppercase tracking-widest font-bold z-0 hidden">
                     {{ _('prod_no_img') }}
                 </div>
                 
                 {% if product.on_sale() %}
-                <div class="absolute top-0 left-0 bg-black text-white text-[10px] font-bold px-4 py-2 uppercase tracking-widest z-20">
+                <div class="absolute top-0 left-0 bg-black text-white text-[10px] font-bold px-4 py-2 uppercase tracking-widest z-30">
                     -{{ product.discount_percentage }}%
                 </div>
                 {% endif %}
@@ -53,13 +70,14 @@
                         {{ product.price | currency }}
                     </span>
                 {% endif %}
-                
             </div>
+
             {% if product.description %}
             <div class="mb-8 text-gray-600 text-sm leading-7 smart-body">
                 {{ product.description | translate_dynamic }}
             </div>
             {% endif %}
+
             <form action="{{ url_for('main.add_to_cart') }}" method="POST" class="space-y-8">
                 <input type="hidden" name="product_id" value="{{ product.id }}">
                 
@@ -146,25 +164,38 @@
 {% set c_data = config['CURRENCY_RATES'].get(code, config['CURRENCY_RATES']['BHD']) %}
 
 <script>
-    // --- 1. SETUP DATA ---
-    const defaultImage = "{{ url_for('uploaded_file', filename=product.image_url) if product.image_url else '' }}";
-    // Base product price (used as fallback)
-    const productBasePrice = {{ product.get_price() }}; 
+
     const exchangeRate = {{ c_data.rate }};
     const symbol = "{{ c_data.symbol }}";
     const decimals = {{ c_data.decimals }};
-    
-    // Inventory Data (Updated to include PRICE)
+    const productBasePrice = {{ product.get_price() }};
+
+ 
+    const defaultGallery = [];
+    {% if product.image_url %}
+        defaultGallery.push("{{ url_for('uploaded_file', filename=product.image_url) }}");
+    {% endif %}
+    {% if product.images %}
+        {% for img in product.images %}
+            defaultGallery.push("{{ url_for('uploaded_file', filename=img.image_url) }}");
+        {% endfor %}
+    {% endif %}
+
+  
     const inventoryData = {
         {% for color in product.colors %}
         "{{ color.id }}": {
-            image: "{{ url_for('uploaded_file', filename=color.image_url) if color.image_url else '' }}",
+          
+            images: [
+                {% for img in color.images %}
+                "{{ url_for('uploaded_file', filename=img.image_url) }}",
+                {% endfor %}
+            ],
             sizes: [
                 {% for size in color.sizes %}
                 { 
                     label: "{{ size.size_label }}", 
                     qty: {{ size.quantity }},
-                    // If price is null in DB, it sends null to JS
                     price: {{ size.price if size.price is not none else 'null' }} 
                 },
                 {% endfor %}
@@ -174,10 +205,58 @@
     };
 
     // --- 2. LOGIC FUNCTIONS ---
+
+    // New Function to Render the Carousel
+    function renderGallery(images) {
+        const slider = document.getElementById('imageSlider');
+        const dotsContainer = document.getElementById('sliderDots');
+        const placeholder = document.getElementById('noImagePlaceholder');
+
+        slider.innerHTML = '';
+        dotsContainer.innerHTML = '';
+
+        if (!images || images.length === 0) {
+            placeholder.style.display = 'flex';
+            return;
+        }
+
+        placeholder.style.display = 'none';
+
     
-    function handleImageError() {
-        document.getElementById('mainImage').style.display = 'none';
-        document.getElementById('noImagePlaceholder').style.display = 'flex';
+        images.forEach((url, index) => {
+            const imgDiv = document.createElement('div');
+            imgDiv.className = "w-full h-full flex-shrink-0 snap-center flex items-center justify-center p-8 lg:p-12";
+            
+            const img = document.createElement('img');
+            img.src = url;
+            img.className = "w-full h-full object-contain transition-transform duration-700 hover:scale-105";
+            img.onerror = function() { this.style.display = 'none'; }; 
+
+            imgDiv.appendChild(img);
+            slider.appendChild(imgDiv);
+
+            if (images.length > 1) {
+                const dot = document.createElement('div');
+                dot.className = `w-2 h-2 rounded-full transition-all duration-300 ${index === 0 ? 'bg-black w-4' : 'bg-gray-300'}`;
+                dotsContainer.appendChild(dot);
+            }
+        });
+
+     
+        if (images.length > 1) {
+            slider.onscroll = () => {
+                const index = Math.round(slider.scrollLeft / slider.clientWidth);
+                Array.from(dotsContainer.children).forEach((dot, i) => {
+                    if (i === index) {
+                        dot.classList.remove('bg-gray-300');
+                        dot.classList.add('bg-black', 'w-4');
+                    } else {
+                        dot.classList.add('bg-gray-300');
+                        dot.classList.remove('bg-black', 'w-4');
+                    }
+                });
+            };
+        }
     }
 
     function selectColor(radio) {
@@ -185,30 +264,20 @@
         const colorName = radio.getAttribute('data-name');
         const colorData = inventoryData[colorId];
 
-        // Update Text
+
         document.getElementById('selectedColorName').innerText = colorName;
 
-        // --- IMAGE HANDLING ---
-        const mainImageEl = document.getElementById('mainImage');
-        const placeholderEl = document.getElementById('noImagePlaceholder');
 
-        let targetUrl = "";
-        if (colorData.image && colorData.image !== "") {
-            targetUrl = colorData.image;
-        } else if (defaultImage && defaultImage !== "") {
-            targetUrl = defaultImage;
-        }
-
-        if (targetUrl !== "") {
-            mainImageEl.src = targetUrl;
-            mainImageEl.style.display = 'block';
-            placeholderEl.style.display = 'none';
+        let targetImages = [];
+        if (colorData.images && colorData.images.length > 0) {
+            targetImages = colorData.images;
         } else {
-            mainImageEl.style.display = 'none';
-            placeholderEl.style.display = 'flex';
+            targetImages = defaultGallery;
         }
+        
+        renderGallery(targetImages);
 
-        // --- RENDER SIZES (With Price Data) ---
+      
         const sizesGrid = document.getElementById('sizesGrid');
         sizesGrid.innerHTML = ''; 
         let hasStock = false;
@@ -218,21 +287,11 @@
             colorData.sizes.forEach((size, index) => {
                 const isOutOfStock = size.qty <= 0;
                 if (!isOutOfStock) hasStock = true;
-
-                // Determine data-price attribute (use specific price or empty)
                 const priceAttr = size.price !== null ? size.price : '';
 
                 const sizeHtml = `
                 <label class="cursor-pointer">
-                    <input type="radio" 
-                           name="selected_size" 
-                           value="${size.label}" 
-                           data-price="${priceAttr}"
-                           onchange="updateTotal()"
-                           class="peer sr-only" 
-                           ${isOutOfStock ? 'disabled' : ''} 
-                           ${index===0 && !isOutOfStock ? 'checked' : ''}>
-                    
+                    <input type="radio" name="selected_size" value="${size.label}" data-price="${priceAttr}" onchange="updateTotal()" class="peer sr-only" ${isOutOfStock ? 'disabled' : ''} ${index===0 && !isOutOfStock ? 'checked' : ''}>
                     <div class="min-w-[3rem] h-10 flex items-center justify-center px-3 border border-gray-200 text-xs font-bold text-gray-600 peer-checked:bg-black peer-checked:text-white peer-checked:border-black hover:border-black transition-all ${isOutOfStock ? 'opacity-30 cursor-not-allowed decoration-slice line-through' : ''}">
                         ${size.label}
                     </div>
@@ -245,7 +304,6 @@
             hasStock = true; 
         }
 
-        // Update Button Status
         const btn = document.getElementById('addToCartBtn');
         const msg = document.getElementById('noStockMsg');
         
@@ -259,49 +317,41 @@
             msg.classList.add('hidden');
         }
 
-        // Recalculate Total after rendering sizes (to catch the default checked size)
         updateTotal();
     }
 
     function updateTotal() {
-        // 1. Determine Base Item Price
-        let itemPrice = productBasePrice; // Default to product price
-        
-        // Check if a size is selected
+        let itemPrice = productBasePrice; 
         const selectedSizeInput = document.querySelector('input[name="selected_size"]:checked');
         
         if (selectedSizeInput) {
             const sizeSpecificPrice = selectedSizeInput.getAttribute('data-price');
-            // If the size has a specific price (not empty string), use it
             if (sizeSpecificPrice && sizeSpecificPrice !== '') {
                 itemPrice = parseFloat(sizeSpecificPrice);
             }
         }
 
-        // 2. Add Extras
         let currentTotal = itemPrice;
         document.querySelectorAll('input[name="extras"]:checked').forEach((box) => {
             currentTotal += parseFloat(box.getAttribute('data-price'));
         });
 
-        // 3. Multiply by Quantity
         let qty = parseInt(document.getElementById('quantityInput').value) || 1;
         const finalTotal = currentTotal * qty;
-
-        // 4. Apply Exchange Rate & Format
         const localTotal = finalTotal * exchangeRate;
         const formatted = symbol + " " + localTotal.toLocaleString(undefined, {minimumFractionDigits: decimals, maximumFractionDigits: decimals});
         
-        // 5. Update UI
-        document.getElementById('displayPrice').innerText = formatted; // Main large price
-        document.getElementById('btnPrice').innerText = formatted;     // Button price
+        document.getElementById('displayPrice').innerText = formatted;
+        document.getElementById('btnPrice').innerText = formatted;
     }
 
-    // --- 3. INIT ---
+
     window.onload = function() {
+    
+        renderGallery(defaultGallery);
+
         const firstColor = document.querySelector('input[name="color_id"]:checked');
         if (firstColor) selectColor(firstColor);
-        // updateTotal is called inside selectColor, so no need to call it again here
     };
 </script>
 {% endblock %}
