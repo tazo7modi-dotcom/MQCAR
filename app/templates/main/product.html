@@ -2,7 +2,7 @@
 
 {% block content %}
 <style>
-   
+    /* Utility to hide scrollbar but allow scrolling */
     .scrollbar-hide::-webkit-scrollbar {
         display: none;
     }
@@ -10,7 +10,7 @@
         -ms-overflow-style: none;  
         scrollbar-width: none; 
     }
-    
+    /* Smooth scrolling behavior */
     .snap-x {
         scroll-snap-type: x mandatory;
     }
@@ -36,8 +36,7 @@
                 <div id="imageSlider" class="flex w-full h-full overflow-x-auto snap-x snap-mandatory scrollbar-hide z-10 relative">
                     </div>
 
-                <div id="sliderDots" class="absolute bottom-4 left-0 right-0 flex justify-center gap-2 z-20">
-                    </div>
+                <div id="sliderDots" class="absolute bottom-4 left-0 right-0 flex justify-center gap-2 z-20"></div>
                 
                 <div id="noImagePlaceholder" 
                      class="absolute inset-0 flex items-center justify-center text-gray-300 text-xs uppercase tracking-widest font-bold z-0 hidden">
@@ -83,7 +82,9 @@
                 
                 {% if product.colors %}
                 <div>
-                    <h3 class="text-[10px] font-bold text-gray-900 uppercase tracking-widest mb-4">{{ _('prod_select_color') }}: <span id="selectedColorName" class="text-gray-400 font-normal"></span></h3>
+                    <h3 class="text-[10px] font-bold text-gray-900 uppercase tracking-widest mb-4">
+                        {{ _('prod_select_color') }}: <span id="selectedColorName" class="text-gray-400 font-normal"></span>
+                    </h3>
                     <div class="flex flex-wrap gap-3">
                         {% for color in product.colors %}
                         <label class="cursor-pointer group">
@@ -164,13 +165,13 @@
 {% set c_data = config['CURRENCY_RATES'].get(code, config['CURRENCY_RATES']['BHD']) %}
 
 <script>
-
+    // --- 1. SETUP ---
     const exchangeRate = {{ c_data.rate }};
     const symbol = "{{ c_data.symbol }}";
     const decimals = {{ c_data.decimals }};
     const productBasePrice = {{ product.get_price() }};
 
- 
+    // Default Images (Main)
     const defaultGallery = [];
     {% if product.image_url %}
         defaultGallery.push("{{ url_for('uploaded_file', filename=product.image_url) }}");
@@ -181,22 +182,29 @@
         {% endfor %}
     {% endif %}
 
-  
+    // Global variable to remember which set of images is currently "Active" for the Color
+    // We need this so if we click a size with NO image, we can revert to these.
+    let currentVariantImages = defaultGallery;
+
+    // Inventory Data
     const inventoryData = {
         {% for color in product.colors %}
         "{{ color.id }}": {
-          
+            name: "{{ color.name }}",
+            // Variant Images
             images: [
                 {% for img in color.images %}
                 "{{ url_for('uploaded_file', filename=img.image_url) }}",
                 {% endfor %}
             ],
+            // Size Data (Now includes 'image')
             sizes: [
                 {% for size in color.sizes %}
                 { 
                     label: "{{ size.size_label }}", 
                     qty: {{ size.quantity }},
-                    price: {{ size.price if size.price is not none else 'null' }} 
+                    price: {{ size.price if size.price is not none else 'null' }},
+                    image: "{{ url_for('uploaded_file', filename=size.image_url) if size.image_url else '' }}"
                 },
                 {% endfor %}
             ]
@@ -206,7 +214,6 @@
 
     // --- 2. LOGIC FUNCTIONS ---
 
-    // New Function to Render the Carousel
     function renderGallery(images) {
         const slider = document.getElementById('imageSlider');
         const dotsContainer = document.getElementById('sliderDots');
@@ -222,7 +229,6 @@
 
         placeholder.style.display = 'none';
 
-    
         images.forEach((url, index) => {
             const imgDiv = document.createElement('div');
             imgDiv.className = "w-full h-full flex-shrink-0 snap-center flex items-center justify-center p-8 lg:p-12";
@@ -242,7 +248,6 @@
             }
         });
 
-     
         if (images.length > 1) {
             slider.onscroll = () => {
                 const index = Math.round(slider.scrollLeft / slider.clientWidth);
@@ -264,20 +269,20 @@
         const colorName = radio.getAttribute('data-name');
         const colorData = inventoryData[colorId];
 
-
         document.getElementById('selectedColorName').innerText = colorName;
 
-
-        let targetImages = [];
+        // 1. Determine the "Base" images for this color
+        // If color has specific images, use them. Else use default.
         if (colorData.images && colorData.images.length > 0) {
-            targetImages = colorData.images;
+            currentVariantImages = colorData.images;
         } else {
-            targetImages = defaultGallery;
+            currentVariantImages = defaultGallery;
         }
-        
-        renderGallery(targetImages);
 
-      
+        // 2. Render gallery initially with these base images
+        renderGallery(currentVariantImages);
+
+        // 3. Render Sizes
         const sizesGrid = document.getElementById('sizesGrid');
         sizesGrid.innerHTML = ''; 
         let hasStock = false;
@@ -289,9 +294,19 @@
                 if (!isOutOfStock) hasStock = true;
                 const priceAttr = size.price !== null ? size.price : '';
 
+                // NEW: Added 'onchange="selectSize(this)"' and 'data-image'
                 const sizeHtml = `
                 <label class="cursor-pointer">
-                    <input type="radio" name="selected_size" value="${size.label}" data-price="${priceAttr}" onchange="updateTotal()" class="peer sr-only" ${isOutOfStock ? 'disabled' : ''} ${index===0 && !isOutOfStock ? 'checked' : ''}>
+                    <input type="radio" 
+                           name="selected_size" 
+                           value="${size.label}" 
+                           data-price="${priceAttr}"
+                           data-image="${size.image}" 
+                           onchange="selectSize(this)"
+                           class="peer sr-only" 
+                           ${isOutOfStock ? 'disabled' : ''} 
+                           ${index===0 && !isOutOfStock ? 'checked' : ''}>
+                    
                     <div class="min-w-[3rem] h-10 flex items-center justify-center px-3 border border-gray-200 text-xs font-bold text-gray-600 peer-checked:bg-black peer-checked:text-white peer-checked:border-black hover:border-black transition-all ${isOutOfStock ? 'opacity-30 cursor-not-allowed decoration-slice line-through' : ''}">
                         ${size.label}
                     </div>
@@ -299,11 +314,18 @@
                 `;
                 sizesGrid.insertAdjacentHTML('beforeend', sizeHtml);
             });
+            
+            // Trigger selectSize for the auto-checked first item
+            const firstInput = sizesGrid.querySelector('input:checked');
+            if(firstInput) selectSize(firstInput);
+
         } else {
             document.getElementById('sizeContainer').classList.add('hidden');
             hasStock = true; 
+            updateTotal();
         }
 
+        // Button State
         const btn = document.getElementById('addToCartBtn');
         const msg = document.getElementById('noStockMsg');
         
@@ -315,6 +337,20 @@
             btn.disabled = false;
             document.getElementById('btnText').innerText = "{{ _('prod_add_cart') }}";
             msg.classList.add('hidden');
+        }
+    }
+
+    // --- NEW FUNCTION: Handle Size Selection ---
+    function selectSize(input) {
+        const sizeImage = input.getAttribute('data-image');
+        
+        // If this size has a specific image, show ONLY that image
+        if (sizeImage && sizeImage !== "") {
+            renderGallery([sizeImage]);
+        } 
+        // Otherwise, revert to the Color's main gallery
+        else {
+            renderGallery(currentVariantImages);
         }
 
         updateTotal();
@@ -345,11 +381,9 @@
         document.getElementById('btnPrice').innerText = formatted;
     }
 
-
+    // --- INIT ---
     window.onload = function() {
-    
         renderGallery(defaultGallery);
-
         const firstColor = document.querySelector('input[name="color_id"]:checked');
         if (firstColor) selectColor(firstColor);
     };

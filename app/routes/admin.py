@@ -195,11 +195,12 @@ def manage_product(product_id):
                     db.session.flush() # Ensure we have color.id
                     kept_color_ids.append(color.id)
 
-                    # --- B. Manage Sizes (Bottles) ---
-                    # Strategy: Delete old sizes for this color and re-add (cleanest)
+       # --- B. Manage Sizes (Bottles) ---
+                    # Strategy: Delete old sizes for this color and re-add
                     ProductSize.query.filter_by(color_id=color.id).delete()
                     
-                    for s_data in v_data.get('sizes', []):
+                
+                    for j, s_data in enumerate(v_data.get('sizes', [])):
                         try:
                             qty = int(s_data.get('qty', 0))
                         except:
@@ -211,23 +212,37 @@ def manage_product(product_id):
                             s_price = None
 
                         new_size = ProductSize(
-                            color_id=color.id,
+                            color_id=color.id, 
                             size_label=s_data.get('label', '500ml'),
                             quantity=qty,
-                            price=s_price
+                            price=s_price,
+                            image_url=s_data.get('image_url')
                         )
+
+                       
+                        size_img_key = f"size_image_{i}_{j}"
+                        
+                        if size_img_key in request.files:
+                            s_file = request.files[size_img_key]
+                            if s_file and s_file.filename != '':
+                               
+                                fname = secure_filename(f"sz_{product.id}_{color.id}_{j}_{s_file.filename}")
+                                save_path = os.path.join(BASE_UPLOAD_PATH, 'products/sizes')
+                                os.makedirs(save_path, exist_ok=True)
+                                s_file.save(os.path.join(save_path, fname))
+                                new_size.image_url = f'products/sizes/{fname}'
+
                         db.session.add(new_size)
                         total_calculated_qty += qty
 
                     # --- C. Manage Variant Images (Uploads) ---
-                    # The form sends files with name="variant_images_0[]", "variant_images_1[]", etc.
-                    # 'i' comes from the loop index
+                 
                     file_key = f'variant_images_{i}[]'
                     v_files = request.files.getlist(file_key)
                     
                     for v_file in v_files:
                         if v_file and v_file.filename != '':
-                            # Naming: prodID_colorID_filename
+                          
                             fname = secure_filename(f"v_{product.id}_{color.id}_{v_file.filename}")
                             v_save_dir = os.path.join(BASE_UPLOAD_PATH, 'products/variants')
                             os.makedirs(v_save_dir, exist_ok=True)

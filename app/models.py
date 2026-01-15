@@ -215,7 +215,8 @@ class ProductSize(db.Model):
     color_id = db.Column(db.Integer, db.ForeignKey('product_color.id'), nullable=False)
     size_label = db.Column(db.String(20), nullable=False) 
     quantity = db.Column(db.Integer, default=0)
-    price = db.Column(db.Float, nullable=True)    
+    price = db.Column(db.Float, nullable=True)  
+    image_url = db.Column(db.String(500), nullable=True)  
 
 
 
