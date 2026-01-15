@@ -106,6 +106,21 @@ def api_add_category():
     db.session.commit()
     
     return jsonify({'id': new_cat.id, 'name': new_cat.name})
+
+import os
+import json
+from flask import render_template, redirect, url_for, request, flash, current_app
+from werkzeug.utils import secure_filename
+from flask_login import login_required
+
+
+
+
+
+
+# Helper to define upload path
+BASE_UPLOAD_PATH = 'app/static/uploads' # Adjust if your path is different
+
 @admin_bp.route('/product/new', defaults={'product_id': None}, methods=['GET', 'POST'])
 @admin_bp.route('/product/edit/<int:product_id>', methods=['GET', 'POST'])
 @login_required
@@ -114,74 +129,75 @@ def manage_product(product_id):
     product = Product.query.get_or_404(product_id) if product_id else Product()
     
     if request.method == 'POST':
-        # ==========================================
-        # 1. BASIC INFO
-        # ==========================================
-        product.name = request.form.get('name')
         try:
-            product.price = float(request.form.get('price'))
-        except (ValueError, TypeError):
-            product.price = 0.0
-            
-        cat_id = request.form.get('category_id')
-        product.category_id = int(cat_id) if cat_id else None
-        product.description = request.form.get('description')
-        product.label = request.form.get('label')
-        
-        # Ensure product is in session to generate ID (needed for image filenames)
-        if not product.id:
-            db.session.add(product)
-            db.session.flush()
-
-        # ==========================================
-        # 2. MAIN GALLERY (Multiple Images)
-        # ==========================================
-        
-        # A. Handle New Uploads
-        main_files = request.files.getlist('main_images[]')
-        for file in main_files:
-            if file and file.filename != '':
-                filename = secure_filename(f"main_{product.id}_{file.filename}")
-                save_dir = os.path.join(BASE_UPLOAD_PATH, 'products')
-                os.makedirs(save_dir, exist_ok=True)
-                file.save(os.path.join(save_dir, filename))
-                
-                db_path = f'products/{filename}'
-                
-                # Logic: If no cover image, first one becomes cover. Others go to gallery.
-                if not product.image_url:
-                    product.image_url = db_path
-                else:
-                    new_img = ProductImage(product_id=product.id, image_url=db_path)
-                    db.session.add(new_img)
-
-        # B. Handle Deletions (Checkboxes from UI)
-        delete_main_ids = request.form.getlist('delete_main_image[]')
-        if delete_main_ids:
-            # Optional: Add logic here to delete actual file from disk if you want
-            ProductImage.query.filter(ProductImage.id.in_(delete_main_ids)).delete(synchronize_session=False)
-
-
-        # ==========================================
-        # 3. VARIANTS (Colors, Sizes, Images)
-        # ==========================================
-        variants_json = request.form.get('variants_json')
-        
-        # Flags
-        product.has_colors = True # Force true if using the new form logic
-        product.has_sizes = True 
-        
-        total_calculated_qty = 0
-        kept_color_ids = [] # To track which colors remain active
-
-        if variants_json:
+            # ==========================================
+            # 1. BASIC INFO
+            # ==========================================
+            product.name = request.form.get('name')
             try:
+                product.price = float(request.form.get('price'))
+            except (ValueError, TypeError):
+                product.price = 0.0
+                
+            cat_id = request.form.get('category_id')
+            product.category_id = int(cat_id) if cat_id else None
+            product.description = request.form.get('description')
+            product.label = request.form.get('label')
+            
+            # Checkbox: 'on' if checked, None if not
+            product.is_juice = True if request.form.get('is_juice') else False
+            
+            # Ensure product exists to get an ID for filenames
+            if not product.id:
+                db.session.add(product)
+                db.session.flush()
+
+            # ==========================================
+            # 2. MAIN GALLERY
+            # ==========================================
+            
+            # A. New Uploads
+            main_files = request.files.getlist('main_images[]')
+            for file in main_files:
+                if file and file.filename != '':
+                    filename = secure_filename(f"main_{product.id}_{file.filename}")
+                    save_dir = os.path.join(BASE_UPLOAD_PATH, 'products')
+                    os.makedirs(save_dir, exist_ok=True)
+                    file.save(os.path.join(save_dir, filename))
+                    
+                    db_path = f'products/{filename}'
+                    
+                    # Logic: If no cover, set as cover. Else add to gallery.
+                    if not product.image_url:
+                        product.image_url = db_path
+                    else:
+                        new_img = ProductImage(product_id=product.id, image_url=db_path)
+                        db.session.add(new_img)
+
+            # B. Deletions
+            delete_main_ids = request.form.getlist('delete_main_image[]')
+            if delete_main_ids:
+                ProductImage.query.filter(ProductImage.id.in_(delete_main_ids)).delete(synchronize_session=False)
+
+
+            # ==========================================
+            # 3. VARIANTS (Colors/Flavors, Sizes, Images)
+            # ==========================================
+            variants_json = request.form.get('variants_json')
+            
+            # Force flags true if using this system
+            product.has_colors = True 
+            product.has_sizes = True 
+            
+            total_calculated_qty = 0
+            kept_color_ids = [] 
+
+            if variants_json:
                 variants_data = json.loads(variants_json)
 
                 for i, v_data in enumerate(variants_data):
                     # --- A. Manage ProductColor ---
                     color = None
-                    # If ID exists, we update. If not, we create.
                     if v_data.get('id'):
                         color = ProductColor.query.get(v_data['id'])
                     
@@ -192,14 +208,13 @@ def manage_product(product_id):
                     color.name = v_data.get('name', 'Standard')
                     color.code = v_data.get('code', '#000000')
                     
-                    db.session.flush() # Ensure we have color.id
+                    db.session.flush() 
                     kept_color_ids.append(color.id)
 
-  # --- B. Manage Sizes (Bottles) ---
-                    # 1. Clear old sizes
+                    # --- B. Manage Sizes (Bottles) ---
+                    # 1. Delete old sizes (This cascades and deletes old SizeImage rows!)
                     ProductSize.query.filter_by(color_id=color.id).delete()
                     
-                    # 2. Loop through new sizes
                     for j, s_data in enumerate(v_data.get('sizes', [])):
                         try:
                             qty = int(s_data.get('qty', 0))
@@ -211,7 +226,7 @@ def manage_product(product_id):
                         except:
                             s_price = None
 
-                        # 3. Create the ProductSize record first
+                        # 2. Create New Size
                         new_size = ProductSize(
                             color_id=color.id, 
                             size_label=s_data.get('label', '500ml'),
@@ -219,12 +234,31 @@ def manage_product(product_id):
                             price=s_price,
                         )
                         db.session.add(new_size)
-                        db.session.flush() # IMPORTANT: This generates the new_size.id
+                        db.session.flush() # Need ID for images
 
-                        # 4. Handle Multiple Images for this Size
-                        # NOTE: Ensure this matches your HTML input name exactly (size_images vs size_image)
-                        size_img_key = f"size_images_{i}_{j}[]" 
+                        # -------------------------------------------------------
+                        # 3. RESTORE OLD SIZE IMAGES (The Fix)
+                        # -------------------------------------------------------
+                        # The JS sends a list of URLs for images that were already there.
+                        # We must re-insert them into the SizeImage table.
+                        existing_urls = s_data.get('existing_images', [])
                         
+                        for url in existing_urls:
+                            # URL is like "/static/uploads/products/sizes/abc.jpg"
+                            # We need relative path "products/sizes/abc.jpg"
+                            if 'uploads/' in url:
+                                clean_path = url.split('uploads/', 1)[1]
+                                # Create entry
+                                restored_img = SizeImage(
+                                    size_id=new_size.id,
+                                    image_url=clean_path
+                                )
+                                db.session.add(restored_img)
+
+                        # -------------------------------------------------------
+                        # 4. SAVE NEW SIZE UPLOADS (Multiple)
+                        # -------------------------------------------------------
+                        size_img_key = f"size_images_{i}_{j}[]" 
                         files = request.files.getlist(size_img_key)
                         
                         for s_file in files:
@@ -234,7 +268,7 @@ def manage_product(product_id):
                                 os.makedirs(save_path, exist_ok=True)
                                 s_file.save(os.path.join(save_path, fname))
             
-                                # 5. Save to SizeImage Table
+                                # Add new DB entry
                                 size_image = SizeImage(
                                     size_id=new_size.id,
                                     image_url=f'products/sizes/{fname}'
@@ -243,14 +277,13 @@ def manage_product(product_id):
 
                         total_calculated_qty += qty
 
-                    # --- C. Manage Variant Images (Uploads) ---
-                 
+                    # --- C. Manage Variant Images (Color Images) ---
+                    # Uploads
                     file_key = f'variant_images_{i}[]'
                     v_files = request.files.getlist(file_key)
                     
                     for v_file in v_files:
                         if v_file and v_file.filename != '':
-                          
                             fname = secure_filename(f"v_{product.id}_{color.id}_{v_file.filename}")
                             v_save_dir = os.path.join(BASE_UPLOAD_PATH, 'products/variants')
                             os.makedirs(v_save_dir, exist_ok=True)
@@ -259,57 +292,51 @@ def manage_product(product_id):
                             new_col_img = ColorImage(color_id=color.id, image_url=f'products/variants/{fname}')
                             db.session.add(new_col_img)
 
-                    # --- D. Manage Variant Images (Deletions) ---
+                    # Deletions
                     if v_data.get('id'):
                         del_col_imgs = request.form.getlist(f'delete_color_image_{v_data["id"]}[]')
                         if del_col_imgs:
                             ColorImage.query.filter(ColorImage.id.in_(del_col_imgs)).delete(synchronize_session=False)
 
-                # --- E. Cleanup Removed Colors ---
-                # If a color was in DB but not in the JSON submission, delete it
+                # --- D. Cleanup Removed Colors ---
                 if kept_color_ids:
                     ProductColor.query.filter(
                         ProductColor.product_id == product.id,
                         ~ProductColor.id.in_(kept_color_ids)
                     ).delete(synchronize_session=False)
-                else:
-                    # If JSON was empty/valid but had no items, delete all colors? 
-                    # Usually better to check if variants_data was not empty
-                    pass
-
+                
+                # Update Total Quantity
                 product.quantity = total_calculated_qty
 
-            except Exception as e:
-                print(f"Variant Error: {e}")
-                db.session.rollback()
-                flash("Error saving variants. Please check data.", "error")
-                return redirect(request.url)
+            # ==========================================
+            # 4. EXTRAS
+            # ==========================================
+            Extra.query.filter_by(product_id=product.id).delete()
+            ex_names = request.form.getlist('extra_name[]')
+            ex_prices = request.form.getlist('extra_price[]')
+            
+            for n, p in zip(ex_names, ex_prices):
+                if n.strip():
+                    try:
+                        price_val = float(p)
+                    except:
+                        price_val = 0.0
+                    new_extra = Extra(name=n, price=price_val, product_id=product.id)
+                    db.session.add(new_extra)
 
-        # ==========================================
-        # 4. EXTRAS
-        # ==========================================
-        Extra.query.filter_by(product_id=product.id).delete()
-        ex_names = request.form.getlist('extra_name[]')
-        ex_prices = request.form.getlist('extra_price[]')
-        
-        for n, p in zip(ex_names, ex_prices):
-            if n.strip():
-                try:
-                    price_val = float(p)
-                except:
-                    price_val = 0.0
-                new_extra = Extra(name=n, price=price_val, product_id=product.id)
-                db.session.add(new_extra)
+            db.session.commit()
+            flash("Product saved successfully!", "success")
+            return redirect(url_for('admin.dashboard'))
 
-        db.session.commit()
-        
-        flash("Product saved successfully!", "success")
-        return redirect(url_for('admin.dashboard'))
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error Saving Product: {e}") # Print error to console
+            flash(f"Error saving product: {str(e)}", "error")
+            return redirect(request.url)
 
+    # GET Request
     categories = Category.query.all()
     return render_template('admin/product_form.html', product=product, categories=categories)
-
-
 
 
 # --- 5. DELETE PRODUCT ---
