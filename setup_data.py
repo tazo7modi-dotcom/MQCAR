@@ -8,8 +8,8 @@ def create_admin_user():
     """Creates the main admin user if not exists"""
     print("\n👤 Checking Admin User...")
     
-    email = "dropi@admin.com"
-    password = "dropi123"
+    email = "tazo@tazo.com"
+    password = "Hamod88"
 
 
     admin = User.query.filter_by(email=email).first()
@@ -27,7 +27,7 @@ def create_admin_user():
         db.drop_all()    
         db.create_all()  
         
-        new_admin = User(email=email, username="CarsAdmin", is_admin=True)
+        new_admin = User(email=email, username="Tazo", is_admin=True)
         new_admin.set_password(password)
         
         db.session.add(new_admin)

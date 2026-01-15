@@ -8,15 +8,15 @@ with app.app_context():
     db.create_all()
     
     # 2. Now we can safely check for the admin
-    existing_admin = User.query.filter_by(email="admin@dropi.com").first()
+    existing_admin = User.query.filter_by(email="admin@tazo.com").first()
     
     if not existing_admin:
-        admin = User(username="Boss", email="admin@dropi.com", is_admin=True)
-        admin.set_password("DropiAa1223Aa") 
+        admin = User(username="Boss", email="admin@tazo.com", is_admin=True)
+        admin.set_password("Hamod88") 
         db.session.add(admin)
         db.session.commit()
         print("✅ Success! Admin account created.")
-        print("Email: admin@dropi.com")
-        print("Password: DropiAa1223Aa")
+        print("Email: admin@Tazo.com")
+        print("Password: Hamod88")
     else:
         print("⚠️ Admin already exists.")
