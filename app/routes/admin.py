@@ -119,7 +119,7 @@ from flask_login import login_required
 
 
 # Helper to define upload path
-BASE_UPLOAD_PATH = '/var/data/uploads' # Adjust if your path is different
+BASE_UPLOAD_PATH = '/var/data' # Adjust if your path is different
 
 @admin_bp.route('/product/new', defaults={'product_id': None}, methods=['GET', 'POST'])
 @admin_bp.route('/product/edit/<int:product_id>', methods=['GET', 'POST'])
