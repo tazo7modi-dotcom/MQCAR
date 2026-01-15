@@ -6,7 +6,7 @@ from werkzeug.utils import secure_filename
 from sqlalchemy import func, extract
 from datetime import datetime, timedelta
 
-from app.models import db, Product, Category, Order, User, Extra, OrderItem,ProductSize,ProductColor,ProductImage, ColorImage
+from app.models import db, Product, Category, Order, User, Extra, OrderItem,ProductSize,ProductColor,ProductImage, ColorImage,SizeImage
 from app.translations import dictionary
 import json
 
@@ -195,11 +195,11 @@ def manage_product(product_id):
                     db.session.flush() # Ensure we have color.id
                     kept_color_ids.append(color.id)
 
-       # --- B. Manage Sizes (Bottles) ---
-                    # Strategy: Delete old sizes for this color and re-add
+  # --- B. Manage Sizes (Bottles) ---
+                    # 1. Clear old sizes
                     ProductSize.query.filter_by(color_id=color.id).delete()
                     
-                
+                    # 2. Loop through new sizes
                     for j, s_data in enumerate(v_data.get('sizes', [])):
                         try:
                             qty = int(s_data.get('qty', 0))
@@ -211,28 +211,36 @@ def manage_product(product_id):
                         except:
                             s_price = None
 
+                        # 3. Create the ProductSize record first
                         new_size = ProductSize(
                             color_id=color.id, 
                             size_label=s_data.get('label', '500ml'),
                             quantity=qty,
                             price=s_price,
-                            image_url=s_data.get('image_url')
                         )
+                        db.session.add(new_size)
+                        db.session.flush() # IMPORTANT: This generates the new_size.id
 
-                       
-                        size_img_key = f"size_image_{i}_{j}"
+                        # 4. Handle Multiple Images for this Size
+                        # NOTE: Ensure this matches your HTML input name exactly (size_images vs size_image)
+                        size_img_key = f"size_images_{i}_{j}[]" 
                         
-                        if size_img_key in request.files:
-                            s_file = request.files[size_img_key]
+                        files = request.files.getlist(size_img_key)
+                        
+                        for s_file in files:
                             if s_file and s_file.filename != '':
-                               
                                 fname = secure_filename(f"sz_{product.id}_{color.id}_{j}_{s_file.filename}")
                                 save_path = os.path.join(BASE_UPLOAD_PATH, 'products/sizes')
                                 os.makedirs(save_path, exist_ok=True)
                                 s_file.save(os.path.join(save_path, fname))
-                                new_size.image_url = f'products/sizes/{fname}'
+            
+                                # 5. Save to SizeImage Table
+                                size_image = SizeImage(
+                                    size_id=new_size.id,
+                                    image_url=f'products/sizes/{fname}'
+                                )
+                                db.session.add(size_image)
 
-                        db.session.add(new_size)
                         total_calculated_qty += qty
 
                     # --- C. Manage Variant Images (Uploads) ---

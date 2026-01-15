@@ -217,6 +217,7 @@ class ProductSize(db.Model):
     quantity = db.Column(db.Integer, default=0)
     price = db.Column(db.Float, nullable=True)  
     image_url = db.Column(db.String(500), nullable=True)  
+    images = db.relationship('SizeImage', backref='size', cascade="all, delete-orphan", lazy=True)
 
 
 
@@ -225,6 +226,7 @@ class ProductImage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
     image_url = db.Column(db.String(500), nullable=False)   
+    
 
 
 
@@ -236,3 +238,11 @@ class ColorImage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     color_id = db.Column(db.Integer, db.ForeignKey('product_color.id'), nullable=False)
     image_url = db.Column(db.String(500), nullable=False)     
+
+
+
+class SizeImage(db.Model):
+    """Stores multiple images for a specific size variant"""
+    id = db.Column(db.Integer, primary_key=True)
+    size_id = db.Column(db.Integer, db.ForeignKey('product_size.id'), nullable=False)
+    image_url = db.Column(db.String(500), nullable=False)    
