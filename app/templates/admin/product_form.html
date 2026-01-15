@@ -293,7 +293,7 @@
                     <div class="flex gap-2 flex-wrap">
                         ${variant.existing_images.map(img => `
                             <div class="relative group border border-zinc-300">
-                                <img src="/static/uploads/${img.url}" class="w-12 h-12 object-cover">
+                                <img src="/var/data/uploads/${img.url}" class="w-12 h-12 object-cover">
                                 <label class="absolute inset-0 bg-red-500/80 hidden group-hover:flex items-center justify-center cursor-pointer text-white text-[10px] font-bold">
                                     <input type="checkbox" name="delete_color_image_${variant.id}[]" value="${img.id}" class="mr-1"> DEL
                                 </label>
