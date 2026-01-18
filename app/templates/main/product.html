@@ -21,14 +21,11 @@
         
         <div class="w-full lg:w-1/2">
             <div class="aspect-square w-full overflow-hidden bg-gray-50 border border-gray-100 relative group">
-                
                 <div id="imageSlider" class="flex w-full h-full overflow-x-auto snap-x snap-mandatory scrollbar-hide z-10 relative">
                     </div>
-
                 <div id="sliderDots" class="absolute bottom-4 left-0 right-0 flex justify-center gap-2 z-20"></div>
                 
-                <div id="noImagePlaceholder" 
-                     class="absolute inset-0 flex items-center justify-center text-gray-300 text-xs uppercase tracking-widest font-bold z-0 hidden">
+                <div id="noImagePlaceholder" class="absolute inset-0 flex items-center justify-center text-gray-300 text-xs uppercase tracking-widest font-bold z-0 hidden">
                     {{ _('prod_no_img') }}
                 </div>
                 
@@ -49,21 +46,14 @@
             <h1 class="text-4xl md:text-5xl font-light text-black mb-6 smart-heading leading-tight">{{ product.name|translate_dynamic }}</h1>
             
             <div class="flex items-end gap-4 mb-10 pb-10 border-b border-gray-100">
-                <span id="displayPrice" class="text-3xl font-bold text-black smart-heading">
-                    {{ product.get_price() | currency }}
-                </span>
-                
+                <span id="displayPrice" class="text-3xl font-bold text-black smart-heading">{{ product.get_price() | currency }}</span>
                 {% if product.on_sale() %}
-                    <span id="oldPriceDisplay" class="text-sm text-gray-400 line-through mb-1 font-medium">
-                        {{ product.price | currency }}
-                    </span>
+                    <span id="oldPriceDisplay" class="text-sm text-gray-400 line-through mb-1 font-medium">{{ product.price | currency }}</span>
                 {% endif %}
             </div>
 
             {% if product.description %}
-            <div class="mb-8 text-gray-600 text-sm leading-7 smart-body">
-                {{ product.description | translate_dynamic }}
-            </div>
+            <div class="mb-8 text-gray-600 text-sm leading-7 smart-body">{{ product.description | translate_dynamic }}</div>
             {% endif %}
 
             <form action="{{ url_for('main.add_to_cart') }}" method="POST" class="space-y-8">
@@ -71,17 +61,23 @@
                 
                 {% if product.colors %}
                 
-                {% set has_visible_colors = false %}
-                {% for c in product.colors %}{% if c.name and c.name.strip() %}{% set has_visible_colors = true %}{% endif %}{% endfor %}
+                {% set show_color_title = false %}
+                {% for c in product.colors %}
+                    {% if c.name and c.name.strip() and c.name|lower != 'standard' %}
+                        {% set show_color_title = true %}
+                    {% endif %}
+                {% endfor %}
 
-                <div id="colorContainer" class="{% if not has_visible_colors %}hidden{% endif %}">
+                <div id="colorContainer" class="{% if not show_color_title %}hidden{% endif %}">
                     <h3 class="text-[10px] font-bold text-gray-900 uppercase tracking-widest mb-4">
                         {{ _('prod_select_color') }}: <span id="selectedColorName" class="text-gray-400 font-normal"></span>
                     </h3>
                     <div class="flex flex-wrap gap-3">
                         {% for color in product.colors %}
                         
-                        <label class="cursor-pointer group {% if not (color.name and color.name.strip()) %}hidden{% endif %}">
+                        {% set is_hidden = (not color.name) or (color.name|lower == 'standard') %}
+                        
+                        <label class="cursor-pointer group {% if is_hidden %}hidden{% endif %}">
                             <input type="radio" name="color_id" value="{{ color.id }}" 
                                    data-name="{{ color.name }}"
                                    onchange="selectColor(this)"
@@ -168,6 +164,7 @@
     let currentVariantImages = defaultGallery;
 
     // --- 2. INVENTORY DATA ---
+    // Note: We use color.name and size.size_label as per your model definition
     const inventoryData = {
         {% for color in product.colors %}
             "{{ color.id }}": {
@@ -179,12 +176,11 @@
                 ],
                 sizes: [
                     {% for size in color.sizes %}
-                        // Always include size data so logic works
+                        // Always load size data regardless of name
                         { 
                             label: "{{ size.size_label }}", 
                             qty: {{ size.quantity }},
                             price: {{ size.price if size.price is not none else 'null' }},
-                            // NEW: Load ARRAY of images for this size
                             images: [
                                 {% for simg in size.images %}
                                 "{{ url_for('uploaded_file', filename=simg.image_url) }}",
@@ -254,15 +250,14 @@
         const colorName = radio.getAttribute('data-name');
         const colorData = inventoryData[colorId];
 
-        // Update Text Label (Only if name is visible)
+        // LOGIC: If name is "Standard" or empty, don't show it in the text label
         const nameDisplay = document.getElementById('selectedColorName');
-        if(colorName && colorName.trim() !== "") {
+        if(colorName && colorName.trim() !== "" && colorName.toLowerCase() !== "standard") {
             nameDisplay.innerText = colorName;
         } else {
             nameDisplay.innerText = "";
         }
 
-        // Update Gallery
         if (colorData.images && colorData.images.length > 0) {
             currentVariantImages = colorData.images;
         } else {
@@ -270,12 +265,11 @@
         }
         renderGallery(currentVariantImages);
 
-        // Update Sizes
         const sizesGrid = document.getElementById('sizesGrid');
         sizesGrid.innerHTML = ''; 
         let hasStock = false;
 
-        // CHECK SIZES
+        // CHECK: Do we have sizes?
         if (colorData.sizes && colorData.sizes.length > 0) {
             document.getElementById('sizeContainer').classList.remove('hidden');
             
@@ -283,9 +277,9 @@
                 const isOutOfStock = size.qty <= 0;
                 if (!isOutOfStock) hasStock = true;
                 const priceAttr = size.price !== null ? size.price : '';
+                
                 const sizeImagesJson = JSON.stringify(size.images).replace(/"/g, '&quot;');
 
-                // Always render button even if label is standard
                 const sizeHtml = `
                 <label class="cursor-pointer">
                     <input type="radio" 
@@ -311,7 +305,7 @@
             if(firstInput) selectSize(firstInput);
 
         } else {
-            // No sizes for this color (Just a color product)
+            // No sizes for this color
             document.getElementById('sizeContainer').classList.add('hidden');
             hasStock = true; 
             updateTotal();
@@ -345,7 +339,6 @@
         } else {
             renderGallery(currentVariantImages);
         }
-
         updateTotal();
     }
 
@@ -381,13 +374,13 @@
         // 1. Try to find an input that is already 'checked' (via loop.first in Jinja)
         let firstColor = document.querySelector('input[name="color_id"]:checked');
         
-        // 2. If nothing is checked (e.g. because we hid it), grab the first available one
+        // 2. If nothing is checked (e.g. because it's hidden or Standard), grab the first available one
         if (!firstColor) {
             firstColor = document.querySelector('input[name="color_id"]');
         }
 
         if (firstColor) {
-            // Force select it to trigger JS event logic which loads sizes
+            // Force select it to trigger JS event logic
             firstColor.checked = true;
             selectColor(firstColor);
         }
