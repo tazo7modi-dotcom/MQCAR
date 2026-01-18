@@ -2,19 +2,10 @@
 
 {% block content %}
 <style>
-    .scrollbar-hide::-webkit-scrollbar {
-        display: none;
-    }
-    .scrollbar-hide {
-        -ms-overflow-style: none;  
-        scrollbar-width: none; 
-    }
-    .snap-x {
-        scroll-snap-type: x mandatory;
-    }
-    .snap-center {
-        scroll-snap-align: center;
-    }
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    .snap-x { scroll-snap-type: x mandatory; }
+    .snap-center { scroll-snap-align: center; }
 </style>
 
 <div class="container mx-auto px-6 py-16 max-w-7xl">
@@ -79,12 +70,9 @@
                 <input type="hidden" name="product_id" value="{{ product.id }}">
                 
                 {% if product.colors %}
+                
                 {% set has_visible_colors = false %}
-                {% for c in product.colors %}
-                    {% if c.name and c.name.strip() %}
-                        {% set has_visible_colors = true %}
-                    {% endif %}
-                {% endfor %}
+                {% for c in product.colors %}{% if c.name and c.name.strip() %}{% set has_visible_colors = true %}{% endif %}{% endfor %}
 
                 <div id="colorContainer" class="{% if not has_visible_colors %}hidden{% endif %}">
                     <h3 class="text-[10px] font-bold text-gray-900 uppercase tracking-widest mb-4">
@@ -92,17 +80,18 @@
                     </h3>
                     <div class="flex flex-wrap gap-3">
                         {% for color in product.colors %}
-                            <label class="cursor-pointer group {% if not (color.name and color.name.strip()) %}hidden{% endif %}">
-                                <input type="radio" name="color_id" value="{{ color.id }}" 
-                                       data-name="{{ color.name }}"
-                                       onchange="selectColor(this)"
-                                       class="peer sr-only" 
-                                       {% if loop.first %}checked{% endif %}>
-                                
-                                <div class="w-10 h-10 rounded-full border border-gray-200 peer-checked:ring-1 peer-checked:ring-offset-2 peer-checked:ring-black relative transition-all">
-                                    <span class="absolute inset-0.5 rounded-full" style="background-color: {{ color.code }};"></span>
-                                </div>
-                            </label>
+                        
+                        <label class="cursor-pointer group {% if not (color.name and color.name.strip()) %}hidden{% endif %}">
+                            <input type="radio" name="color_id" value="{{ color.id }}" 
+                                   data-name="{{ color.name }}"
+                                   onchange="selectColor(this)"
+                                   class="peer sr-only" 
+                                   {% if loop.first %}checked{% endif %}>
+                            
+                            <div class="w-10 h-10 rounded-full border border-gray-200 peer-checked:ring-1 peer-checked:ring-offset-2 peer-checked:ring-black relative transition-all">
+                                <span class="absolute inset-0.5 rounded-full" style="background-color: {{ color.code }};"></span>
+                            </div>
+                        </label>
                         {% endfor %}
                     </div>
                 </div>
@@ -148,20 +137,9 @@
             </form>
             
             <div class="mt-12 grid grid-cols-2 gap-4 border-t border-gray-100 pt-8">
-                <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 bg-gray-50 flex items-center justify-center rounded-full text-black">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 13l4 4L19 7"></path></svg>
-                    </div>
-                    <span class="text-[10px] font-bold uppercase tracking-wide text-gray-500">{{ _('prod_auth_guarantee') }}</span>
-                </div>
-                <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 bg-gray-50 flex items-center justify-center rounded-full text-black">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    </div>
-                    <span class="text-[10px] font-bold uppercase tracking-wide text-gray-500">{{ _('prod_ship_time') }}</span>
-                </div>
+                <div class="flex items-center gap-3"><div class="w-8 h-8 bg-gray-50 flex items-center justify-center rounded-full text-black"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 13l4 4L19 7"></path></svg></div><span class="text-[10px] font-bold uppercase tracking-wide text-gray-500">{{ _('prod_auth_guarantee') }}</span></div>
+                <div class="flex items-center gap-3"><div class="w-8 h-8 bg-gray-50 flex items-center justify-center rounded-full text-black"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div><span class="text-[10px] font-bold uppercase tracking-wide text-gray-500">{{ _('prod_ship_time') }}</span></div>
             </div>
-
         </div>
     </div>
 </div>
@@ -255,7 +233,6 @@
             }
         });
 
-        // Dots scrolling logic
         if (images.length > 1) {
             slider.onscroll = () => {
                 const index = Math.round(slider.scrollLeft / slider.clientWidth);
@@ -277,7 +254,7 @@
         const colorName = radio.getAttribute('data-name');
         const colorData = inventoryData[colorId];
 
-        // Update Text Label
+        // Update Text Label (Only if name is visible)
         const nameDisplay = document.getElementById('selectedColorName');
         if(colorName && colorName.trim() !== "") {
             nameDisplay.innerText = colorName;
@@ -298,6 +275,7 @@
         sizesGrid.innerHTML = ''; 
         let hasStock = false;
 
+        // CHECK SIZES
         if (colorData.sizes && colorData.sizes.length > 0) {
             document.getElementById('sizeContainer').classList.remove('hidden');
             
@@ -305,11 +283,9 @@
                 const isOutOfStock = size.qty <= 0;
                 if (!isOutOfStock) hasStock = true;
                 const priceAttr = size.price !== null ? size.price : '';
-                
                 const sizeImagesJson = JSON.stringify(size.images).replace(/"/g, '&quot;');
 
-                // Always render the size option HTML, even if label is standard
-                // (You can add logic to hide label text if needed, but the button is usually required)
+                // Always render button even if label is standard
                 const sizeHtml = `
                 <label class="cursor-pointer">
                     <input type="radio" 
@@ -335,6 +311,7 @@
             if(firstInput) selectSize(firstInput);
 
         } else {
+            // No sizes for this color (Just a color product)
             document.getElementById('sizeContainer').classList.add('hidden');
             hasStock = true; 
             updateTotal();
@@ -354,11 +331,9 @@
         }
     }
 
-    // --- NEW: Handle Multiple Images per Size ---
     function selectSize(input) {
         const imagesStr = input.getAttribute('data-images');
         let sizeImages = [];
-        
         try {
             if(imagesStr) sizeImages = JSON.parse(imagesStr);
         } catch(e) {
@@ -406,13 +381,13 @@
         // 1. Try to find an input that is already 'checked' (via loop.first in Jinja)
         let firstColor = document.querySelector('input[name="color_id"]:checked');
         
-        // 2. If nothing is checked (e.g. because it's hidden), grab the first available one
+        // 2. If nothing is checked (e.g. because we hid it), grab the first available one
         if (!firstColor) {
             firstColor = document.querySelector('input[name="color_id"]');
         }
 
         if (firstColor) {
-            // Force select it to trigger JS event logic
+            // Force select it to trigger JS event logic which loads sizes
             firstColor.checked = true;
             selectColor(firstColor);
         }
