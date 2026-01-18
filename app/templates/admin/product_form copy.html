@@ -63,22 +63,14 @@
             <div class="mb-8 p-4 bg-zinc-50 border border-zinc-200">
                 <label class="block text-zinc-900 text-sm font-bold uppercase mb-4">{{ _('lbl_main_gallery') }}</label>
                 
-                {% if product and (product.image_url or product.images) %}
+                {% if product and product.images %}
                 <div class="mb-4">
                     <p class="text-[10px] text-zinc-400 uppercase font-bold mb-2">Saved Images (Check to Delete)</p>
                     <div class="flex gap-3 flex-wrap">
-                        
-                        {% if product.image_url %}
                         <div class="relative group">
                             <img src="{{ url_for('uploaded_file', filename=product.image_url) }}" class="w-20 h-20 object-cover border-2 border-amber-500" title="Main Cover">
                             <span class="absolute bottom-0 left-0 w-full bg-amber-500 text-white text-[9px] text-center font-bold uppercase">Cover</span>
-                            
-                            <label class="absolute inset-0 bg-red-500/80 hidden group-hover:flex items-center justify-center cursor-pointer text-white text-[10px] font-bold z-10">
-                                <input type="checkbox" name="delete_cover" value="1" class="mr-1"> DEL
-                            </label>
                         </div>
-                        {% endif %}
-
                         {% for img in product.images %}
                         <div class="relative group">
                             <img src="{{ url_for('uploaded_file', filename=img.image_url) }}" class="w-20 h-20 object-cover border border-zinc-300">
@@ -135,11 +127,12 @@
     </div>
 </div>
 
+
 <script>
     // --- 1. GLOBAL VARIABLES ---
     let mainFilesStore = new DataTransfer(); 
     let variantFilesStore = {};
-    let sizeFilesStore = {}; 
+    let sizeFilesStore = {}; // Stores files for sizes { vIndex: { sIndex: DataTransfer } }
 
     // --- 2. DATA LOADING ---
     let variantsData = [];
@@ -224,7 +217,7 @@
     }
 
     // ==========================================
-    //  VARIANT LOGIC
+    //  VARIANT LOGIC (FIXED)
     // ==========================================
     function renderVariants() {
         const container = document.getElementById('variantsContainer');
@@ -235,19 +228,19 @@
             if (!sizeFilesStore[vIndex]) sizeFilesStore[vIndex] = {}; 
 
             let sizesHtml = variant.sizes.map((size, sIndex) => {
-                // Initialize DataTransfer
+                // Initialize DataTransfer for this specific size if missing
                 if (!sizeFilesStore[vIndex][sIndex]) sizeFilesStore[vIndex][sIndex] = new DataTransfer();
 
-                // Preview Logic
+                // --- PREVIEW LOGIC ---
                 let previewSrc = "";
                 let count = 0;
 
-                // 1. New Uploads
+                // 1. Check New Uploads
                 if (sizeFilesStore[vIndex][sIndex].files.length > 0) {
                     previewSrc = URL.createObjectURL(sizeFilesStore[vIndex][sIndex].files[0]);
                     count = sizeFilesStore[vIndex][sIndex].files.length;
                 } 
-                // 2. Existing DB Images
+                // 2. Check Database Images
                 else if (size.existing_images && size.existing_images.length > 0) {
                     previewSrc = size.existing_images[0];
                     count = size.existing_images.length;
@@ -287,7 +280,7 @@
                 </div>
             `}).join('');
 
-            // Variant Gallery
+            // --- VARIANT GALLERY PREVIEW ---
             let existingImagesHtml = '';
             if (variant.existing_images && variant.existing_images.length > 0) {
                 existingImagesHtml = `
@@ -351,7 +344,7 @@
             
             container.insertAdjacentHTML('beforeend', variantHtml);
             
-            // --- RE-ATTACH FILES ---
+            // --- CRITICAL FIX: RE-ATTACH FILES TO INPUTS ---
             variant.sizes.forEach((_, sIndex) => {
                 const inputEl = document.getElementById(`sizeInput_${vIndex}_${sIndex}`);
                 if (inputEl && sizeFilesStore[vIndex] && sizeFilesStore[vIndex][sIndex]) {
@@ -374,6 +367,7 @@
             for (let i = 0; i < input.files.length; i++) {
                 sizeFilesStore[vIndex][sIndex].items.add(input.files[i]);
             }
+            // Trigger Render (updates preview and resets DOM)
             renderVariants(); 
         }
     }

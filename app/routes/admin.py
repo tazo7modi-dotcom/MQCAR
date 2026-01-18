@@ -118,8 +118,8 @@ from flask_login import login_required
 
 
 
-# Helper to define upload path
-BASE_UPLOAD_PATH = '/var/data' # Adjust if your path is different
+
+BASE_UPLOAD_PATH = '/var/data' 
 
 @admin_bp.route('/product/new', defaults={'product_id': None}, methods=['GET', 'POST'])
 @admin_bp.route('/product/edit/<int:product_id>', methods=['GET', 'POST'])
@@ -178,6 +178,8 @@ def manage_product(product_id):
             delete_main_ids = request.form.getlist('delete_main_image[]')
             if delete_main_ids:
                 ProductImage.query.filter(ProductImage.id.in_(delete_main_ids)).delete(synchronize_session=False)
+            if request.form.get('delete_cover'):
+                product.image_url = None    
 
 
             # ==========================================
