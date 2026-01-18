@@ -79,8 +79,12 @@
                 <input type="hidden" name="product_id" value="{{ product.id }}">
                 
                 {% if product.colors %}
-                {% set has_visible_colors = false %}
-                {% for c in product.colors %}{% if c.name and c.name.strip() %}{% set has_visible_colors = true %}{% endif %}{% endfor %}
+{% set has_visible_colors = false %}
+{% for c in product.colors %}
+    {% if c.name and c.name.strip() %}
+        {% set has_visible_colors = true %}
+    {% endif %}
+{% endfor %}
 
                 <div id="colorContainer" class="{% if not has_visible_colors %}hidden{% endif %}">
                     <h3 class="text-[10px] font-bold text-gray-900 uppercase tracking-widest mb-4">

@@ -67,7 +67,6 @@ class Product(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     colors = db.relationship('ProductColor', backref='product', cascade="all, delete-orphan", lazy=True)
     images = db.relationship('ProductImage', backref='product', cascade="all, delete-orphan", lazy=True)
-    colors = db.relationship('ProductColor', backref='product', cascade="all, delete-orphan", lazy=True)
 
     @property
     def total_quantity(self):
