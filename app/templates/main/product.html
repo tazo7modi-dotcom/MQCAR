@@ -92,19 +92,17 @@
                     </h3>
                     <div class="flex flex-wrap gap-3">
                         {% for color in product.colors %}
-                        
-                        <label class="cursor-pointer group {% if not (color.name and color.name.strip()) %}hidden{% endif %}">
-                            <input type="radio" name="color_id" value="{{ color.id }}" 
-                                   data-name="{{ color.name }}"
-                                   onchange="selectColor(this)"
-                                   class="peer sr-only" 
-                                   {% if loop.first %}checked{% endif %}>
-                            
-                            <div class="w-10 h-10 rounded-full border border-gray-200 peer-checked:ring-1 peer-checked:ring-offset-2 peer-checked:ring-black relative transition-all">
-                                <span class="absolute inset-0.5 rounded-full" style="background-color: {{ color.code }};"></span>
-                            </div>
-                        </label>
-                        
+                            <label class="cursor-pointer group {% if not (color.name and color.name.strip()) %}hidden{% endif %}">
+                                <input type="radio" name="color_id" value="{{ color.id }}" 
+                                       data-name="{{ color.name }}"
+                                       onchange="selectColor(this)"
+                                       class="peer sr-only" 
+                                       {% if loop.first %}checked{% endif %}>
+                                
+                                <div class="w-10 h-10 rounded-full border border-gray-200 peer-checked:ring-1 peer-checked:ring-offset-2 peer-checked:ring-black relative transition-all">
+                                    <span class="absolute inset-0.5 rounded-full" style="background-color: {{ color.code }};"></span>
+                                </div>
+                            </label>
                         {% endfor %}
                     </div>
                 </div>
@@ -203,12 +201,12 @@
                 ],
                 sizes: [
                     {% for size in color.sizes %}
-                        // Always include size data, even if the label is weird, logic handles display
+                        // Always include size data so logic works
                         { 
                             label: "{{ size.size_label }}", 
                             qty: {{ size.quantity }},
                             price: {{ size.price if size.price is not none else 'null' }},
-                            // Load Multiple Size Images
+                            // NEW: Load ARRAY of images for this size
                             images: [
                                 {% for simg in size.images %}
                                 "{{ url_for('uploaded_file', filename=simg.image_url) }}",
@@ -257,6 +255,7 @@
             }
         });
 
+        // Dots scrolling logic
         if (images.length > 1) {
             slider.onscroll = () => {
                 const index = Math.round(slider.scrollLeft / slider.clientWidth);
@@ -278,13 +277,15 @@
         const colorName = radio.getAttribute('data-name');
         const colorData = inventoryData[colorId];
 
-        // Only show name if it's not empty and not just whitespace
+        // Update Text Label
+        const nameDisplay = document.getElementById('selectedColorName');
         if(colorName && colorName.trim() !== "") {
-            document.getElementById('selectedColorName').innerText = colorName;
+            nameDisplay.innerText = colorName;
         } else {
-            document.getElementById('selectedColorName').innerText = "";
+            nameDisplay.innerText = "";
         }
 
+        // Update Gallery
         if (colorData.images && colorData.images.length > 0) {
             currentVariantImages = colorData.images;
         } else {
@@ -292,11 +293,11 @@
         }
         renderGallery(currentVariantImages);
 
+        // Update Sizes
         const sizesGrid = document.getElementById('sizesGrid');
         sizesGrid.innerHTML = ''; 
         let hasStock = false;
 
-        // CHECK: Do we have sizes?
         if (colorData.sizes && colorData.sizes.length > 0) {
             document.getElementById('sizeContainer').classList.remove('hidden');
             
@@ -307,27 +308,26 @@
                 
                 const sizeImagesJson = JSON.stringify(size.images).replace(/"/g, '&quot;');
 
-                // Only render visible HTML if it has a label (optional check, currently showing all valid sizes)
-                if (size.label && size.label.trim() !== "") {
-                    const sizeHtml = `
-                    <label class="cursor-pointer">
-                        <input type="radio" 
-                               name="selected_size" 
-                               value="${size.label}" 
-                               data-price="${priceAttr}"
-                               data-images="${sizeImagesJson}" 
-                               onchange="selectSize(this)"
-                               class="peer sr-only" 
-                               ${isOutOfStock ? 'disabled' : ''} 
-                               ${index===0 && !isOutOfStock ? 'checked' : ''}>
-                        
-                        <div class="min-w-[3rem] h-10 flex items-center justify-center px-3 border border-gray-200 text-xs font-bold text-gray-600 peer-checked:bg-black peer-checked:text-white peer-checked:border-black hover:border-black transition-all ${isOutOfStock ? 'opacity-30 cursor-not-allowed decoration-slice line-through' : ''}">
-                            ${size.label}
-                        </div>
-                    </label>
-                    `;
-                    sizesGrid.insertAdjacentHTML('beforeend', sizeHtml);
-                }
+                // Always render the size option HTML, even if label is standard
+                // (You can add logic to hide label text if needed, but the button is usually required)
+                const sizeHtml = `
+                <label class="cursor-pointer">
+                    <input type="radio" 
+                           name="selected_size" 
+                           value="${size.label}" 
+                           data-price="${priceAttr}"
+                           data-images="${sizeImagesJson}" 
+                           onchange="selectSize(this)"
+                           class="peer sr-only" 
+                           ${isOutOfStock ? 'disabled' : ''} 
+                           ${index===0 && !isOutOfStock ? 'checked' : ''}>
+                    
+                    <div class="min-w-[3rem] h-10 flex items-center justify-center px-3 border border-gray-200 text-xs font-bold text-gray-600 peer-checked:bg-black peer-checked:text-white peer-checked:border-black hover:border-black transition-all ${isOutOfStock ? 'opacity-30 cursor-not-allowed decoration-slice line-through' : ''}">
+                        ${size.label}
+                    </div>
+                </label>
+                `;
+                sizesGrid.insertAdjacentHTML('beforeend', sizeHtml);
             });
             
             // Auto-trigger selection for first item in size list
@@ -335,7 +335,6 @@
             if(firstInput) selectSize(firstInput);
 
         } else {
-            // No sizes for this color (standard product)
             document.getElementById('sizeContainer').classList.add('hidden');
             hasStock = true; 
             updateTotal();
@@ -355,9 +354,11 @@
         }
     }
 
+    // --- NEW: Handle Multiple Images per Size ---
     function selectSize(input) {
         const imagesStr = input.getAttribute('data-images');
         let sizeImages = [];
+        
         try {
             if(imagesStr) sizeImages = JSON.parse(imagesStr);
         } catch(e) {
@@ -369,6 +370,7 @@
         } else {
             renderGallery(currentVariantImages);
         }
+
         updateTotal();
     }
 
@@ -404,7 +406,7 @@
         // 1. Try to find an input that is already 'checked' (via loop.first in Jinja)
         let firstColor = document.querySelector('input[name="color_id"]:checked');
         
-        // 2. If nothing is checked (e.g. because we hid it), grab the first available one
+        // 2. If nothing is checked (e.g. because it's hidden), grab the first available one
         if (!firstColor) {
             firstColor = document.querySelector('input[name="color_id"]');
         }
