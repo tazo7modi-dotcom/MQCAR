@@ -2,7 +2,6 @@
 
 {% block content %}
 <style>
-    /* Utility to hide scrollbar but allow scrolling */
     .scrollbar-hide::-webkit-scrollbar {
         display: none;
     }
@@ -10,7 +9,6 @@
         -ms-overflow-style: none;  
         scrollbar-width: none; 
     }
-    /* Smooth scrolling behavior */
     .snap-x {
         scroll-snap-type: x mandatory;
     }
@@ -81,31 +79,34 @@
                 <input type="hidden" name="product_id" value="{{ product.id }}">
                 
                 {% if product.colors %}
-                <div>
+                {% set has_visible_colors = false %}
+                {% for c in product.colors %}{% if c.name and c.name.strip() %}{% set has_visible_colors = true %}{% endif %}{% endfor %}
+
+                <div id="colorContainer" class="{% if not has_visible_colors %}hidden{% endif %}">
                     <h3 class="text-[10px] font-bold text-gray-900 uppercase tracking-widest mb-4">
                         {{ _('prod_select_color') }}: <span id="selectedColorName" class="text-gray-400 font-normal"></span>
                     </h3>
                     <div class="flex flex-wrap gap-3">
                         {% for color in product.colors %}
-                            {% if color.name and color.name.strip() %}
-                            <label class="cursor-pointer group">
-                                <input type="radio" name="color_id" value="{{ color.id }}" 
-                                       data-name="{{ color.name }}"
-                                       onchange="selectColor(this)"
-                                       class="peer sr-only" 
-                                       {% if loop.first %}checked{% endif %}>
-                                
-                                <div class="w-10 h-10 rounded-full border border-gray-200 peer-checked:ring-1 peer-checked:ring-offset-2 peer-checked:ring-black relative transition-all">
-                                    <span class="absolute inset-0.5 rounded-full" style="background-color: {{ color.code }};"></span>
-                                </div>
-                            </label>
-                            {% endif %}
+                        
+                        <label class="cursor-pointer group {% if not (color.name and color.name.strip()) %}hidden{% endif %}">
+                            <input type="radio" name="color_id" value="{{ color.id }}" 
+                                   data-name="{{ color.name }}"
+                                   onchange="selectColor(this)"
+                                   class="peer sr-only" 
+                                   {% if loop.first %}checked{% endif %}>
+                            
+                            <div class="w-10 h-10 rounded-full border border-gray-200 peer-checked:ring-1 peer-checked:ring-offset-2 peer-checked:ring-black relative transition-all">
+                                <span class="absolute inset-0.5 rounded-full" style="background-color: {{ color.code }};"></span>
+                            </div>
+                        </label>
+                        
                         {% endfor %}
                     </div>
                 </div>
                 {% endif %}
 
-                <div id="sizeContainer" class="{% if not product.colors %}hidden{% endif %}">
+                <div id="sizeContainer" class="hidden">
                     <h3 class="text-[10px] font-bold text-gray-900 uppercase tracking-widest mb-4">{{ _('prod_select_size') }}</h3>
                     <div id="sizesGrid" class="flex flex-wrap gap-3">
                         </div>
@@ -167,13 +168,13 @@
 {% set c_data = config['CURRENCY_RATES'].get(code, config['CURRENCY_RATES']['BHD']) %}
 
 <script>
-    // --- 1. SETUP ---
+
     const exchangeRate = {{ c_data.rate }};
     const symbol = "{{ c_data.symbol }}";
     const decimals = {{ c_data.decimals }};
     const productBasePrice = {{ product.get_price() }};
 
-    // Default Images
+
     const defaultGallery = [];
     {% if product.image_url %}
         defaultGallery.push("{{ url_for('uploaded_file', filename=product.image_url) }}");
@@ -186,11 +187,9 @@
 
     let currentVariantImages = defaultGallery;
 
-    // --- 2. INVENTORY DATA (With Filtering and Arrays) ---
+
     const inventoryData = {
         {% for color in product.colors %}
-            // FILTER 1: Only include color if name is valid
-            {% if color.name and color.name.strip() %}
             "{{ color.id }}": {
                 name: "{{ color.name }}",
                 images: [
@@ -200,13 +199,13 @@
                 ],
                 sizes: [
                     {% for size in color.sizes %}
-                        // FILTER 2: Only include size if label is valid
+                    
                         {% if size.size_label and size.size_label.strip() %}
                         { 
                             label: "{{ size.size_label }}", 
                             qty: {{ size.quantity }},
                             price: {{ size.price if size.price is not none else 'null' }},
-                            // NEW: Load ARRAY of images for this size
+                       
                             images: [
                                 {% for simg in size.images %}
                                 "{{ url_for('uploaded_file', filename=simg.image_url) }}",
@@ -217,11 +216,10 @@
                     {% endfor %}
                 ]
             },
-            {% endif %}
         {% endfor %}
     };
 
-    // --- 3. LOGIC ---
+
 
     function renderGallery(images) {
         const slider = document.getElementById('imageSlider');
@@ -250,7 +248,6 @@
             imgDiv.appendChild(img);
             slider.appendChild(imgDiv);
 
-            // Show dots if more than 1 image
             if (images.length > 1) {
                 const dot = document.createElement('div');
                 dot.className = `w-2 h-2 rounded-full transition-all duration-300 ${index === 0 ? 'bg-black w-4' : 'bg-gray-300'}`;
@@ -258,7 +255,6 @@
             }
         });
 
-        // Scroll Logic for dots
         if (images.length > 1) {
             slider.onscroll = () => {
                 const index = Math.round(slider.scrollLeft / slider.clientWidth);
@@ -280,9 +276,13 @@
         const colorName = radio.getAttribute('data-name');
         const colorData = inventoryData[colorId];
 
-        document.getElementById('selectedColorName').innerText = colorName;
+   
+        if(colorName && colorName.trim() !== "") {
+            document.getElementById('selectedColorName').innerText = colorName;
+        } else {
+            document.getElementById('selectedColorName').innerText = "";
+        }
 
-        // Set Base Variant Images
         if (colorData.images && colorData.images.length > 0) {
             currentVariantImages = colorData.images;
         } else {
@@ -290,19 +290,19 @@
         }
         renderGallery(currentVariantImages);
 
-        // Render Sizes
         const sizesGrid = document.getElementById('sizesGrid');
         sizesGrid.innerHTML = ''; 
         let hasStock = false;
 
-        if (colorData.sizes.length > 0) {
+
+        if (colorData.sizes && colorData.sizes.length > 0) {
             document.getElementById('sizeContainer').classList.remove('hidden');
+            
             colorData.sizes.forEach((size, index) => {
                 const isOutOfStock = size.qty <= 0;
                 if (!isOutOfStock) hasStock = true;
                 const priceAttr = size.price !== null ? size.price : '';
                 
-                // IMPORTANT: Pass the array of size images safely via JSON string
                 const sizeImagesJson = JSON.stringify(size.images).replace(/"/g, '&quot;');
 
                 const sizeHtml = `
@@ -325,11 +325,12 @@
                 sizesGrid.insertAdjacentHTML('beforeend', sizeHtml);
             });
             
-            // Auto-trigger selection for first item
+       
             const firstInput = sizesGrid.querySelector('input:checked');
             if(firstInput) selectSize(firstInput);
 
         } else {
+         
             document.getElementById('sizeContainer').classList.add('hidden');
             hasStock = true; 
             updateTotal();
@@ -349,25 +350,20 @@
         }
     }
 
-    // --- NEW: Handle Multiple Images per Size ---
     function selectSize(input) {
         const imagesStr = input.getAttribute('data-images');
         let sizeImages = [];
-        
         try {
             if(imagesStr) sizeImages = JSON.parse(imagesStr);
         } catch(e) {
             console.error("Error parsing size images", e);
         }
         
-        // If size has its own images, use them. 
-        // Else, fallback to the Color's images.
         if (sizeImages && sizeImages.length > 0) {
             renderGallery(sizeImages);
         } else {
             renderGallery(currentVariantImages);
         }
-
         updateTotal();
     }
 
@@ -398,8 +394,19 @@
 
     window.onload = function() {
         renderGallery(defaultGallery);
-        const firstColor = document.querySelector('input[name="color_id"]:checked');
-        if (firstColor) selectColor(firstColor);
+
+        let firstColor = document.querySelector('input[name="color_id"]:checked');
+        
+
+        if (!firstColor) {
+            firstColor = document.querySelector('input[name="color_id"]');
+        }
+
+        if (firstColor) {
+         
+            firstColor.checked = true;
+            selectColor(firstColor);
+        }
     };
 </script>
 {% endblock %}
