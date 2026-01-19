@@ -6,6 +6,7 @@ from app.translations import dictionary
 from deep_translator import GoogleTranslator
 from functools import lru_cache
 import re
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 
 
@@ -96,6 +97,7 @@ def cached_translate(text, target_lang='ar'):
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
 
 

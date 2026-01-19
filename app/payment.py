@@ -25,7 +25,11 @@ def create_tap_charge(total_amount, currency, customer_info, order_id):
     rounded_amount = round(float(total_amount), decimals)
 
    
-    redirect_url = url_for('main.order_success', _external=True)
+    raw_url = url_for('main.order_success', order_id=order_id, _external=True)
+    if raw_url.startswith("http://"):
+        redirect_url = raw_url.replace("http://", "https://", 1)
+    else:
+        redirect_url = raw_url
 
     payload = {
         "amount": rounded_amount,
@@ -45,6 +49,7 @@ def create_tap_charge(total_amount, currency, customer_info, order_id):
                 "number": clean_number
             }
         },
+        
         "redirect": {
             "url": redirect_url
         }
