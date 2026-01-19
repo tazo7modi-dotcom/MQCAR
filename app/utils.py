@@ -63,6 +63,9 @@ def create_tap_charge(total_amount, currency, customer_info, order_id):
     try:
         response = requests.post(url, json=payload, headers=headers)
         data = response.json()
+        key = current_app.config['TAP_SECRET_KEY']
+        print(f"DEBUG KEY: {key[:5]}...{key[-5:]} (Length: {len(key)})", file=sys.stdout)
+        sys.stdout.flush()
         
         # --- FIX 3: FORCE LOGGING TO CONSOLE ---
         print(f"\n🚀 TAP REQUEST SENT:", file=sys.stdout)
