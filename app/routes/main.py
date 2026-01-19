@@ -269,6 +269,7 @@ def get_cart_data():
     
     return items, total
 
+from app.utils import create_tap_charge
 
 @main_bp.route('/checkout', methods=['GET', 'POST'])
 def checkout():
@@ -330,9 +331,9 @@ def checkout():
         shipping_cost = 0.0
 
         if country_check == 'bahrain':
-            shipping_cost = 3.0 if shipping_option == 'fast' else 1.0 
+            shipping_cost = 0.0 if shipping_option == 'fast' else 0 
         else:
-            shipping_cost = 15.0 
+            shipping_cost = 0.0 
 
         final_total_bhd = cart_total + shipping_cost
         customer_email = current_user.email if current_user.is_authenticated else request.form.get('email', 'guest@example.com')

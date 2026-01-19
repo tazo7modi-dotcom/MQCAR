@@ -211,7 +211,7 @@ dictionary = {
         'lbl_delivery_cost': 'Delivery Cost',
         
         # Shipping Options (JS)
-        'ship_std': 'Standard Delivery (2-3 Days)',
+        'ship_std': 'Standard Delivery (1-2 Days)',
         'ship_fast': 'Express Delivery (Same Day)',
         'ship_intl': 'International Shipping (DHL)',
         
@@ -778,7 +778,7 @@ dictionary = {
         'lbl_delivery_cost': 'تكلفة التوصيل',
 
         # Shipping Options (JS)
-        'ship_std': 'توصيل قياسي (2-3 أيام)',
+        'ship_std': 'توصيل قياسي (1-2 أيام)',
         'ship_fast': 'توصيل سريع (نفس اليوم)',
         'ship_intl': 'شحن دولي (DHL)',
         

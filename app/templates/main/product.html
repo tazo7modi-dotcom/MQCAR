@@ -2,14 +2,14 @@
 
 {% block content %}
 <style>
-    /* Hide scrollbar for Chrome, Safari and Opera */
+  
     .scrollbar-hide::-webkit-scrollbar {
         display: none;
     }
-    /* Hide scrollbar for IE, Edge and Firefox */
+   
     .scrollbar-hide {
-        -ms-overflow-style: none;  /* IE and Edge */
-        scrollbar-width: none;  /* Firefox */
+        -ms-overflow-style: none;  
+        scrollbar-width: none;  
     }
     .snap-x {
         scroll-snap-type: x mandatory;
@@ -221,7 +221,7 @@
         {% endfor %}
     };
 
-    // --- 3. LOGIC ---
+   
 
     function renderGallery(images) {
         const slider = document.getElementById('imageSlider');
@@ -278,7 +278,7 @@
         const colorName = radio.getAttribute('data-name');
         const colorData = inventoryData[colorId];
 
-        // Update Text Label
+       
         const nameDisplay = document.getElementById('selectedColorName');
         if(colorName && colorName.trim() !== "") {
             nameDisplay.innerText = colorName;
@@ -286,7 +286,7 @@
             nameDisplay.innerText = "";
         }
 
-        // Update Gallery
+       
         if (colorData.images && colorData.images.length > 0) {
             currentVariantImages = colorData.images;
         } else {
@@ -294,7 +294,7 @@
         }
         renderGallery(currentVariantImages);
 
-        // Update Sizes
+        
         const sizesGrid = document.getElementById('sizesGrid');
         sizesGrid.innerHTML = ''; 
         let hasStock = false;
@@ -328,7 +328,7 @@
                 sizesGrid.insertAdjacentHTML('beforeend', sizeHtml);
             });
             
-            // Auto-trigger selection for first item in size list
+          
             const firstInput = sizesGrid.querySelector('input:checked');
             if(firstInput) selectSize(firstInput);
 
@@ -397,17 +397,16 @@
     window.onload = function() {
         renderGallery(defaultGallery);
         
-        // AUTO SELECT LOGIC:
-        // 1. Try to find an input that is already 'checked' (via loop.first in Jinja)
+
         let firstColor = document.querySelector('input[name="color_id"]:checked');
         
-        // 2. If nothing is checked (e.g. because we hid it), grab the first available one
+       
         if (!firstColor) {
             firstColor = document.querySelector('input[name="color_id"]');
         }
 
         if (firstColor) {
-            // Force select it to trigger JS event logic
+          
             firstColor.checked = true;
             selectColor(firstColor);
         }

@@ -1,66 +1,64 @@
 import requests
-from flask import current_app, url_for, session
-
-def get_user_currency():
-    """Helper to get user currency or default to BHD"""
-    return session.get('currency', 'BHD')
+from flask import current_app, url_for
 
 def create_tap_charge(total_amount, currency, customer_info, order_id):
+    """
+    Sends a request to Tap Payment API (V2) to generate a payment link.
+    """
     url = "https://api.tap.company/v2/charges"
     
+    # 1. Prepare Authorization
     headers = {
         "Authorization": f"Bearer {current_app.config['TAP_SECRET_KEY']}",
         "Content-Type": "application/json"
     }
 
-  
-    raw_code = str(customer_info['phone'].get('country_code', '973'))
-    clean_code = raw_code.replace('+', '').strip()
-    if not clean_code: clean_code = "973"
-
-    clean_number = str(customer_info['phone'].get('number', '')).replace(' ', '')
-
-
-    decimals = 3 if currency in ['BHD', 'KWD', 'OMR'] else 2
-    rounded_amount = round(float(total_amount), decimals)
-
-
-    redirect_url = url_for('main.order_success', _external=True)
-
+    # 2. Build the Payload (Strict Format Required)
     payload = {
-        "amount": rounded_amount,
+        "amount": round(total_amount, 3),  # Ensure decimal precision
         "currency": currency,
         "threeDSecure": True,
         "save_card": False,
         "description": f"Order #{order_id}",
-        "source": {
-            "id": "src_all" 
+        "statement_descriptor": "Sample Store",
+        
+        # Metadata allows you to pass custom data back
+        "metadata": {
+            "order_id": order_id
         },
+        
+        # Customer Details
         "customer": {
             "first_name": customer_info.get('first_name', 'Guest'),
-            "last_name": customer_info.get('last_name', 'Customer'), 
-            "email": customer_info.get('email', 'no-email@example.com'),
+            "last_name": customer_info.get('last_name', 'User'),
+            "email": customer_info.get('email'),
             "phone": {
-                "country_code": clean_code, 
-                "number": clean_number
+                "country_code": customer_info['phone'].get('country_code', '973'),
+                "number": customer_info['phone'].get('number')
             }
         },
+        
+        # Source is required (src_all = allow all cards/Apple Pay)
+        "source": {"id": "src_all"},
+        
+        # REDIRECT URL (Must be Absolute URL with https://)
         "redirect": {
-            "url": redirect_url
+            "url": url_for('main.order_success', order_id=order_id, _external=True)
         }
     }
 
-    print(f"🚀 SENDING TO TAP: Amount={rounded_amount} {currency}")
-
+    # 3. Send Request & Debug
     try:
         response = requests.post(url, json=payload, headers=headers)
-        response_data = response.json()
+        data = response.json()
         
+        # PRINT ERROR TO CONSOLE IF IT FAILS
         if response.status_code != 200:
-            print(f"⚠️ TAP API ERROR [{response.status_code}]: {response_data}")
+            print(f"\n🔴 TAP API ERROR: {data}\n")
+            return None
             
-        return response_data
-        
-    except requests.exceptions.RequestException as e:
-        print(f"⚠️ NETWORK ERROR: {e}")
+        return data
+
+    except Exception as e:
+        print(f"🔴 CONNECTION ERROR: {e}")
         return None

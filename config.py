@@ -21,8 +21,8 @@ class Config:
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  
 
 
-    TAP_SECRET_KEY = os.environ.get('TAP_SECRET_KEY') 
-    TAP_PUBLIC_KEY = os.environ.get('TAP_PUBLIC_KEY')
+    TAP_SECRET_KEY = os.environ.get('TAP_SECRET_KEY') or 'BusLPjhJ'
+    TAP_PUBLIC_KEY = os.environ.get('TAP_PUBLIC_KEY') or 'pk_T6jiROls87Y'
 
     # --- CURRENCY SETTINGS (Base: BHD) ---
     CURRENCY_RATES = {

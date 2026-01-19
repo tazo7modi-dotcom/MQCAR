@@ -102,11 +102,6 @@
                                         <label class="block text-[10px] font-bold uppercase text-zinc-400 mb-1">{{ _('lbl_code') }}</label>
                                         <select name="phone_code" id="phoneCodeSelect" class="new-addr-input w-full bg-white border border-zinc-200 py-3 px-2 text-zinc-900 text-sm font-bold focus:border-amber-500 outline-none">
                                             <option value="+973">🇧🇭 +973</option>
-                                            <option value="+966">🇸🇦 +966</option>
-                                            <option value="+971">🇦🇪 +971</option>
-                                            <option value="+965">🇰🇼 +965</option>
-                                            <option value="+974">🇶🇦 +974</option>
-                                            <option value="+968">🇴🇲 +968</option>
                                         </select>
                                     </div>
                                     <div class="flex-1 group relative mt-auto">
@@ -268,7 +263,6 @@
 
 {% set code = session.get('currency', 'BHD') %}
 {% set c_data = config['CURRENCY_RATES'].get(code, config['CURRENCY_RATES']['BHD']) %}
-
 <script>
     // --- GUEST ANIMATION LOGIC ---
     function enableGuestCheckout() {
@@ -292,13 +286,17 @@
     const symbol = "{{ c_data.symbol }}";
     const decimals = {{ c_data.decimals }};
     
+    // TEXT FOR FREE SHIPPING (Translatable)
+    const FREE_TEXT = "{{ _('free') or 'FREE' }}"; 
+    
     const COUNTRY_PHONE_MAP = {
         'Bahrain': '+973', 'Saudi Arabia': '+966', 'UAE': '+971',
         'Kuwait': '+965', 'Qatar': '+974', 'Oman': '+968'
     };
     
     const SHIPPING_RATES = {
-        'bahrain_normal': 1.65,
+        // FIX: Keep this as 0 (Number) for math, not text!
+        'bahrain_normal': 0, 
         'bahrain_fast': 3.0, 
         'gulf_flat': 15.0
     };
@@ -370,9 +368,9 @@
         const container = document.getElementById('shippingOptionsContainer');
         container.innerHTML = ''; 
 
+        // Pass 0 (Number) here, the display logic handles the text
         if (country === 'Bahrain') {
             container.innerHTML += createOptionHTML('normal', '{{_("ship_std")}}', SHIPPING_RATES.bahrain_normal, true);
-            container.innerHTML += createOptionHTML('fast', '{{_("ship_fast")}}', SHIPPING_RATES.bahrain_fast, false);
         } else {
             container.innerHTML += createOptionHTML('gulf', 'International Shipping', SHIPPING_RATES.gulf_flat, true);
         }
@@ -380,8 +378,16 @@
     }
 
     function createOptionHTML(value, label, costBHD, isChecked) {
-        const costUser = (costBHD * exchangeRate).toFixed(decimals);
         const checkedStr = isChecked ? 'checked' : '';
+        
+        // FIX: Display Logic
+        let displayPrice;
+        if (costBHD === 0) {
+            displayPrice = `<span class="text-green-600 font-bold">${FREE_TEXT}</span>`;
+        } else {
+            const costUser = (costBHD * exchangeRate).toFixed(decimals);
+            displayPrice = `${symbol} ${costUser}`;
+        }
         
         return `
         <label class="flex items-center justify-between p-5 border border-zinc-200 bg-white cursor-pointer hover:border-amber-500 hover:shadow-sm transition-all relative group">
@@ -394,7 +400,7 @@
 
                 <span class="font-bold text-zinc-600 text-sm uppercase tracking-wider group-hover:text-black transition-colors">${label}</span>
             </div>
-            <span class="font-bold text-amber-600 font-mono text-base">${symbol} ${costUser}</span>
+            <span class="font-bold text-amber-600 font-mono text-base">${displayPrice}</span>
         </label>
         `;
     }
@@ -404,20 +410,32 @@
         if (!selectedOption) return;
 
         const type = selectedOption.value;
-        if (type === 'normal') currentShippingCostBHD = SHIPPING_RATES.bahrain_normal;
-        else if (type === 'fast') currentShippingCostBHD = SHIPPING_RATES.bahrain_fast;
-        else currentShippingCostBHD = SHIPPING_RATES.gulf_flat;
+        
+        // Reset cost based on selection
+        if (type === 'normal') currentShippingCostBHD = SHIPPING_RATES.bahrain_normal; // This is now 0
+        else if (type === 'gulf') currentShippingCostBHD = SHIPPING_RATES.gulf_flat;
+        else currentShippingCostBHD = 0; // Fallback
 
-        const shippingUser = currentShippingCostBHD * exchangeRate;
-        document.getElementById('shippingDisplay').innerText = symbol + " " + shippingUser.toFixed(decimals);
+        // Update Shipping Display in Summary
+        const shipDisplayEl = document.getElementById('shippingDisplay');
+        if (currentShippingCostBHD === 0) {
+            shipDisplayEl.innerText = FREE_TEXT;
+            shipDisplayEl.classList.add('text-green-600');
+            shipDisplayEl.classList.remove('text-amber-600');
+        } else {
+            const shippingUser = currentShippingCostBHD * exchangeRate;
+            shipDisplayEl.innerText = symbol + " " + shippingUser.toFixed(decimals);
+            shipDisplayEl.classList.remove('text-green-600');
+            shipDisplayEl.classList.add('text-amber-600');
+        }
 
+        // Calculate Final Total
         const totalBHD = cartTotalBHD + currentShippingCostBHD;
         const totalUser = totalBHD * exchangeRate;
         
         document.getElementById('totalDisplay').innerText = symbol + " " + totalUser.toFixed(decimals);
     }
 </script>
-
 <style>
     /* Custom Scrollbar for the summary list */
     .scrollbar-thin::-webkit-scrollbar { width: 4px; }
