@@ -4,6 +4,7 @@ from app.models import Product, Category, Cart, CartItem, Order, OrderItem, Extr
 from app.extensions import db
 import requests
 from sqlalchemy import or_
+from flask_mail import Mail
 
 # FIX: Import both functions from payment.py (since we deleted utils.py)
 from app.payment import get_user_currency, create_tap_charge
@@ -270,6 +271,7 @@ def get_cart_data():
     return items, total
 
 from app.utils import create_tap_charge
+from app.mail import send_order_receipt
 
 @main_bp.route('/checkout', methods=['GET', 'POST'])
 def checkout():
@@ -411,6 +413,7 @@ def checkout():
                         product.quantity -= cart_item.quantity
                         
                 db.session.commit()
+                send_order_receipt(order)
                 
             except Exception as e:
                 db.session.rollback()
@@ -527,6 +530,7 @@ def order_success(order_id):
     # Check if CAPTURED
     if data.get('status') == 'CAPTURED' and order.payment_status == 'Unpaid':
         order.payment_status = 'Paid'
+        send_order_receipt(order)
         
         # --- 1. INVENTORY DEDUCTION (The Fix) ---
         try:

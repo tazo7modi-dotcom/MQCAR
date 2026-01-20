@@ -34,3 +34,19 @@ class Config:
         'OMR': {'rate': 1.02,  'symbol': 'OMR', 'decimals': 3},
     }
 
+
+
+
+    import os
+
+
+    # ... your existing config ...
+
+    # --- EMAIL SETTINGS ---
+    MAIL_SERVER = 'smtp.privateemail.com'
+    MAIL_PORT = 465
+    MAIL_USE_SSL = True
+    MAIL_USERNAME = 'support@dropibh.store'  # The email you created in Step 1
+    MAIL_PASSWORD = 'Dropi123@Dropi'
+    MAIL_DEFAULT_SENDER = ('Dropi ', 'support@dropibh.store')
+

@@ -92,10 +92,23 @@
                                     <label class="absolute left-0 top-3 text-zinc-400 text-xs uppercase font-bold transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:text-zinc-500 peer-placeholder-shown:top-3 peer-focus:-top-2 peer-focus:text-amber-600 peer-focus:text-[10px] -top-2">{{ _('lbl_fullname') }} <span class="text-amber-600">*</span></label>
                                 </div>
 
-                                <div class="group relative">
-                                    <input type="email" name="email" value="{{ current_user.email if current_user.is_authenticated else '' }}" class="new-addr-input peer w-full bg-transparent border-b-2 border-zinc-200 py-3 text-zinc-900 focus:outline-none focus:border-amber-500 transition-colors placeholder-transparent font-bold" placeholder="Email">
-                                    <label class="absolute left-0 top-3 text-zinc-400 text-xs uppercase font-bold transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:text-zinc-500 peer-placeholder-shown:top-3 peer-focus:-top-2 peer-focus:text-amber-600 peer-focus:text-[10px] -top-2">Email</label>
-                                </div>
+                            <div class="group relative">
+    <input type="email" name="email" 
+           value="{{ current_user.email if current_user.is_authenticated else '' }}" 
+           class="new-addr-input peer w-full bg-transparent border-b-2 border-zinc-200 py-3 text-zinc-900 focus:outline-none focus:border-amber-500 transition-colors placeholder-transparent font-bold
+           {% if current_user.is_authenticated %} opacity-50 cursor-not-allowed bg-zinc-50 {% endif %}" 
+           placeholder="Email"
+           {% if current_user.is_authenticated %} readonly {% else %} required {% endif %}>
+           
+    <label class="absolute left-0 top-3 text-zinc-400 text-xs uppercase font-bold transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:text-zinc-500 peer-placeholder-shown:top-3 peer-focus:-top-2 peer-focus:text-amber-600 peer-focus:text-[10px] -top-2">
+        Email 
+        {% if current_user.is_authenticated %}
+            <span class="text-amber-600 ml-1 text-[9px]">(LINKED)</span>
+        {% else %}
+            <span class="text-amber-600">*</span>
+        {% endif %}
+    </label>
+</div>
 
                                 <div class="md:col-span-2 flex gap-4">
                                     <div class="w-32 relative">

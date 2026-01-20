@@ -6,6 +6,7 @@ from app.translations import dictionary
 from deep_translator import GoogleTranslator
 from functools import lru_cache
 import re
+from flask_mail import Mail
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 
@@ -93,10 +94,12 @@ def cached_translate(text, target_lang='ar'):
     except Exception:
         return text
 
-
+mail = Mail()
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
+    
+    
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
 
@@ -105,6 +108,7 @@ def create_app(config_class=Config):
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
+    mail.init_app(app)
 
     # User Loader
     from .models import User

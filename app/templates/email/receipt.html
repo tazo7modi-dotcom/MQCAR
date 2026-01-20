@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <title>إيصال الطلب</title>
+</head>
+<body style="font-family: 'Tajawal', Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; direction: rtl; text-align: right;">
+    
+    <div style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border: 1px solid #ddd; padding: 20px; border-radius: 8px;">
+        
+        <div style="text-align: center; border-bottom: 2px solid #2563eb; padding-bottom: 20px; margin-bottom: 20px;">
+            <h2 style="color: #2563eb; margin: 0;">شكراً لطلبك!</h2>
+            <p style="color: #555; font-size: 14px; margin-top: 5px;">رقم الطلب: <strong>#{{ order.id }}</strong></p>
+        </div>
+
+        <p style="font-size: 16px; color: #333;">مرحباً <strong>{{ order.full_name }}</strong>،</p>
+        <p style="color: #555; line-height: 1.6;">تم استلام طلبك بنجاح. نقوم حالياً بتجهيزه وسنرسل لك تحديثاً فور شحنه.</p>
+        
+        <table style="width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px;">
+            <thead>
+                <tr style="background-color: #f8f9fa;">
+                    <th style="padding: 12px; border: 1px solid #eee; text-align: right;">المنتج</th>
+                    <th style="padding: 12px; border: 1px solid #eee; text-align: center;">الكمية</th>
+                    <th style="padding: 12px; border: 1px solid #eee; text-align: left;">السعر</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order.items %}
+                <tr>
+                    <td style="padding: 12px; border: 1px solid #eee; color: #333;">
+                        {{ item.product.name }}
+                        {% if item.size %}
+                            <br><span style="font-size: 12px; color: #777;">المقاس: {{ item.size }}</span>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 12px; border: 1px solid #eee; text-align: center;">{{ item.quantity }}</td>
+                    <td style="padding: 12px; border: 1px solid #eee; text-align: left; white-space: nowrap;">
+                        {{ "%.3f"|format(item.price) }} د.ب
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div style="margin-top: 20px; border-top: 2px solid #eee; padding-top: 15px;">
+            <table style="width: 100%; font-size: 14px;">
+                <tr>
+                    <td style="text-align: left; padding: 5px; font-weight: bold;">المجموع الكلي:</td>
+                    <td style="text-align: left; padding: 5px; color: #2563eb; font-size: 18px; font-weight: bold;">
+                        {{ "%.3f"|format(order.total_amount) }} د.ب
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin-top: 25px; font-size: 13px; color: #555;">
+            <h4 style="margin: 0 0 10px 0; color: #333;">تفاصيل الشحن:</h4>
+            <p style="margin: 0; line-height: 1.6;">
+                {{ order.shipping_details.split(', Phone')[0] }}<br>
+                رقم الهاتف: {{ order.phone }}
+            </p>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px; font-size: 12px; color: #999;">
+            <p>&copy; 2026 متجر دروبي. جميع الحقوق محفوظة.</p>
+        </div>
+    </div>
+</body>
+</html>
