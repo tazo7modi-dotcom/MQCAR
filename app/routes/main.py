@@ -443,7 +443,7 @@ def checkout():
                 db.session.commit()
                 
                 # Send Receipt (Optional)
-                # send_order_receipt(order)
+                send_order_receipt(order)
                 
             except Exception as e:
                 db.session.rollback()
