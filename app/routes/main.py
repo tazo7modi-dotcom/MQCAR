@@ -432,22 +432,22 @@ def checkout():
                         else:
                             raise Exception(f"Color database error for {product.name}")
                             
-                    # 2. Handle Simple Products (No variants)
+                  
                     else:
                         if product.quantity < cart_item.quantity:
                             raise Exception(f"Out of stock: {product.name}")
                         product.quantity -= cart_item.quantity
                         db.session.add(product)
                         
-                # Commit the changes to DB
+            
                 db.session.commit()
                 
-                # Send Receipt (Optional)
+              
                 send_order_receipt(order)
                 
             except Exception as e:
                 db.session.rollback()
-                db.session.delete(order) # Delete order if failed
+                db.session.delete(order) 
                 db.session.commit()
                 flash(str(e), "error")
                 return redirect(url_for('main.cart_page'))
