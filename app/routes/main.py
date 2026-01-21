@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app, jsonify
 from flask_login import login_required, current_user
 from app.models import Product, Category, Cart, CartItem, Order, OrderItem, Extra, Address,Review,ProductColor,ProductSize
 from app.extensions import db
@@ -150,7 +150,19 @@ def add_to_cart():
         session['cart'] = current_cart
     
     flash("Added to cart successfully!")
-    return redirect(url_for('main.cart_page')) 
+    # --- CALCULATE NEW CART COUNT ---
+    if current_user.is_authenticated:
+        # Re-query the cart to get the new count
+        new_count = len(current_user.cart.cart_items)
+    else:
+        new_count = len(session.get('cart', []))
+
+    # --- RETURN JSON INSTEAD OF REDIRECT ---
+    return jsonify({
+        'status': 'success', 
+        'message': 'Added to cart successfully!',
+        'cart_count': new_count
+    })
 
 @main_bp.route('/cart')
 # 1. REMOVED @login_required
@@ -376,53 +388,69 @@ def checkout():
         #  4. PROCESS PAYMENT & INVENTORY
         # ======================================================
         payment_method = request.form.get('payment_method') 
-
         if payment_method == 'cod':
             # --- OPTION A: CASH ON DELIVERY ---
             order.payment_status = 'COD'
             
-            # ---------------------------------------------------
-            # NEW: DEDUCT INVENTORY LOGIC (Only for COD here)
-            # ---------------------------------------------------
+            # --- FIXED INVENTORY LOGIC (SIZE BASED) ---
             try:
                 for cart_item in items:
                     product = Product.query.get(cart_item.product_id)
                     
-                    # A. Handle Variant Products (Color + Size)
+                    # 1. Check if this is a variant product (Has Color & Size)
                     if cart_item.color and cart_item.size:
-                        # Find the specific size row in DB
-                        variant_size = ProductSize.query.join(ProductColor).filter(
-                            ProductColor.product_id == product.id,
-                            ProductColor.name == cart_item.color,
-                            ProductSize.size_label == cart_item.size
+                        
+                        # Find the Color first
+                        color_obj = ProductColor.query.filter_by(
+                            product_id=product.id, 
+                            name=cart_item.color
                         ).first()
                         
-                        if variant_size:
-                            if variant_size.quantity < cart_item.quantity:
-                                raise Exception(f"Out of stock: {product.name} ({cart_item.size})")
+                        if color_obj:
+                            # Find the Size inside that Color
+                            size_obj = ProductSize.query.filter_by(
+                                color_id=color_obj.id, 
+                                size_label=cart_item.size
+                            ).first()
                             
-                            # Deduct specific size
-                            variant_size.quantity -= cart_item.quantity
-                            # Deduct from main product total
-                            product.quantity -= cart_item.quantity
+                            if size_obj:
+                                # Check Stock
+                                if size_obj.quantity < cart_item.quantity:
+                                    raise Exception(f"Out of stock: {product.name} ({cart_item.size})")
+                                
+                                # DEDUCT SIZE QUANTITY
+                                size_obj.quantity -= cart_item.quantity
+                                
+                                # CRITICAL: Also update the Main Product Total
+                                # This ensures the homepage knows stock has dropped
+                                product.quantity -= cart_item.quantity 
+                                
+                                db.session.add(size_obj)
+                                db.session.add(product)
+                            else:
+                                raise Exception(f"Size database error for {product.name}")
+                        else:
+                            raise Exception(f"Color database error for {product.name}")
                             
-                    # B. Handle Simple Products (No variants)
+                    # 2. Handle Simple Products (No variants)
                     else:
                         if product.quantity < cart_item.quantity:
                             raise Exception(f"Out of stock: {product.name}")
                         product.quantity -= cart_item.quantity
+                        db.session.add(product)
                         
+                # Commit the changes to DB
                 db.session.commit()
-                send_order_receipt(order)
+                
+                # Send Receipt (Optional)
+                # send_order_receipt(order)
                 
             except Exception as e:
                 db.session.rollback()
-                # Delete the order we just made since stock failed
-                db.session.delete(order)
+                db.session.delete(order) # Delete order if failed
                 db.session.commit()
                 flash(str(e), "error")
                 return redirect(url_for('main.cart_page'))
-            # ---------------------------------------------------
 
             # Clear Cart
             if current_user.is_authenticated:
