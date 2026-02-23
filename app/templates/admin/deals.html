@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="container mx-auto px-4 py-12">
-    <div class="max-w-xl mx-auto bg-white border border-zinc-200 shadow-xl relative">
+    <div class="max-w-4xl mx-auto bg-white border border-zinc-200 shadow-xl relative">
         
         <div class="bg-zinc-900 text-white p-6 border-b-4 border-amber-500">
             <h2 class="text-3xl font-bold uppercase ltr:font-['Oswald'] rtl:font-['Cairo']">
@@ -10,41 +10,112 @@
             </h2>
         </div>
         
-        <div class="p-8">
-            
-            <form method="POST" class="mb-12">
-                <input type="hidden" name="action" value="apply">
-                
-                <div class="mb-6">
-                    <label class="block text-zinc-500 text-xs font-bold uppercase mb-2 ltr:tracking-widest rtl:tracking-normal">{{ _('lbl_discount_pct') }}</label>
-                    <input type="number" name="percentage" min="1" max="99" class="w-full border-2 border-zinc-200 p-3 bg-zinc-50 text-zinc-900 focus:outline-none focus:border-amber-500 font-bold text-lg" placeholder="20" required>
+        <div class="p-8 space-y-10">
+            <div>
+                <h3 class="text-sm font-bold uppercase tracking-widest text-zinc-500 mb-4">
+                    {{ _('admin_deals_title') }} - {{ _('opt_all_products') }}
+                </h3>
+
+                <form method="POST" class="space-y-6">
+                    <input type="hidden" name="action" value="apply">
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-zinc-500 text-xs font-bold uppercase mb-2 ltr:tracking-widest rtl:tracking-normal">{{ _('lbl_discount_pct') }}</label>
+                            <input type="number" name="percentage" min="1" max="99" class="w-full border-2 border-zinc-200 p-3 bg-zinc-50 text-zinc-900 focus:outline-none focus:border-amber-500 font-bold text-lg" placeholder="20" required>
+                        </div>
+
+                        <div>
+                            <label class="block text-zinc-500 text-xs font-bold uppercase mb-2 ltr:tracking-widest rtl:tracking-normal">{{ _('lbl_apply_to') }}</label>
+                            <select name="target_type" class="w-full border-2 border-zinc-200 p-3 bg-zinc-50 text-zinc-900 focus:outline-none focus:border-amber-500 font-bold">
+                                <option value="all">{{ _('opt_all_products') }}</option>
+                                <option disabled>──────────</option>
+                                {% for cat in categories %}
+                                <option value="{{ cat.id }}">{{ _('Category') }}: {{ cat.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-amber-500 text-zinc-900 py-4 font-bold text-lg uppercase tracking-widest hover:bg-amber-400 transition ltr:font-['Oswald'] rtl:font-['Cairo']">
+                        {{ _('btn_apply_deal') }}
+                    </button>
+                </form>
+
+                <form method="POST" class="mt-4">
+                    <input type="hidden" name="action" value="clear">
+                    <button type="submit" class="w-full bg-zinc-200 text-zinc-500 py-3 font-bold text-sm uppercase tracking-wide hover:bg-red-700 hover:text-white transition" onclick="return confirm('Are you sure? This will remove ALL discounts.');">
+                        {{ _('btn_clear_deals') }}
+                    </button>
+                </form>
+            </div>
+
+            <div class="border-t border-zinc-200 pt-8">
+                <h3 class="text-sm font-bold uppercase tracking-widest text-zinc-500 mb-4">
+                    {{ _('admin_discount_codes_title') }}
+                </h3>
+
+                <form method="POST" class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+                    <input type="hidden" name="action" value="create_code">
+                    <input type="text" name="discount_code" maxlength="32" class="md:col-span-2 border-2 border-zinc-200 p-3 bg-zinc-50 text-zinc-900 focus:outline-none focus:border-amber-500 font-bold uppercase" placeholder="{{ _('ph_discount_code') }}" required>
+                    <div class="flex gap-2">
+                        <input type="number" name="discount_code_percentage" min="1" max="99" class="w-24 border-2 border-zinc-200 p-3 bg-zinc-50 text-zinc-900 focus:outline-none focus:border-amber-500 font-bold text-center" placeholder="10" required>
+                        <button type="submit" class="flex-1 bg-zinc-900 text-white py-3 px-4 font-bold text-xs uppercase tracking-widest hover:bg-amber-500 hover:text-black transition">
+                            {{ _('btn_save_code') }}
+                        </button>
+                    </div>
+                </form>
+
+                {% if discount_codes %}
+                <div class="overflow-x-auto border border-zinc-200">
+                    <table class="w-full text-sm">
+                        <thead class="bg-zinc-50 border-b border-zinc-200">
+                            <tr>
+                                <th class="p-3 text-left rtl:text-right font-bold uppercase text-[10px] tracking-widest text-zinc-500">{{ _('lbl_discount_code') }}</th>
+                                <th class="p-3 text-left rtl:text-right font-bold uppercase text-[10px] tracking-widest text-zinc-500">{{ _('lbl_discount_pct') }}</th>
+                                <th class="p-3 text-left rtl:text-right font-bold uppercase text-[10px] tracking-widest text-zinc-500">{{ _('lbl_status') }}</th>
+                                <th class="p-3 text-left rtl:text-right font-bold uppercase text-[10px] tracking-widest text-zinc-500">{{ _('th_actions') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for d_code in discount_codes %}
+                            <tr class="border-b border-zinc-100 last:border-0">
+                                <td class="p-3 font-mono font-bold tracking-wide text-zinc-900">{{ d_code.code }}</td>
+                                <td class="p-3 font-bold text-zinc-700">{{ d_code.percentage }}%</td>
+                                <td class="p-3">
+                                    {% if d_code.is_active %}
+                                    <span class="inline-block px-2 py-1 text-[10px] font-bold uppercase tracking-widest bg-green-100 text-green-700">{{ _('lbl_active') }}</span>
+                                    {% else %}
+                                    <span class="inline-block px-2 py-1 text-[10px] font-bold uppercase tracking-widest bg-zinc-200 text-zinc-600">{{ _('lbl_inactive') }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="p-3">
+                                    <div class="flex flex-wrap gap-2">
+                                        <form method="POST">
+                                            <input type="hidden" name="action" value="toggle_code">
+                                            <input type="hidden" name="code_id" value="{{ d_code.id }}">
+                                            <button type="submit" class="px-3 py-2 text-[10px] font-bold uppercase tracking-widest border border-zinc-300 hover:border-zinc-900 hover:text-zinc-900 transition">
+                                                {{ _('btn_disable_code') if d_code.is_active else _('btn_enable_code') }}
+                                            </button>
+                                        </form>
+                                        <form method="POST" onsubmit="return confirm('{{ _('msg_confirm') }}')">
+                                            <input type="hidden" name="action" value="delete_code">
+                                            <input type="hidden" name="code_id" value="{{ d_code.id }}">
+                                            <button type="submit" class="px-3 py-2 text-[10px] font-bold uppercase tracking-widest border border-red-200 text-red-600 hover:bg-red-600 hover:text-white hover:border-red-600 transition">
+                                                {{ _('btn_delete_code') }}
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
-
-                <div class="mb-8">
-                    <label class="block text-zinc-500 text-xs font-bold uppercase mb-2 ltr:tracking-widest rtl:tracking-normal">{{ _('lbl_apply_to') }}</label>
-                    <select name="target_type" class="w-full border-2 border-zinc-200 p-3 bg-zinc-50 text-zinc-900 focus:outline-none focus:border-amber-500 font-bold">
-                        <option value="all">{{ _('opt_all_products') }}</option>
-                        <option disabled>──────────</option>
-                        {% for cat in categories %}
-                        <option value="{{ cat.id }}">{{ _('Category') }}: {{ cat.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <button type="submit" class="w-full bg-amber-500 text-zinc-900 py-4 font-bold text-lg uppercase tracking-widest hover:bg-amber-400 transition ltr:font-['Oswald'] rtl:font-['Cairo']">
-                    {{ _('btn_apply_deal') }}
-                </button>
-            </form>
-
-            <hr class="border-zinc-200 mb-8">
-
-            <form method="POST">
-                <input type="hidden" name="action" value="clear">
-                <button type="submit" class="w-full bg-zinc-200 text-zinc-500 py-3 font-bold text-sm uppercase tracking-wide hover:bg-red-700 hover:text-white transition" onclick="return confirm('Are you sure? This will remove ALL discounts.');">
-                    {{ _('btn_clear_deals') }}
-                </button>
-            </form>
-
+                {% else %}
+                <p class="text-xs text-zinc-500 uppercase tracking-widest">{{ _('msg_no_discount_codes') }}</p>
+                {% endif %}
+            </div>
         </div>
     </div>
 </div>

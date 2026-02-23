@@ -1,7 +1,8 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app, jsonify
 from flask_login import login_required, current_user
-from app.models import Product, Category, Cart, CartItem, Order, OrderItem, Extra, Address,Review,ProductColor,ProductSize
+from app.models import Product, Category, Cart, CartItem, Order, OrderItem, Extra, Address, Review, ProductColor, ProductSize, DiscountCode
 from app.extensions import db
+from app.translations import dictionary
 import requests
 from sqlalchemy import or_
 from flask_mail import Mail
@@ -10,6 +11,11 @@ from flask_mail import Mail
 from app.payment import get_user_currency, create_tap_charge
 
 main_bp = Blueprint('main', __name__)
+
+
+def _t(key):
+    lang = session.get('language', 'en')
+    return dictionary.get(lang, {}).get(key, key)
 
 @main_bp.route('/')
 def home():
@@ -36,6 +42,20 @@ def submit_review():
         flash('Please fill in all fields.', 'error')
 
     return redirect(url_for('main.home'))
+
+
+@main_bp.route('/reviews/delete/<int:review_id>', methods=['POST'])
+@login_required
+def delete_review(review_id):
+    if not current_user.is_admin:
+        flash(_t('review_delete_forbidden'), 'error')
+        return redirect(url_for('main.home'))
+
+    review = Review.query.get_or_404(review_id)
+    db.session.delete(review)
+    db.session.commit()
+    flash(_t('review_deleted'), 'success')
+    return redirect(request.referrer or url_for('main.home'))
 
 
 
@@ -81,9 +101,9 @@ def add_to_cart():
             if size_label:
                 for s in color_obj.sizes:
                     if s.size_label == size_label:
-                        # If this size has a specific price, OVERRIDE the base price
+                        # If this size has a specific price, apply product discount on that size price
                         if s.price is not None:
-                            final_price = s.price
+                            final_price = product.get_price(s.price)
                         break
             # ----------------------------------
 
@@ -169,6 +189,7 @@ def add_to_cart():
 def cart_page():
     items = []
     total = 0.0
+    upsell_categories = []
 
     if current_user.is_authenticated:
         # --- LOGGED IN: Get from Database ---
@@ -188,6 +209,7 @@ def cart_page():
 
                 fake_item = type('CartItem', (object,), {
                     'id': s_item['uuid'], 
+                    'product_id': product.id,
                     'product': product,   
                     'quantity': s_item['quantity'],
                     'unit_price': s_item['unit_price'],
@@ -199,7 +221,59 @@ def cart_page():
                 items.append(fake_item)
                 total += (fake_item.unit_price * fake_item.quantity)
 
-    return render_template('main/cart.html', cart_items=items, total=total)
+    if items:
+        cart_product_ids = {
+            item.product_id for item in items
+            if getattr(item, 'product_id', None) is not None
+        }
+
+        accessory_name_filters = [
+            Category.name.ilike('%accessor%'),
+            Category.name.ilike('%ملحق%'),
+            Category.name.ilike('%اكسس%'),
+            Category.name.ilike('%إكسس%')
+        ]
+
+        accessory_categories = Category.query.filter(or_(*accessory_name_filters)).all()
+        all_categories = Category.query.order_by(Category.id.desc()).all()
+
+        seen_category_ids = set()
+        ordered_categories = []
+
+        for category in accessory_categories:
+            if category.id not in seen_category_ids:
+                ordered_categories.append(category)
+                seen_category_ids.add(category.id)
+
+        for category in all_categories:
+            if category.id not in seen_category_ids:
+                ordered_categories.append(category)
+                seen_category_ids.add(category.id)
+
+        for category in ordered_categories:
+            products_query = Product.query.filter(
+                Product.category_id == category.id,
+                Product.quantity > 0
+            )
+            if cart_product_ids:
+                products_query = products_query.filter(~Product.id.in_(cart_product_ids))
+
+            suggested_products = products_query.order_by(Product.id.desc()).limit(4).all()
+            if suggested_products:
+                upsell_categories.append({
+                    'category': category,
+                    'products': suggested_products
+                })
+
+            if len(upsell_categories) >= 3:
+                break
+
+    return render_template(
+        'main/cart.html',
+        cart_items=items,
+        total=total,
+        upsell_categories=upsell_categories
+    )
 
 
 
@@ -285,6 +359,28 @@ def get_cart_data():
 from app.utils import create_tap_charge
 from app.mail import send_order_receipt
 
+
+@main_bp.route('/validate-discount-code', methods=['POST'])
+def validate_discount_code():
+    payload = request.get_json(silent=True) or {}
+    raw_code = payload.get('code', '')
+    normalized_code = (raw_code or '').strip().upper()
+
+    if not normalized_code:
+        return jsonify({'valid': False, 'message': _t('discount_code_required')}), 400
+
+    code_obj = DiscountCode.query.filter_by(code=normalized_code, is_active=True).first()
+    if not code_obj:
+        return jsonify({'valid': False, 'message': _t('discount_code_invalid')}), 404
+
+    percentage = min(max(code_obj.percentage or 0, 0), 100)
+    return jsonify({
+        'valid': True,
+        'code': code_obj.code,
+        'percentage': percentage
+    })
+
+
 @main_bp.route('/checkout', methods=['GET', 'POST'])
 def checkout():
     items, cart_total = get_cart_data()
@@ -349,7 +445,26 @@ def checkout():
         else:
             shipping_cost = 0.0 
 
-        final_total_bhd = cart_total + shipping_cost
+        raw_discount_code = request.form.get('discount_code', '')
+        normalized_discount_code = (raw_discount_code or '').strip().upper()
+        discount_percentage = 0
+        discount_amount = 0.0
+
+        if normalized_discount_code:
+            discount_code_obj = DiscountCode.query.filter_by(
+                code=normalized_discount_code,
+                is_active=True
+            ).first()
+
+            if not discount_code_obj:
+                flash(_t('discount_code_invalid'), 'error')
+                return redirect(url_for('main.checkout'))
+
+            discount_percentage = min(max(discount_code_obj.percentage or 0, 0), 100)
+            discount_amount = cart_total * (discount_percentage / 100.0)
+
+        discounted_subtotal = max(cart_total - discount_amount, 0.0)
+        final_total_bhd = discounted_subtotal + shipping_cost
         customer_email = current_user.email if current_user.is_authenticated else request.form.get('email', 'guest@example.com')
         shipping_string = f"{final_addr.full_name}, {final_addr.street_address}, {final_addr.city}, {final_addr.country}, {final_addr.phone}, Email: {customer_email}"
 
@@ -462,7 +577,7 @@ def checkout():
             
             db.session.commit()
             
-            flash(f"Order placed! Please pay {final_total_bhd} BD upon delivery.", "success")
+            flash(f"Order placed! Please pay {final_total_bhd:.3f} BD upon delivery.", "success")
             return redirect(url_for('main.order_success', order_id=order.id))
 
         else:

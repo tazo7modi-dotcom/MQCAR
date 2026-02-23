@@ -78,12 +78,14 @@ class Product(db.Model):
         return total
 
 
-    def get_price(self):
-        """Returns the price AFTER discount"""
-        if self.discount_percentage and self.discount_percentage > 0:
-            discount_amount = self.price * (self.discount_percentage / 100)
-            return self.price - discount_amount
-        return self.price
+    def get_price(self, base_price=None):
+        """Returns the given price (or base product price) AFTER discount."""
+        price_to_discount = self.price if base_price is None else base_price
+        discount = min(max(self.discount_percentage or 0, 0), 100)
+        if discount > 0:
+            discount_amount = price_to_discount * (discount / 100)
+            return price_to_discount - discount_amount
+        return price_to_discount
 
     def on_sale(self):
         """Helper to check if product is on sale"""
@@ -196,6 +198,14 @@ class Review(db.Model):
 
 
 
+
+
+class DiscountCode(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(64), unique=True, nullable=False)
+    percentage = db.Column(db.Integer, nullable=False, default=0)
+    is_active = db.Column(db.Boolean, nullable=False, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 class ProductColor(db.Model):

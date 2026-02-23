@@ -6,7 +6,7 @@ from werkzeug.utils import secure_filename
 from sqlalchemy import func, extract
 from datetime import datetime, timedelta
 
-from app.models import db, Product, Category, Order, User, Extra, OrderItem,ProductSize,ProductColor,ProductImage, ColorImage,SizeImage
+from app.models import db, Product, Category, Order, User, Extra, OrderItem, ProductSize, ProductColor, ProductImage, ColorImage, SizeImage, DiscountCode
 from app.translations import dictionary
 import json
 
@@ -443,6 +443,8 @@ def delete_category(id):
 @admin_required
 def deals():
     categories = Category.query.all()
+    discount_codes = DiscountCode.query.order_by(DiscountCode.created_at.desc()).all()
+
     if request.method == 'POST':
         action = request.form.get('action')
         if action == 'clear':
@@ -459,8 +461,41 @@ def deals():
                 Product.query.filter_by(category_id=cat_id).update({Product.discount_percentage: percentage})
             db.session.commit()
             flash(_('msg_deal_applied'))
+        elif action == 'create_code':
+            raw_code = (request.form.get('discount_code') or '').strip().upper()
+            try:
+                code_percentage = int(request.form.get('discount_code_percentage') or 0)
+            except ValueError:
+                code_percentage = 0
+
+            if not raw_code:
+                flash(_('msg_coupon_code_required'), 'error')
+            elif code_percentage < 1 or code_percentage > 99:
+                flash(_('msg_coupon_pct_invalid'), 'error')
+            else:
+                existing = DiscountCode.query.filter_by(code=raw_code).first()
+                if existing:
+                    existing.percentage = code_percentage
+                    existing.is_active = True
+                    flash(_('msg_coupon_updated'), 'success')
+                else:
+                    db.session.add(DiscountCode(code=raw_code, percentage=code_percentage, is_active=True))
+                    flash(_('msg_coupon_created'), 'success')
+                db.session.commit()
+        elif action == 'toggle_code':
+            code_id = request.form.get('code_id', type=int)
+            code_obj = DiscountCode.query.get_or_404(code_id)
+            code_obj.is_active = not code_obj.is_active
+            db.session.commit()
+            flash(_('msg_coupon_status_updated'), 'success')
+        elif action == 'delete_code':
+            code_id = request.form.get('code_id', type=int)
+            code_obj = DiscountCode.query.get_or_404(code_id)
+            db.session.delete(code_obj)
+            db.session.commit()
+            flash(_('msg_coupon_deleted'), 'success')
         return redirect(url_for('admin.deals'))
-    return render_template('admin/deals.html', categories=categories)
+    return render_template('admin/deals.html', categories=categories, discount_codes=discount_codes)
 
 # --- 10. VIEW ORDER ---
 @admin_bp.route('/order/<int:order_id>')

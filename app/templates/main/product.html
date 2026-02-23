@@ -215,7 +215,7 @@
                         { 
                             label: "{{ size.size_label }}", 
                             qty: {{ size.quantity }},
-                            price: {{ size.price if size.price is not none else 'null' }},
+                            price: {{ product.get_price(size.price) if size.price is not none else 'null' }},
                             images: [
                                 {% for simg in size.images %}
                                 "{{ url_for('uploaded_file', filename=simg.image_url) }}",

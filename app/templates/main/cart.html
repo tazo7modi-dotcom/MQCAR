@@ -113,6 +113,96 @@
                 </div>
             </div>
 
+            {% if upsell_categories %}
+            <div class="mt-16 border border-zinc-200 bg-gradient-to-br from-zinc-50 to-white p-6 md:p-8">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+                    <div>
+                        <p class="text-[10px] uppercase tracking-[0.25em] font-bold text-amber-600 mb-2">
+                            {{ _('cart_accessories_badge') }}
+                        </p>
+                        <h2 class="text-2xl md:text-3xl font-bold text-zinc-900 ltr:font-['Oswald'] rtl:font-['Cairo'] uppercase">
+                            {{ _('cart_accessories_question') }}
+                        </h2>
+                        <p class="text-zinc-500 text-sm mt-2">{{ _('cart_accessories_hint') }}</p>
+                    </div>
+
+                    <button type="button" id="accessoriesToggle" class="inline-flex items-center justify-center gap-2 border border-zinc-300 bg-white px-5 py-3 text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-zinc-900 hover:text-white hover:border-zinc-900 transition">
+                        <span id="accessoriesToggleText">{{ _('cart_accessories_toggle_open') }}</span>
+                        <svg id="accessoriesToggleIcon" class="w-4 h-4 transition-transform duration-300 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <div id="accessoriesPanel" class="hidden mt-8">
+                    <div class="flex flex-wrap gap-2 mb-6">
+                        {% for block in upsell_categories %}
+                        <button type="button"
+                                class="upsell-tab px-4 py-2 text-[10px] font-bold uppercase tracking-widest border transition {% if loop.first %}bg-zinc-900 text-white border-zinc-900{% else %}bg-white text-zinc-600 border-zinc-200 hover:border-zinc-400{% endif %}"
+                                data-target="upsell-cat-{{ block.category.id }}">
+                            {{ block.category.name | translate_dynamic }}
+                        </button>
+                        {% endfor %}
+                    </div>
+
+                    {% for block in upsell_categories %}
+                    <div id="upsell-cat-{{ block.category.id }}" class="upsell-grid {% if not loop.first %}hidden{% endif %}">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            {% for product in block.products %}
+                            <div class="border border-zinc-200 bg-white p-4 group">
+                                <a href="{{ url_for('main.product_detail', product_id=product.id) }}" class="block w-full aspect-square bg-zinc-50 border border-zinc-100 overflow-hidden mb-4">
+                                    {% if product.image_url %}
+                                    <img src="{{ url_for('uploaded_file', filename=product.image_url) if not product.image_url.startswith('http') else product.image_url }}"
+                                         alt="{{ product.name }}"
+                                         class="w-full h-full object-contain p-3 mix-blend-multiply group-hover:scale-105 transition duration-500">
+                                    {% else %}
+                                    <div class="w-full h-full flex items-center justify-center text-[10px] uppercase font-bold text-zinc-300">
+                                        {{ _('txt_no_img') }}
+                                    </div>
+                                    {% endif %}
+                                </a>
+
+                                <h3 class="font-bold text-sm text-zinc-900 leading-tight mb-2 min-h-[2.5rem]">
+                                    {{ product.name | translate_dynamic }}
+                                </h3>
+
+                                <div class="flex items-center gap-2 mb-4">
+                                    {% if product.on_sale() %}
+                                    <span class="font-bold text-sm text-rose-600">{{ product.get_price() | currency }}</span>
+                                    <span class="text-xs text-zinc-400 line-through">{{ product.price | currency }}</span>
+                                    {% else %}
+                                    <span class="font-bold text-sm text-zinc-700">{{ product.price | currency }}</span>
+                                    {% endif %}
+                                </div>
+
+                                <div class="flex gap-2">
+                                    {% if product.has_sizes or product.has_colors %}
+                                    <a href="{{ url_for('main.product_detail', product_id=product.id) }}"
+                                       class="flex-1 text-center border border-zinc-300 py-2 text-[10px] font-bold uppercase tracking-widest hover:border-zinc-900 hover:text-zinc-900 transition">
+                                        {{ _('cart_accessories_choose_options') }}
+                                    </a>
+                                    {% else %}
+                                    <button type="button"
+                                            class="quick-accessory-add flex-1 border border-zinc-900 bg-zinc-900 text-white py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-amber-500 hover:border-amber-500 hover:text-black transition"
+                                            data-product-id="{{ product.id }}">
+                                        {{ _('cart_accessories_add') }}
+                                    </button>
+                                    {% endif %}
+
+                                    <a href="{{ url_for('main.product_detail', product_id=product.id) }}"
+                                       class="px-3 border border-zinc-300 py-2 text-[10px] font-bold uppercase tracking-widest hover:border-zinc-900 hover:text-zinc-900 transition">
+                                        {{ _('cart_accessories_view') }}
+                                    </a>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
         {% else %}
             <div class="flex flex-col items-center justify-center py-32 text-center border border-dashed border-zinc-300 bg-zinc-50">
                 <div class="w-20 h-20 bg-white border border-zinc-200 rounded-full flex items-center justify-center mb-6 text-zinc-300">
@@ -127,4 +217,89 @@
         {% endif %}
     </div>
 </div>
+{% if cart_items and upsell_categories %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const toggleButton = document.getElementById('accessoriesToggle');
+        const panel = document.getElementById('accessoriesPanel');
+        const toggleText = document.getElementById('accessoriesToggleText');
+        const toggleIcon = document.getElementById('accessoriesToggleIcon');
+
+        if (toggleButton && panel && toggleText && toggleIcon) {
+            toggleButton.addEventListener('click', () => {
+                panel.classList.toggle('hidden');
+                const isOpen = !panel.classList.contains('hidden');
+                toggleText.textContent = isOpen
+                    ? "{{ _('cart_accessories_toggle_close') }}"
+                    : "{{ _('cart_accessories_toggle_open') }}";
+                toggleIcon.classList.toggle('rotate-180', isOpen);
+            });
+        }
+
+        const tabs = Array.from(document.querySelectorAll('.upsell-tab'));
+        const grids = Array.from(document.querySelectorAll('.upsell-grid'));
+
+        const activateTab = (activeTab) => {
+            tabs.forEach((tab) => {
+                tab.classList.remove('bg-zinc-900', 'text-white', 'border-zinc-900');
+                tab.classList.add('bg-white', 'text-zinc-600', 'border-zinc-200');
+            });
+
+            activeTab.classList.remove('bg-white', 'text-zinc-600', 'border-zinc-200');
+            activeTab.classList.add('bg-zinc-900', 'text-white', 'border-zinc-900');
+
+            const target = activeTab.getAttribute('data-target');
+            grids.forEach((grid) => {
+                grid.classList.toggle('hidden', grid.id !== target);
+            });
+        };
+
+        tabs.forEach((tab) => {
+            tab.addEventListener('click', () => activateTab(tab));
+        });
+
+        const updateCartBadge = (count) => {
+            document.querySelectorAll('.cart-badge').forEach((badge) => {
+                badge.textContent = count;
+                badge.classList.toggle('hidden', Number(count) === 0);
+            });
+        };
+
+        document.querySelectorAll('.quick-accessory-add').forEach((button) => {
+            button.addEventListener('click', async () => {
+                const productId = button.getAttribute('data-product-id');
+                if (!productId) return;
+
+                button.disabled = true;
+                const originalText = button.textContent;
+                button.textContent = "{{ _('cart_accessories_adding') }}";
+
+                try {
+                    const formData = new FormData();
+                    formData.append('product_id', productId);
+                    formData.append('quantity', '1');
+
+                    const response = await fetch("{{ url_for('main.add_to_cart') }}", {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await response.json();
+
+                    if (data && data.status === 'success') {
+                        button.textContent = "{{ _('cart_accessories_added') }}";
+                        updateCartBadge(data.cart_count);
+                        setTimeout(() => window.location.reload(), 450);
+                    } else {
+                        button.textContent = originalText;
+                        button.disabled = false;
+                    }
+                } catch (error) {
+                    button.textContent = originalText;
+                    button.disabled = false;
+                }
+            });
+        });
+    });
+</script>
+{% endif %}
 {% endblock %}

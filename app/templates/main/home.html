@@ -202,7 +202,14 @@
         {% if reviews %}
         <div class="flex overflow-x-auto gap-6 pb-8 mb-12 snap-x snap-mandatory hide-scrollbar">
             {% for review in reviews %}
-            <div class="min-w-[300px] md:min-w-[400px] bg-white p-8 border border-gray-100 shadow-sm snap-center">
+            <div class="min-w-[300px] md:min-w-[400px] bg-white p-8 border border-gray-100 shadow-sm snap-center relative">
+                {% if current_user.is_authenticated and current_user.is_admin %}
+                <form action="{{ url_for('main.delete_review', review_id=review.id) }}" method="POST" class="absolute top-3 ltr:right-3 rtl:left-3 z-10" onsubmit="return confirm('{{ _('review_delete_confirm') }}')">
+                    <button type="submit" title="{{ _('review_delete') }}" aria-label="{{ _('review_delete') }}" class="w-7 h-7 rounded-full bg-zinc-100 text-zinc-600 hover:bg-red-600 hover:text-white transition flex items-center justify-center text-sm font-bold">
+                        ×
+                    </button>
+                </form>
+                {% endif %}
                 <div class="flex text-[#1a1a1a] mb-4">
                     {% for i in range(review.rating) %}★{% endfor %}
                     {% for i in range(5 - review.rating) %}<span class="text-gray-300">★</span>{% endfor %}

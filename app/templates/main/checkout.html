@@ -155,6 +155,24 @@
                             </div>
                     </div>
 
+                    <div class="bg-zinc-50 border border-zinc-200 p-6">
+                        <h3 class="text-[11px] font-bold uppercase tracking-widest text-zinc-500 mb-2 ltr:font-['Oswald'] rtl:font-['Cairo']">
+                            {{ _('checkout_discount_title') }}
+                        </h3>
+                        <p class="text-xs text-zinc-500 mb-4">{{ _('checkout_discount_hint') }}</p>
+
+                        <div class="flex flex-col md:flex-row gap-3">
+                            <input type="text" id="discountCodeInput" name="discount_code" maxlength="32" class="flex-1 border border-zinc-200 p-3 bg-white text-zinc-900 focus:outline-none focus:border-amber-500 font-bold uppercase tracking-wider" placeholder="{{ _('ph_discount_code') }}">
+                            <button type="button" id="applyDiscountBtn" class="px-5 py-3 bg-zinc-900 text-white text-xs font-bold uppercase tracking-widest hover:bg-amber-500 hover:text-black transition">
+                                {{ _('checkout_apply_code') }}
+                            </button>
+                            <button type="button" id="clearDiscountBtn" class="px-5 py-3 border border-zinc-300 text-zinc-600 text-xs font-bold uppercase tracking-widest hover:border-zinc-900 hover:text-zinc-900 transition hidden">
+                                {{ _('checkout_remove_code') }}
+                            </button>
+                        </div>
+                        <p id="discountCodeMessage" class="mt-3 text-xs font-bold uppercase tracking-widest text-zinc-500"></p>
+                    </div>
+
 <div class="mt-8 border-t border-zinc-100 pt-8">
     <h3 class="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-4 ltr:font-['Oswald'] rtl:font-['Cairo']">
         {{ 'Payment Methods' |translate_dynamic }}
@@ -249,7 +267,11 @@
                     <div class="border-t border-zinc-200 pt-6 space-y-3">
                         <div class="flex justify-between text-zinc-500 text-xs font-bold uppercase tracking-wider">
                             <span>{{ _('cart_subtotal') }}</span>
-                            <span class="text-zinc-900">{{ total | currency }}</span>
+                            <span id="subtotalDisplay" class="text-zinc-900">{{ total | currency }}</span>
+                        </div>
+                        <div id="discountRow" class="hidden flex justify-between text-zinc-500 text-xs font-bold uppercase tracking-wider">
+                            <span>{{ _('checkout_discount') }}</span>
+                            <span id="discountDisplay" class="text-green-600">-</span>
                         </div>
                         <div class="flex justify-between text-zinc-500 text-xs font-bold uppercase tracking-wider">
                             <span>{{ _('cart_shipping') }}</span>
@@ -301,6 +323,9 @@
     
     // TEXT FOR FREE SHIPPING (Translatable)
     const FREE_TEXT = "{{ _('free') or 'FREE' }}"; 
+    const DISCOUNT_APPLIED_TEXT = "{{ _('discount_code_applied') }}";
+    const DISCOUNT_INVALID_TEXT = "{{ _('discount_code_invalid') }}";
+    const DISCOUNT_REQUIRED_TEXT = "{{ _('discount_code_required') }}";
     
     const COUNTRY_PHONE_MAP = {
         'Bahrain': '+973', 'Saudi Arabia': '+966', 'UAE': '+971',
@@ -315,16 +340,39 @@
     };
 
     let currentShippingCostBHD = 0;
+    let appliedDiscountCode = '';
+    let appliedDiscountPercentage = 0;
 
     document.addEventListener('DOMContentLoaded', () => {
         const countrySelect = document.getElementById('countrySelect');
         const savedAddrRadio = document.querySelector('input[name="selected_address"]:checked');
+        const applyDiscountBtn = document.getElementById('applyDiscountBtn');
+        const clearDiscountBtn = document.getElementById('clearDiscountBtn');
+        const discountInput = document.getElementById('discountCodeInput');
 
         if (!savedAddrRadio) {
             updatePhoneCode('Bahrain');
         }
 
         updateShippingOptions();
+
+        if (applyDiscountBtn) {
+            applyDiscountBtn.addEventListener('click', applyDiscountCode);
+        }
+        if (clearDiscountBtn) {
+            clearDiscountBtn.addEventListener('click', clearDiscountCode);
+        }
+        if (discountInput) {
+            discountInput.addEventListener('input', () => {
+                setDiscountMessage('');
+            });
+            discountInput.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    applyDiscountCode();
+                }
+            });
+        }
         
         document.querySelectorAll('.new-addr-input').forEach(input => {
             input.addEventListener('input', () => {
@@ -418,6 +466,85 @@
         `;
     }
 
+    function formatUserCurrency(amountBHD) {
+        return `${symbol} ${(amountBHD * exchangeRate).toFixed(decimals)}`;
+    }
+
+    function setDiscountMessage(text, tone = 'neutral') {
+        const msg = document.getElementById('discountCodeMessage');
+        if (!msg) return;
+        msg.textContent = text || '';
+        msg.classList.remove('text-zinc-500', 'text-green-600', 'text-red-600');
+
+        if (tone === 'success') msg.classList.add('text-green-600');
+        else if (tone === 'error') msg.classList.add('text-red-600');
+        else msg.classList.add('text-zinc-500');
+    }
+
+    function clearDiscountCode() {
+        appliedDiscountCode = '';
+        appliedDiscountPercentage = 0;
+        const input = document.getElementById('discountCodeInput');
+        if (input) input.value = '';
+
+        const clearBtn = document.getElementById('clearDiscountBtn');
+        if (clearBtn) clearBtn.classList.add('hidden');
+
+        setDiscountMessage('');
+        calculateTotal();
+    }
+
+    async function applyDiscountCode() {
+        const input = document.getElementById('discountCodeInput');
+        const code = input ? input.value.trim().toUpperCase() : '';
+        const applyBtn = document.getElementById('applyDiscountBtn');
+        const clearBtn = document.getElementById('clearDiscountBtn');
+
+        if (!code) {
+            appliedDiscountCode = '';
+            appliedDiscountPercentage = 0;
+            if (clearBtn) clearBtn.classList.add('hidden');
+            setDiscountMessage(DISCOUNT_REQUIRED_TEXT, 'error');
+            calculateTotal();
+            return;
+        }
+
+        if (applyBtn) applyBtn.disabled = true;
+
+        try {
+            const response = await fetch("{{ url_for('main.validate_discount_code') }}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code })
+            });
+
+            const data = await response.json();
+            if (!response.ok || !data.valid) {
+                appliedDiscountCode = '';
+                appliedDiscountPercentage = 0;
+                if (clearBtn) clearBtn.classList.add('hidden');
+                setDiscountMessage((data && data.message) ? data.message : DISCOUNT_INVALID_TEXT, 'error');
+                calculateTotal();
+                return;
+            }
+
+            appliedDiscountCode = data.code;
+            appliedDiscountPercentage = Number(data.percentage) || 0;
+            if (input) input.value = appliedDiscountCode;
+            if (clearBtn) clearBtn.classList.remove('hidden');
+            setDiscountMessage(`${DISCOUNT_APPLIED_TEXT} ${appliedDiscountPercentage}%`, 'success');
+            calculateTotal();
+        } catch (error) {
+            appliedDiscountCode = '';
+            appliedDiscountPercentage = 0;
+            if (clearBtn) clearBtn.classList.add('hidden');
+            setDiscountMessage(DISCOUNT_INVALID_TEXT, 'error');
+            calculateTotal();
+        } finally {
+            if (applyBtn) applyBtn.disabled = false;
+        }
+    }
+
     function calculateTotal() {
         const selectedOption = document.querySelector('input[name="shipping_option"]:checked');
         if (!selectedOption) return;
@@ -442,8 +569,23 @@
             shipDisplayEl.classList.add('text-amber-600');
         }
 
+        const discountAmountBHD = cartTotalBHD * (appliedDiscountPercentage / 100);
+        const discountedSubtotalBHD = Math.max(cartTotalBHD - discountAmountBHD, 0);
+
+        const discountRow = document.getElementById('discountRow');
+        const discountDisplay = document.getElementById('discountDisplay');
+        if (discountRow && discountDisplay) {
+            if (appliedDiscountPercentage > 0) {
+                discountRow.classList.remove('hidden');
+                discountDisplay.innerText = `- ${formatUserCurrency(discountAmountBHD)}`;
+            } else {
+                discountRow.classList.add('hidden');
+                discountDisplay.innerText = '-';
+            }
+        }
+
         // Calculate Final Total
-        const totalBHD = cartTotalBHD + currentShippingCostBHD;
+        const totalBHD = discountedSubtotalBHD + currentShippingCostBHD;
         const totalUser = totalBHD * exchangeRate;
         
         document.getElementById('totalDisplay').innerText = symbol + " " + totalUser.toFixed(decimals);
