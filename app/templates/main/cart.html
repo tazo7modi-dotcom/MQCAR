@@ -71,6 +71,98 @@
                         </div>
                     </div>
                     {% endfor %}
+
+                    {% if upsell_categories %}
+                    <div class="pt-12 border-t-0">
+                        <div class="border border-zinc-200 bg-gradient-to-br from-zinc-50 to-white p-6 md:p-8">
+                            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+                                <div>
+                                    <p class="text-[10px] uppercase tracking-[0.25em] font-bold text-amber-600 mb-2">
+                                        {{ _('cart_accessories_badge') }}
+                                    </p>
+                                    <h2 class="text-2xl md:text-3xl font-bold text-zinc-900 ltr:font-['Oswald'] rtl:font-['Cairo'] uppercase">
+                                        {{ _('cart_accessories_question') }}
+                                    </h2>
+                                    <p class="text-zinc-500 text-sm mt-2">{{ _('cart_accessories_hint') }}</p>
+                                </div>
+
+                                <button type="button" id="accessoriesToggle" class="inline-flex items-center justify-center gap-2 border border-zinc-300 bg-white px-5 py-3 text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-zinc-900 hover:text-white hover:border-zinc-900 transition">
+                                    <span id="accessoriesToggleText">{{ _('cart_accessories_toggle_open') }}</span>
+                                    <svg id="accessoriesToggleIcon" class="w-4 h-4 transition-transform duration-300 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <div id="accessoriesPanel" class="hidden mt-8">
+                                <div class="flex flex-wrap gap-2 mb-6">
+                                    {% for block in upsell_categories %}
+                                    <button type="button"
+                                            class="upsell-tab px-4 py-2 text-[10px] font-bold uppercase tracking-widest border transition {% if loop.first %}bg-zinc-900 text-white border-zinc-900{% else %}bg-white text-zinc-600 border-zinc-200 hover:border-zinc-400{% endif %}"
+                                            data-target="upsell-cat-{{ block.category.id }}">
+                                        {{ block.category.name | translate_dynamic }}
+                                    </button>
+                                    {% endfor %}
+                                </div>
+
+                                {% for block in upsell_categories %}
+                                <div id="upsell-cat-{{ block.category.id }}" class="upsell-grid {% if not loop.first %}hidden{% endif %}">
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                                        {% for product in block.products %}
+                                        <div class="border border-zinc-200 bg-white p-4 group">
+                                            <a href="{{ url_for('main.product_detail', product_id=product.id) }}" class="block w-full aspect-square bg-zinc-50 border border-zinc-100 overflow-hidden mb-4">
+                                                {% if product.image_url %}
+                                                <img src="{{ url_for('uploaded_file', filename=product.image_url) if not product.image_url.startswith('http') else product.image_url }}"
+                                                     alt="{{ product.name }}"
+                                                     class="w-full h-full object-contain p-3 mix-blend-multiply group-hover:scale-105 transition duration-500">
+                                                {% else %}
+                                                <div class="w-full h-full flex items-center justify-center text-[10px] uppercase font-bold text-zinc-300">
+                                                    {{ _('txt_no_img') }}
+                                                </div>
+                                                {% endif %}
+                                            </a>
+
+                                            <h3 class="font-bold text-sm text-zinc-900 leading-tight mb-2 min-h-[2.5rem]">
+                                                {{ product.name | translate_dynamic }}
+                                            </h3>
+
+                                            <div class="flex items-center gap-2 mb-4">
+                                                {% if product.on_sale() %}
+                                                <span class="font-bold text-sm text-rose-600">{{ product.get_price() | currency }}</span>
+                                                <span class="text-xs text-zinc-400 line-through">{{ product.price | currency }}</span>
+                                                {% else %}
+                                                <span class="font-bold text-sm text-zinc-700">{{ product.price | currency }}</span>
+                                                {% endif %}
+                                            </div>
+
+                                            <div class="flex gap-2">
+                                                {% if product.has_sizes or product.has_colors %}
+                                                <a href="{{ url_for('main.product_detail', product_id=product.id) }}"
+                                                   class="flex-1 text-center border border-zinc-300 py-2 text-[10px] font-bold uppercase tracking-widest hover:border-zinc-900 hover:text-zinc-900 transition">
+                                                    {{ _('cart_accessories_choose_options') }}
+                                                </a>
+                                                {% else %}
+                                                <button type="button"
+                                                        class="quick-accessory-add flex-1 border border-zinc-900 bg-zinc-900 text-white py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-amber-500 hover:border-amber-500 hover:text-black transition"
+                                                        data-product-id="{{ product.id }}">
+                                                    {{ _('cart_accessories_add') }}
+                                                </button>
+                                                {% endif %}
+
+                                                <a href="{{ url_for('main.product_detail', product_id=product.id) }}"
+                                                   class="px-3 border border-zinc-300 py-2 text-[10px] font-bold uppercase tracking-widest hover:border-zinc-900 hover:text-zinc-900 transition">
+                                                    {{ _('cart_accessories_view') }}
+                                                </a>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
 
                 <div class="lg:w-1/3">
@@ -112,96 +204,6 @@
                     </div>
                 </div>
             </div>
-
-            {% if upsell_categories %}
-            <div class="mt-16 border border-zinc-200 bg-gradient-to-br from-zinc-50 to-white p-6 md:p-8">
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
-                    <div>
-                        <p class="text-[10px] uppercase tracking-[0.25em] font-bold text-amber-600 mb-2">
-                            {{ _('cart_accessories_badge') }}
-                        </p>
-                        <h2 class="text-2xl md:text-3xl font-bold text-zinc-900 ltr:font-['Oswald'] rtl:font-['Cairo'] uppercase">
-                            {{ _('cart_accessories_question') }}
-                        </h2>
-                        <p class="text-zinc-500 text-sm mt-2">{{ _('cart_accessories_hint') }}</p>
-                    </div>
-
-                    <button type="button" id="accessoriesToggle" class="inline-flex items-center justify-center gap-2 border border-zinc-300 bg-white px-5 py-3 text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-zinc-900 hover:text-white hover:border-zinc-900 transition">
-                        <span id="accessoriesToggleText">{{ _('cart_accessories_toggle_open') }}</span>
-                        <svg id="accessoriesToggleIcon" class="w-4 h-4 transition-transform duration-300 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                        </svg>
-                    </button>
-                </div>
-
-                <div id="accessoriesPanel" class="hidden mt-8">
-                    <div class="flex flex-wrap gap-2 mb-6">
-                        {% for block in upsell_categories %}
-                        <button type="button"
-                                class="upsell-tab px-4 py-2 text-[10px] font-bold uppercase tracking-widest border transition {% if loop.first %}bg-zinc-900 text-white border-zinc-900{% else %}bg-white text-zinc-600 border-zinc-200 hover:border-zinc-400{% endif %}"
-                                data-target="upsell-cat-{{ block.category.id }}">
-                            {{ block.category.name | translate_dynamic }}
-                        </button>
-                        {% endfor %}
-                    </div>
-
-                    {% for block in upsell_categories %}
-                    <div id="upsell-cat-{{ block.category.id }}" class="upsell-grid {% if not loop.first %}hidden{% endif %}">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                            {% for product in block.products %}
-                            <div class="border border-zinc-200 bg-white p-4 group">
-                                <a href="{{ url_for('main.product_detail', product_id=product.id) }}" class="block w-full aspect-square bg-zinc-50 border border-zinc-100 overflow-hidden mb-4">
-                                    {% if product.image_url %}
-                                    <img src="{{ url_for('uploaded_file', filename=product.image_url) if not product.image_url.startswith('http') else product.image_url }}"
-                                         alt="{{ product.name }}"
-                                         class="w-full h-full object-contain p-3 mix-blend-multiply group-hover:scale-105 transition duration-500">
-                                    {% else %}
-                                    <div class="w-full h-full flex items-center justify-center text-[10px] uppercase font-bold text-zinc-300">
-                                        {{ _('txt_no_img') }}
-                                    </div>
-                                    {% endif %}
-                                </a>
-
-                                <h3 class="font-bold text-sm text-zinc-900 leading-tight mb-2 min-h-[2.5rem]">
-                                    {{ product.name | translate_dynamic }}
-                                </h3>
-
-                                <div class="flex items-center gap-2 mb-4">
-                                    {% if product.on_sale() %}
-                                    <span class="font-bold text-sm text-rose-600">{{ product.get_price() | currency }}</span>
-                                    <span class="text-xs text-zinc-400 line-through">{{ product.price | currency }}</span>
-                                    {% else %}
-                                    <span class="font-bold text-sm text-zinc-700">{{ product.price | currency }}</span>
-                                    {% endif %}
-                                </div>
-
-                                <div class="flex gap-2">
-                                    {% if product.has_sizes or product.has_colors %}
-                                    <a href="{{ url_for('main.product_detail', product_id=product.id) }}"
-                                       class="flex-1 text-center border border-zinc-300 py-2 text-[10px] font-bold uppercase tracking-widest hover:border-zinc-900 hover:text-zinc-900 transition">
-                                        {{ _('cart_accessories_choose_options') }}
-                                    </a>
-                                    {% else %}
-                                    <button type="button"
-                                            class="quick-accessory-add flex-1 border border-zinc-900 bg-zinc-900 text-white py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-amber-500 hover:border-amber-500 hover:text-black transition"
-                                            data-product-id="{{ product.id }}">
-                                        {{ _('cart_accessories_add') }}
-                                    </button>
-                                    {% endif %}
-
-                                    <a href="{{ url_for('main.product_detail', product_id=product.id) }}"
-                                       class="px-3 border border-zinc-300 py-2 text-[10px] font-bold uppercase tracking-widest hover:border-zinc-900 hover:text-zinc-900 transition">
-                                        {{ _('cart_accessories_view') }}
-                                    </a>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
 
         {% else %}
             <div class="flex flex-col items-center justify-center py-32 text-center border border-dashed border-zinc-300 bg-zinc-50">

@@ -598,7 +598,8 @@ dictionary = {
     'btn_create_product':'Finalize Product',
     'lbl_upload_main_photos':'Upload main Images',
     'lbl_main_gallery':'Main Gallery',
-    'Product_Inventory':'Product Inventory'
+    'Product_Inventory':'Product Inventory',
+    'sold_out':'Sold Out'
         
 
        
@@ -1221,7 +1222,8 @@ dictionary = {
     'btn_create_product':'حفظ ',
     'lbl_upload_main_photos':'تحميل الصور الأساسية',
     'lbl_main_gallery':'الصور الأساسية',
-    'Product_Inventory':'ادارة المخزون'
+    'Product_Inventory':'ادارة المخزون',
+    'sold_out':'نفذت الكمية'
 
 
 
