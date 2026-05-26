@@ -127,7 +127,7 @@
             </div>
 
             <div class="flex items-center gap-3 md:gap-5">
-                <div class="relative hidden md:block">
+                <div class="relative block">
                     <label for="nav-currency" class="sr-only">{{ _('currency') }}</label>
                     <select id="nav-currency"
                             aria-label="{{ _('currency') }}"
@@ -263,19 +263,6 @@
             <div>
                 <h4 class="smart-heading text-sm font-bold mb-4">{{ _('newsletter_title') }}</h4>
                 <p class="text-sm text-zinc-300 mb-4 leading-6">{{ _('newsletter_desc') }}</p>
-                <div class="mb-4 md:hidden">
-                    <label for="footer-currency-mobile" class="block text-xs font-bold text-zinc-400 mb-2">{{ _('currency') }}</label>
-                    <select id="footer-currency-mobile"
-                            aria-label="{{ _('currency') }}"
-                            class="w-full bg-white text-zinc-950 border border-white px-4 py-3 text-sm outline-none focus:border-[#d71920] rounded-md"
-                            onchange="if (this.value) window.location.href = this.value;">
-                        {% for code, currency_data in config['CURRENCY_RATES'].items() %}
-                        <option value="{{ url_for('main.set_currency', code=code) }}" {% if current_currency == code %}selected{% endif %}>
-                            {{ code }} - {{ currency_data.symbol }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
                 <form action="#" class="flex flex-col gap-3">
                     <label for="footer-email" class="sr-only">{{ _('newsletter_placeholder') }}</label>
                     <input id="footer-email" type="email" placeholder="{{ _('newsletter_placeholder') }}"
