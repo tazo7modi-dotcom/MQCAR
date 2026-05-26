@@ -66,9 +66,9 @@ class ShippingService:
                 # Optional: "addressDetail": "Warehouse A",
                 
                 # CONTACT INFO (Directly inside pickup, per your doc)
-                "fullName": "Store Dispatch",
+                "fullName": current_app.config['STORE'].get('dispatch_name', 'Store Dispatch'),
                 "phone": current_app.config['STORE_CONTACT_PHONE'],
-                "email": "dispatch@store.com",
+                "email": current_app.config['STORE'].get('dispatch_email', ''),
                 
                 # TIMESTAMPS
                 "completeAfter": complete_after,

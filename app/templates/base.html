@@ -4,97 +4,170 @@
     <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ _('nav_home') }} | Dropi</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Cairo:wght@400;600;800&family=Oswald:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <style>
-        /* Base Theme: Clean White & Black */
-        body { 
-            font-family: 'Inter', 'Cairo', sans-serif; 
-            background-color: #ffffff; 
-            color: #1a1a1a; 
-        }
-        
-        /* Typography Utilities */
-        .smart-heading { font-family: 'Oswald', 'Cairo', sans-serif; letter-spacing: 0.05em; text-transform: uppercase; }
-        .smart-body { font-family: 'Inter', 'Cairo', sans-serif; }
-        
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 3px; }
+    <title>{{ seo.title or store.name }}</title>
+    <meta name="description" content="{{ seo.description }}">
+    {% if seo.keywords %}<meta name="keywords" content="{{ seo.keywords }}">{% endif %}
+    <meta property="og:title" content="{{ seo.title or store.name }}">
+    <meta property="og:description" content="{{ seo.description }}">
+    <meta property="og:image" content="{{ seo.og_image }}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="{{ seo.whatsapp_image or seo.og_image }}">
 
-        /* Animation for Toast */
+    <link href="https://fonts.googleapis.com/css2?family={{ theme.font|replace(' ', '+') }}:wght@300;400;500;600;700;800&family={{ theme.arabic_font|replace(' ', '+') }}:wght@400;500;600;700;800&family={{ theme.heading_font|replace(' ', '+') }}:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+
+    <style>
+        :root {
+            --store-primary: {{ theme.primary_color }};
+            --store-accent: {{ theme.accent_color }};
+            --store-bg: {{ theme.background_color }};
+            --store-surface: {{ theme.surface_color }};
+            --store-text: {{ theme.text_color }};
+            --store-muted: {{ theme.muted_text_color }};
+            --store-button-radius: {{ theme.button_radius }};
+            --store-card-radius: {{ theme.card_radius }};
+            --store-hero-overlay: {{ theme.hero_overlay }};
+            --store-hero-position: {{ theme.hero_position }};
+            --mq-red: #d71920;
+            --mq-red-dark: #a90f15;
+            --mq-black: #101114;
+            --mq-ink: #18191d;
+            --mq-line: #e7e8ec;
+            --mq-soft: #f5f6f8;
+        }
+
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: '{{ theme.font }}', '{{ theme.arabic_font }}', sans-serif;
+            background: #fff;
+            color: var(--mq-ink);
+        }
+
+        .smart-heading {
+            font-family: '{{ theme.heading_font }}', '{{ theme.arabic_font }}', sans-serif;
+            letter-spacing: 0;
+            text-transform: none;
+        }
+
+        .smart-body { font-family: '{{ theme.font }}', '{{ theme.arabic_font }}', sans-serif; }
+        .store-primary-bg { background-color: var(--mq-red) !important; }
+        .store-primary-text { color: var(--mq-red) !important; }
+        .store-accent-bg { background-color: var(--mq-black) !important; }
+        .store-accent-text { color: var(--mq-red) !important; }
+        .store-button { border-radius: var(--store-button-radius); }
+        button, .btn, input[type="submit"] { border-radius: var(--store-button-radius); }
+        .text-amber-500, .text-amber-600, .text-amber-800 { color: var(--mq-red) !important; }
+        .border-amber-500, .border-amber-600 { border-color: var(--mq-red) !important; }
+        .bg-amber-500, .bg-amber-600 { background-color: var(--mq-red) !important; }
+        .hover\:bg-amber-500:hover { background-color: var(--mq-red) !important; color: #fff !important; }
+        .hover\:border-amber-500:hover { border-color: var(--mq-red) !important; }
+        .hover\:text-amber-600:hover { color: var(--mq-red) !important; }
+        a, button { touch-action: manipulation; }
+        a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible {
+            outline: 3px solid rgba(215, 25, 32, 0.35);
+            outline-offset: 3px;
+        }
+
+        .mq-container { width: min(1180px, calc(100% - 32px)); margin-inline: auto; }
+        .mq-nav-link { min-height: 44px; display: inline-flex; align-items: center; }
+        .mq-gradient {
+            background:
+                linear-gradient(135deg, rgba(16, 17, 20, 0.96), rgba(16, 17, 20, 0.9)),
+                radial-gradient(circle at 20% 0%, rgba(215, 25, 32, 0.35), transparent 34%);
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f2f4; }
+        ::-webkit-scrollbar-thumb { background: var(--mq-black); border-radius: 999px; }
         @keyframes shrinkWidth { from { width: 100%; } to { width: 0%; } }
         .animate-shrink { animation: shrinkWidth 4s linear forwards; }
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+        }
     </style>
 </head>
 
-<body class="bg-white text-gray-900 flex flex-col min-h-screen antialiased selection:bg-black selection:text-white">
-
+<body class="bg-white text-zinc-950 flex flex-col min-h-screen antialiased selection:bg-[#d71920] selection:text-white">
     <div id="flash-container" class="fixed bottom-5 right-5 z-[100] flex flex-col gap-3 pointer-events-none ltr:right-5 ltr:left-auto rtl:left-5 rtl:right-auto">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="toast-item pointer-events-auto min-w-[300px] bg-white border border-gray-100 text-black p-4 shadow-[0_10px_40px_rgba(0,0,0,0.1)] transform transition-transform duration-500 flex items-start gap-3 relative overflow-hidden rounded-md">
+                    <div class="toast-item pointer-events-auto min-w-[300px] max-w-[92vw] bg-white border border-zinc-100 text-zinc-950 p-4 shadow-[0_18px_50px_rgba(16,17,20,0.16)] transition-all duration-500 flex items-start gap-3 relative overflow-hidden rounded-lg">
                         <div class="flex-shrink-0 pt-0.5">
                             {% if category == 'error' %}
-                                <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <svg class="w-5 h-5 text-[#d71920]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             {% else %}
-                                <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             {% endif %}
                         </div>
                         <div class="flex-1">
                             <p class="text-sm font-medium leading-relaxed">{{ message | translate_dynamic }}</p>
                         </div>
-                        <div class="absolute bottom-0 left-0 h-0.5 {{ 'bg-red-500' if category == 'error' else 'bg-green-500' }} w-full origin-left animate-shrink"></div>
+                        <div class="absolute bottom-0 left-0 h-1 {{ 'bg-[#d71920]' if category == 'error' else 'bg-emerald-600' }} w-full origin-left animate-shrink"></div>
                     </div>
                 {% endfor %}
             {% endif %}
         {% endwith %}
     </div>
 
-    <nav class="fixed w-full z-50 bg-white/90 backdrop-blur-md border-b border-gray-100">
-        <div class="container mx-auto px-6 h-20 flex justify-between items-center">
-            
-            <a href="{{ url_for('main.home') }}" class="flex items-center gap-2">
-            <img style="width: 60px; height: 60px;" src="/static/Ddropi.PNG" >
+    <nav class="fixed w-full z-50 bg-white/95 backdrop-blur-xl border-b border-zinc-200/80">
+        <div class="mq-container h-20 flex justify-between items-center gap-5">
+            <a href="{{ url_for('main.home') }}" class="flex items-center gap-3 min-h-[44px]" aria-label="{{ store.name }}">
+                <img style="width: {{ theme.logo_width }}; height: {{ theme.logo_height }};" src="{{ store.logo }}" alt="{{ store.name }}" class="object-contain">
             </a>
-            
-            <div class="flex items-center gap-6">
-                
-                <div class="flex items-center gap-2 text-xs font-bold tracking-widest">
-                    <a href="{{ url_for('main.set_language', lang_code='en') }}" class="hover:text-black transition {% if current_lang == 'en' %}text-black border-b border-black{% else %}text-gray-400{% endif %}">EN</a>
-                    <span class="text-gray-300">|</span>
-                    <a href="{{ url_for('main.set_language', lang_code='ar') }}" class="hover:text-black transition {% if current_lang == 'ar' %}text-black border-b border-black{% else %}text-gray-400{% endif %}">AR</a>
+
+            <div class="hidden lg:flex items-center justify-center gap-8 text-sm font-semibold text-zinc-700">
+                <a href="{{ url_for('main.home') }}" class="mq-nav-link hover:text-[#d71920] transition-colors">{{ _('nav_home') }}</a>
+                <a href="{{ url_for('main.all_products_view') }}" class="mq-nav-link hover:text-[#d71920] transition-colors">{{ _('nav_shop') }}</a>
+                <a href="/about" class="mq-nav-link hover:text-[#d71920] transition-colors">{{ _('footer_about') }}</a>
+                <a href="/contact" class="mq-nav-link hover:text-[#d71920] transition-colors">{{ _('contact') }}</a>
+            </div>
+
+            <div class="flex items-center gap-3 md:gap-5">
+                <div class="relative hidden md:block">
+                    <label for="nav-currency" class="sr-only">{{ _('currency') }}</label>
+                    <select id="nav-currency"
+                            aria-label="{{ _('currency') }}"
+                            class="h-11 bg-zinc-50 border border-zinc-200 text-zinc-900 rounded-md px-3 pr-8 text-xs font-bold focus:border-[#d71920] outline-none cursor-pointer"
+                            onchange="if (this.value) window.location.href = this.value;">
+                        {% for code, currency_data in config['CURRENCY_RATES'].items() %}
+                        <option value="{{ url_for('main.set_currency', code=code) }}" {% if current_currency == code %}selected{% endif %}>
+                            {{ code }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="hidden sm:flex items-center gap-2 text-xs font-bold">
+                    <a href="{{ url_for('main.set_language', lang_code='en') }}" class="px-2 py-2 hover:text-[#d71920] transition {% if current_lang == 'en' %}text-[#d71920]{% else %}text-zinc-400{% endif %}">EN</a>
+                    <span class="text-zinc-300">/</span>
+                    <a href="{{ url_for('main.set_language', lang_code='ar') }}" class="px-2 py-2 hover:text-[#d71920] transition {% if current_lang == 'ar' %}text-[#d71920]{% else %}text-zinc-400{% endif %}">AR</a>
                 </div>
 
                 {% if current_user.is_authenticated %}
-                    <a href="{{ url_for('main.account') }}" class="text-sm font-medium hover:text-black text-gray-600 transition uppercase flex items-center gap-1">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                        <span class="hidden md:inline text-xs font-bold tracking-widest">{{ _('link_account') }}</span>
+                    <a href="{{ url_for('main.account') }}" class="min-h-[44px] inline-flex items-center gap-2 text-sm font-semibold text-zinc-700 hover:text-[#d71920] transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                        <span class="hidden md:inline">{{ _('link_account') }}</span>
                     </a>
                 {% else %}
-                    <a href="{{ url_for('auth.login') }}" class="text-sm font-medium hover:text-black text-gray-600 transition uppercase flex items-center gap-1">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
-                        <span class="text-xs font-bold tracking-widest">LOGIN</span>
+                    <a href="{{ url_for('auth.login') }}" class="min-h-[44px] inline-flex items-center gap-2 text-sm font-semibold text-zinc-700 hover:text-[#d71920] transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+                        <span class="hidden md:inline">{{ _('nav_login') }}</span>
                     </a>
                 {% endif %}
 
-            <a href="{{ url_for('main.cart_page') }}" class="relative text-gray-800 hover:text-black transition group">
-    <svg class="w-6 h-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-    
-    <span class="cart-badge absolute -top-1 -right-2 bg-black text-white text-[9px] font-bold w-4 h-4 flex items-center justify-center rounded-full {% if cart_count == 0 %}hidden{% endif %}">
-        {{ cart_count }}
-    </span>
-</a>
+                <a href="{{ url_for('main.cart_page') }}" class="relative min-w-[44px] min-h-[44px] inline-flex items-center justify-center text-zinc-900 hover:text-[#d71920] transition group" aria-label="{{ _('cart_title') }}">
+                    <svg class="w-6 h-6 group-hover:scale-105 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    <span class="cart-badge absolute top-1 right-0 bg-[#d71920] text-white text-[10px] font-bold min-w-5 h-5 px-1 flex items-center justify-center rounded-full {% if cart_count == 0 %}hidden{% endif %}">
+                        {{ cart_count }}
+                    </span>
+                </a>
 
                 {% if current_user.is_authenticated and current_user.is_admin %}
-                    <a href="{{ url_for('admin.dashboard') }}" class="bg-black text-white px-3 py-1 text-[10px] rounded-full uppercase font-bold tracking-widest hover:bg-gray-800 transition">Admin</a>
+                    <a href="{{ url_for('admin.dashboard') }}" class="hidden md:inline-flex bg-zinc-950 text-white px-4 py-2 text-xs rounded-full font-bold hover:bg-[#d71920] transition">{{ _('nav_admin') }}</a>
                 {% endif %}
             </div>
         </div>
@@ -103,92 +176,126 @@
     <main class="flex-grow pt-20">
         {% block content %}{% endblock %}
     </main>
-<footer class="bg-[#fafafa] border-t border-gray-200 pt-16 pb-8 text-gray-600">
-    <div class="container mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
-        
-        <div>
-            <h4 class="text-black smart-heading text-sm font-bold mb-6 uppercase tracking-wider">Dropi.</h4>
-            <p class="text-xs leading-relaxed mb-6 text-gray-500 max-w-xs">
-                {{ _('footer_about_text') }}
-            </p>
-            <div class="flex gap-4 items-center">
-                <a href="https://instagram.com/dropi_bh" target="_blank" class="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-400 hover:text-white hover:bg-black hover:border-black transition-all duration-300">
-                    <i class="fab fa-instagram text-sm"></i>
-                </a>
-                <a href="https://wa.me/97338844155" target="_blank" class="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#25D366] hover:border-[#25D366] transition-all duration-300">
-                    <i class="fab fa-whatsapp text-sm"></i>
-                </a>
-                <a href="https://tiktok.com/@dropi.bh" target="_blank" class="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-400 hover:text-white hover:bg-black hover:border-black transition-all duration-300">
-                    <i class="fab fa-tiktok text-sm"></i>
-                </a>
+
+    <footer class="mq-gradient text-white pt-16 pb-8">
+        <div class="mq-container grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 mb-12">
+            <div class="md:col-span-1">
+                <h4 class="smart-heading text-lg font-bold mb-4">{{ store.name }}</h4>
+                <p class="text-sm leading-7 mb-6 text-zinc-300 max-w-sm">
+                    {{ _('footer_about_text') }}
+                </p>
+                <div class="flex gap-3 items-center">
+                    {% if store.instagram_url %}
+                    <a href="{{ store.instagram_url }}" target="_blank" class="w-11 h-11 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-white hover:bg-[#d71920] hover:border-[#d71920] transition-all duration-200" aria-label="Instagram">
+                        <i class="fab fa-instagram text-base"></i>
+                    </a>
+                    {% endif %}
+                    {% if store.whatsapp_url %}
+                    <a href="{{ store.whatsapp_url }}" target="_blank" class="w-11 h-11 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-white hover:bg-[#25D366] hover:border-[#25D366] transition-all duration-200" aria-label="WhatsApp">
+                        <i class="fab fa-whatsapp text-base"></i>
+                    </a>
+                    {% endif %}
+                    {% if store.tiktok_url %}
+                    <a href="{{ store.tiktok_url }}" target="_blank" class="w-11 h-11 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-white hover:bg-white hover:text-zinc-950 transition-all duration-200" aria-label="TikTok">
+                        <i class="fab fa-tiktok text-base"></i>
+                    </a>
+                    {% endif %}
+                </div>
             </div>
+
+            <div>
+                <h4 class="smart-heading text-sm font-bold mb-5">{{ _('footer_quick') }}</h4>
+                <ul class="text-sm space-y-3 text-zinc-300">
+                    <li><a href="{{ url_for('main.home') }}" class="hover:text-white transition-colors">{{ _('nav_home') }}</a></li>
+                    <li><a href="{{ url_for('main.all_products_view') }}" class="hover:text-white transition-colors">{{ _('nav_shop') }}</a></li>
+                    <li><a href="/about" class="hover:text-white transition-colors">{{ _('footer_about') }}</a></li>
+                    <li><a href="{{ url_for('main.help') }}" class="hover:text-white transition-colors">{{ _('footer_help') }}</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="smart-heading text-sm font-bold mb-5">{{ _('footer_categories') }}</h4>
+                <ul class="text-sm space-y-3 text-zinc-300">
+                    <li>{{ _('footer_category_interior') }}</li>
+                    <li>{{ _('footer_category_exterior') }}</li>
+                    <li>{{ _('footer_category_lighting') }}</li>
+                    <li>{{ _('footer_category_protection') }}</li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="smart-heading text-sm font-bold mb-5">{{ _('footer_contact') }}</h4>
+                <ul class="text-sm space-y-4 text-zinc-300">
+                    <li class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-[#d71920] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 21s7-4.438 7-11a7 7 0 10-14 0c0 6.562 7 11 7 11z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 10.5h.01"></path></svg>
+                        <span class="leading-relaxed">{{ _('footer_location_virtual') }}</span>
+                    </li>
+                    {% if store.phone %}
+                    <li class="flex items-center gap-3">
+                        <svg class="w-5 h-5 text-[#d71920] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106a1.125 1.125 0 00-1.173.417l-.97 1.293a12.035 12.035 0 01-5.973-5.973l1.293-.97c.36-.27.527-.734.417-1.173L8.963 5.102A1.125 1.125 0 007.872 4.25H6.5A2.25 2.25 0 004.25 6.5v.25z"></path></svg>
+                        <a href="tel:{{ store.phone }}" dir="ltr" class="hover:text-white transition">{{ store.phone_display or store.phone }}</a>
+                    </li>
+                    {% endif %}
+                    {% if store.email %}
+                    <li class="flex items-center gap-3">
+                        <svg class="w-5 h-5 text-[#d71920] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21.75 7.5v9a2.25 2.25 0 01-2.25 2.25h-15A2.25 2.25 0 012.25 16.5v-9m19.5 0A2.25 2.25 0 0019.5 5.25h-15A2.25 2.25 0 002.25 7.5m19.5 0l-9.75 6.75L2.25 7.5"></path></svg>
+                        <a href="mailto:{{ store.email }}" class="hover:text-white transition">{{ store.email }}</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+
+            {% if home_sections.newsletter %}
+            <div>
+                <h4 class="smart-heading text-sm font-bold mb-4">{{ _('newsletter_title') }}</h4>
+                <p class="text-sm text-zinc-300 mb-4 leading-6">{{ _('newsletter_desc') }}</p>
+                <div class="mb-4 md:hidden">
+                    <label for="footer-currency-mobile" class="block text-xs font-bold text-zinc-400 mb-2">{{ _('currency') }}</label>
+                    <select id="footer-currency-mobile"
+                            aria-label="{{ _('currency') }}"
+                            class="w-full bg-white text-zinc-950 border border-white px-4 py-3 text-sm outline-none focus:border-[#d71920] rounded-md"
+                            onchange="if (this.value) window.location.href = this.value;">
+                        {% for code, currency_data in config['CURRENCY_RATES'].items() %}
+                        <option value="{{ url_for('main.set_currency', code=code) }}" {% if current_currency == code %}selected{% endif %}>
+                            {{ code }} - {{ currency_data.symbol }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <form action="#" class="flex flex-col gap-3">
+                    <label for="footer-email" class="sr-only">{{ _('newsletter_placeholder') }}</label>
+                    <input id="footer-email" type="email" placeholder="{{ _('newsletter_placeholder') }}"
+                           class="w-full bg-white text-zinc-950 border border-white px-4 py-3 text-sm outline-none focus:border-[#d71920] transition-colors placeholder-zinc-400 rounded-md">
+                    <button type="submit" class="w-full bg-[#d71920] text-white px-4 py-3 text-sm font-bold hover:bg-white hover:text-zinc-950 transition-colors rounded-md">
+                        {{ _('subscribe_btn') }}
+                    </button>
+                </form>
+            </div>
+            {% endif %}
         </div>
 
-        <div>
-            <h4 class="text-black smart-heading text-sm font-bold mb-6 uppercase tracking-wider">{{ _('footer_quick') }}</h4>
-            <ul class="text-xs space-y-3 font-medium tracking-wide">
-                <li><a href="{{ url_for('main.home') }}" class="hover:text-black transition-colors">{{ _('nav_home') }}</a></li>
-                <li><a href="#shop-all" class="hover:text-black transition-colors">{{ _('shop_now') }}</a></li>
-                <li><a href="/about" class="hover:text-black transition-colors">{{ _('footer_about') }}</a></li>
-            </ul>
+        <div class="mq-container border-t border-white/10 pt-8 text-center">
+            <p class="text-xs text-zinc-400">
+                &copy; {{ store.name }}. {{ _('footer_rights') }}
+            </p>
+            {% if store.powered_by_enabled and store.powered_by_url and store.powered_by_label %}
+            <a href="{{ store.powered_by_url }}" target="_blank" class="group inline-flex items-center gap-3 px-5 py-2 bg-white/10 rounded-full border border-white/10 transition-all duration-200 mt-4">
+                <span class="text-[10px] font-bold tracking-widest text-zinc-400 group-hover:text-white transition-colors">POWERED BY</span>
+                <div class="h-3 w-px bg-white/20 transition-colors"></div>
+                <span class="text-xs font-bold text-white italic tracking-wide transition-colors">{{ store.powered_by_label }}</span>
+            </a>
+            {% endif %}
         </div>
-
-        <div>
-            <h4 class="text-black smart-heading text-sm font-bold mb-6 uppercase tracking-wider">{{ _('footer_contact') }}</h4>
-            <ul class="text-xs space-y-4 text-gray-500">
-                <li class="flex items-start gap-3">
-                    <span class="text-black text-sm">📍</span> 
-                    <span class="leading-relaxed">{{ _('footer_location_virtual') }}</span>
-                </li>
-                <li class="flex items-center gap-3">
-                    <span class="text-black text-sm">📞</span> 
-                    <a href="tel:+97338844155" dir="ltr" class="hover:text-black transition">+973 3884 4155</a>
-                </li>
-                <li class="flex items-center gap-3">
-                    <span class="text-black text-sm">✉️</span> 
-                    <a href="mailto:dropi.bh@gmail.com" class="hover:text-black transition">dropi.bh@gmail.com</a>
-                </li>
-            </ul>
-        </div>
-
-        <div>
-            <h4 class="text-black smart-heading text-sm font-bold mb-4 uppercase tracking-wider">{{ _('newsletter_title') }}</h4>
-            <p class="text-xs text-gray-500 mb-4">{{ _('newsletter_desc') }}</p>
-            
-            <form action="#" class="flex flex-col gap-2">
-                <input type="email" placeholder="{{ _('newsletter_placeholder') }}" 
-                       class="w-full bg-white border border-gray-200 px-4 py-3 text-xs outline-none focus:border-black transition-colors placeholder-gray-300">
-                <button type="submit" class="w-full bg-black text-white px-4 py-3 text-xs font-bold uppercase tracking-widest hover:bg-[#333] transition-colors">
-                    {{ _('subscribe_btn') }}
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <div class="border-t border-gray-200 pt-8 text-center px-6">
-        <p class="text-[10px] uppercase tracking-widest text-gray-400">
-            &copy; 2026 Dropi. {{ _('footer_rights') }} 
-        </p>
-                     <a href="https://www.instagram.com/cdwbahrain" target="_blank" class="group flex items-center gap-3 px-5 py-2 bg-black rounded-full border border-zinc-800 hover:border-[#897cef]/50 hover:shadow-[0_0_15px_rgba(137,124,239,0.2)] transition-all duration-300">
-                <span class="text-[10px] font-bold tracking-widest text-zinc-500 group-hover:text-zinc-300 transition-colors">POWERED BY</span>
-                <div class="h-3 w-px bg-zinc-800 group-hover:bg-[#897cef] transition-colors"></div>
-                <span class="text-xs font-bold text-white italic tracking-wide group-hover:text-[#2ff495] transition-colors">
-                    CREATIVE WEB<span class="text-[#897cef] group-hover:text-white transition-colors">DIGITAL</span>
-                </span>
-             </a>
-        </div>
-    </div>
-</footer>
+    </footer>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            if (window.lucide) {
+                window.lucide.createIcons();
+            }
             const toasts = document.querySelectorAll('.toast-item');
-            
             toasts.forEach((toast, index) => {
-                // Auto Dismiss after 4 seconds
-                setTimeout(() => {
-                    closeToast(toast);
-                }, 4000 + (index * 100));
+                setTimeout(() => closeToast(toast), 4000 + (index * 100));
             });
         });
 

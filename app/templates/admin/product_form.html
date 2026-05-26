@@ -39,7 +39,7 @@
                             <option value="">{{ _('opt_uncategorized') }}</option>
                             {% for cat in categories %}
                             <option value="{{ cat.id }}" {% if product and product.category_id == cat.id %}selected{% endif %}>
-                                {{ cat.name }} {{cat.model_years or ""}}
+                                {{ cat.name }}{% if cat.name in static_category_names %} - {{ _('admin_fixed_brand') }}{% endif %} {{ cat.model_years or "" }}
                             </option>
                             {% endfor %}
                         </select>

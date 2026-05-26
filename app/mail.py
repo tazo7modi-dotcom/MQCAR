@@ -4,8 +4,6 @@ from app import mail
 from threading import Thread
 import os
 
-# --- CONFIG: PUT YOUR PRIVATE EMAIL HERE ---
-ADMIN_NOTIFY_EMAIL = os.environ.get('ADMIN_MAIL') or 'tazo.7modi@gmail.com'
 
 def send_async_emails(app, messages):
     """
@@ -38,8 +36,15 @@ def send_order_receipt(order):
             recipient_email = order.user.email
 
         if recipient_email and '@' in recipient_email:
+            receipt_subject = current_app.config['EMAIL_SETTINGS']['receipt_subject'].format(
+                order_id=order.id,
+                store_name=current_app.config['STORE']['name'],
+                amount=order.total_amount,
+                currency=current_app.config['CURRENCY_RATES']['BHD']['symbol'],
+                status=order.payment_status,
+            )
             msg_customer = Message(
-                subject=f"Order Confirmation #{order.id} - Dropi",
+                subject=receipt_subject,
                 recipients=[recipient_email]
             )
             msg_customer.html = render_template('email/receipt.html', order=order)
@@ -51,32 +56,43 @@ def send_order_receipt(order):
         # 2. PREPARE ADMIN NOTIFICATION (To You)
         # ==========================================
         # Make the subject informative so you see the value immediately on your phone
-        admin_subject = f"🔔 NEW ORDER #{order.id} | {order.total_amount} BD | {order.payment_status}"
-        
-        msg_admin = Message(
-            subject=admin_subject,
-            recipients=[ADMIN_NOTIFY_EMAIL]
+        currency_symbol = current_app.config['CURRENCY_RATES']['BHD']['symbol']
+        admin_subject = current_app.config['EMAIL_SETTINGS']['admin_subject'].format(
+            order_id=order.id,
+            store_name=current_app.config['STORE']['name'],
+            amount=order.total_amount,
+            currency=currency_symbol,
+            status=order.payment_status,
         )
         
+        admin_email = current_app.config['STORE'].get('admin_email')
+        msg_admin = None
+        if admin_email:
+            msg_admin = Message(
+                subject=admin_subject,
+                recipients=[admin_email]
+            )
+        
         # You can reuse the receipt template, or make a simple body
-        msg_admin.body = f"""
+        if msg_admin:
+            msg_admin.body = f"""
         New Order Received!
         -------------------
         Order ID: {order.id}
-        Amount: {order.total_amount} BD
+        Amount: {order.total_amount} {currency_symbol}
         Status: {order.payment_status}
         Customer: {order.full_name}
         Phone: {order.phone}
         
         Items:
         """
-        # Add item list to admin text email
-        for item in order.items:
-            msg_admin.body += f"\n- {item.product.name} (x{item.quantity})"
-            if item.size: msg_admin.body += f" [{item.size}]"
+            # Add item list to admin text email
+            for item in order.items:
+                msg_admin.body += f"\n- {item.product.name} (x{item.quantity})"
+                if item.size:
+                    msg_admin.body += f" [{item.size}]"
 
-        messages_to_send.append(msg_admin)
-
+            messages_to_send.append(msg_admin)
         # ==========================================
         # 3. SEND BOTH IN BACKGROUND
         # ==========================================

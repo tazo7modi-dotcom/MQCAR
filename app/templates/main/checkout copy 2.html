@@ -53,7 +53,7 @@
                                 <label class="block text-gray-500 text-xs font-bold uppercase mb-2 ml-1 font-bold-heading">{{ _('lbl_phone') }} <span class="text-[#cc0000]">*</span></label>
                                 <div class="flex" dir="ltr"> 
                                     <select name="phone_code" id="phoneCodeSelect" class="new-addr-input border-2 border-r-0 border-[#333] p-4 bg-[#222] text-white focus:border-[#cc0000] outline-none w-28 text-sm font-bold appearance-none text-center">
-                                        <option value="+973">🇧🇭 +973</option>
+                                        <option value="{{ config['CHECKOUT_COUNTRIES'][0].phone_code }}"> {{ config['CHECKOUT_COUNTRIES'][0].phone_code }}</option>
                                         <option value="+966">🇸🇦 +966</option>
                                         <option value="+971">🇦🇪 +971</option>
                                         <option value="+965">🇰🇼 +965</option>
@@ -80,7 +80,7 @@
                                     <select name="country" id="countrySelect" 
                                             class="new-addr-input w-full border-2 border-[#333] p-4 bg-black text-white focus:border-[#cc0000] transition outline-none appearance-none font-bold" 
                                             required onchange="updateShippingOptions()">
-                                        <option value="Bahrain" selected>Bahrain (البحرين)</option>
+                                        <option value="{{ config['CHECKOUT_COUNTRIES'][0].name }}" selected>{{ config['CHECKOUT_COUNTRIES'][0].label }}</option>
                                         </select>
                                     <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
                                         <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
@@ -161,7 +161,7 @@
     const currentCurrencyCode = "{{ current_currency }}"; 
     
     const COUNTRY_PHONE_MAP = {
-        'Bahrain': '+973',
+        '{{ config['CHECKOUT_COUNTRIES'][0].name }}': '{{ config['CHECKOUT_COUNTRIES'][0].phone_code }}',
         'Saudi Arabia': '+966',
         'UAE': '+971',
         'Kuwait': '+965',
@@ -170,7 +170,7 @@
     };
     
     const CURRENCY_TO_COUNTRY_MAP = {
-        'BHD': 'Bahrain',
+        'BHD': '{{ config['CHECKOUT_COUNTRIES'][0].name }}',
         'SAR': 'Saudi Arabia',
         'AED': 'UAE',
         'KWD': 'Kuwait',
@@ -178,10 +178,10 @@
         'OMR': 'Oman',
     };
 
-    // --- UPDATED SHIPPING RATES: BAHRAIN ONLY, 1 BHD ---
+    // --- UPDATED SHIPPING RATES: CONFIGURED COUNTRY, 1 BHD ---
     const SHIPPING_RATES = {
         'bahrain_normal': 0,
-        // Kept others but they won't trigger if country is locked to Bahrain
+        // Kept others but they won't trigger if country is locked to {{ config['CHECKOUT_COUNTRIES'][0].name }}
         'bahrain_fast': 0, 
         'gulf_flat': 0
     };
@@ -199,8 +199,8 @@
         const savedAddrRadio = document.querySelector('input[name="selected_address"]:checked');
 
         if (!savedAddrRadio) {
-            // Default to Bahrain for phone code
-            const mappedCountry = 'Bahrain'; 
+            // Default to configured country for phone code
+            const mappedCountry = '{{ config['CHECKOUT_COUNTRIES'][0].name }}'; 
             countrySelect.value = mappedCountry;
             updatePhoneCode(mappedCountry);
         }
@@ -270,11 +270,11 @@
         container.innerHTML = ''; 
 
 
-        if (country === 'Bahrain') {
+        if (country === '{{ config['CHECKOUT_COUNTRIES'][0].name }}') {
             
             container.innerHTML += createOptionHTML('normal', '{{_("delivery_1")}}', SHIPPING_RATES.bahrain_normal, true);
         } else {
-            // Fallback for saved addresses outside Bahrain (Legacy)
+            // Fallback for saved addresses outside configured country (Legacy)
             container.innerHTML += createOptionHTML('gulf', 'International Shipping', SHIPPING_RATES.gulf_flat, true);
         }
         calculateTotal();

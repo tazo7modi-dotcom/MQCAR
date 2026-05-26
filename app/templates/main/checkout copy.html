@@ -50,7 +50,7 @@
                             <label class="block text-[#2C3E2D]/60 text-xs font-bold uppercase mb-2 ml-1">{{ _('lbl_phone') }} <span class="text-red-500">*</span></label>
                             <div class="flex" dir="ltr"> 
                                 <select name="phone_code" id="phoneCodeSelect" class="new-addr-input border-2 border-r-0 border-[#2C3E2D]/10 p-4 rounded-l-xl bg-gray-50/50 focus:bg-white outline-none w-28 text-sm font-bold text-[#2C3E2D]">
-                                    <option value="+973">🇧🇭 +973</option>
+                                    <option value="{{ config['CHECKOUT_COUNTRIES'][0].phone_code }}"> {{ config['CHECKOUT_COUNTRIES'][0].phone_code }}</option>
                                     <option value="+966">🇸🇦 +966</option>
                                     <option value="+971">🇦🇪 +971</option>
                                     <option value="+965">🇰🇼 +965</option>
@@ -77,7 +77,7 @@
                                 <select name="country" id="countrySelect" 
                                         class="new-addr-input w-full border-2 border-[#2C3E2D]/10 p-4 rounded-xl bg-white/50 focus:bg-white focus:border-[#2C3E2D] transition outline-none text-[#2C3E2D] appearance-none" 
                                         required onchange="updateShippingOptions()">
-                                    <option value="Bahrain" selected>البحرين</option>
+                                    <option value="{{ config['CHECKOUT_COUNTRIES'][0].name }}" selected>{{ config['CHECKOUT_COUNTRIES'][0].label }}</option>
                                     <option value="Saudi Arabia">المملكة العربية السعودية</option>
                                     <option value="UAE">الإمارات</option>
                                     <option value="Kuwait">الكويت</option>
@@ -161,7 +161,7 @@
     
 
     const COUNTRY_PHONE_MAP = {
-        'Bahrain': '+973',
+        '{{ config['CHECKOUT_COUNTRIES'][0].name }}': '{{ config['CHECKOUT_COUNTRIES'][0].phone_code }}',
         'Saudi Arabia': '+966',
         'UAE': '+971',
         'Kuwait': '+965',
@@ -171,7 +171,7 @@
 
     
     const CURRENCY_TO_COUNTRY_MAP = {
-        'BHD': 'Bahrain',
+        'BHD': '{{ config['CHECKOUT_COUNTRIES'][0].name }}',
         'SAR': 'Saudi Arabia',
         'AED': 'UAE',
         'KWD': 'Kuwait',
@@ -268,7 +268,7 @@
         const container = document.getElementById('shippingOptionsContainer');
         container.innerHTML = ''; 
 
-        if (country === 'Bahrain') {
+        if (country === '{{ config['CHECKOUT_COUNTRIES'][0].name }}') {
             container.innerHTML += createOptionHTML('normal', SHIPPING_LABELS.normal, SHIPPING_RATES.bahrain_normal, true);
             container.innerHTML += createOptionHTML('fast', SHIPPING_LABELS.fast, SHIPPING_RATES.bahrain_fast, false);
         } else {

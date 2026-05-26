@@ -1,349 +1,404 @@
 {% extends "base.html" %}
-
 {% block content %}
-
-<div id="site-preloader" class="fixed inset-0 z-[99999] bg-white flex flex-col items-center justify-center transition-opacity duration-700">
-    <div class="relative">
-        <div class="w-16 h-16 border-4 border-gray-100 border-t-black rounded-full animate-spin"></div>
-    </div>
+<!-- Preloader -->
+<div id="site-preloader" class="fixed inset-0 z-[99999] bg-white flex flex-col items-center justify-center transition-opacity duration-500">
+  <div class="relative flex flex-col items-center gap-4">
+    <div class="w-16 h-16 border-4 border-zinc-200 border-t-[#d71920] rounded-full animate-spin"></div>
+    <span class="text-sm font-bold text-zinc-700 tracking-wide">{{ _('loading') }}</span>
+  </div>
 </div>
 
-<div class="relative w-full h-[100vh] flex items-center justify-center overflow-hidden bg-[#F5F5F5]">
-    <div class="absolute inset-0 z-0">
-        <img src="https://i.postimg.cc/P5FdvJwS/PHOTO-2026-01-14-23-53-49.jpg" 
-             onerror="this.src='https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop'"
-             class="w-full h-full object-cover opacity-100 object-[center_30%]">
-        <div class="absolute inset-0 bg-black/10"></div>
+<!-- Hero Section -->
+<section id="hero" class="relative min-h-screen flex items-center overflow-hidden bg-zinc-950 text-white">
+  <div class="absolute inset-0 z-0">
+    <img src="{{ store.hero_image }}" alt="{{ store.name }}"
+         class="w-full h-full object-cover opacity-95 scale-110 transition-transform duration-[12s] hover:scale-100"
+         style="object-position: var(--store-hero-position);">
+    <div class="absolute inset-0 bg-gradient-to-l from-zinc-950 via-zinc-950/60 to-zinc-950/5 backdrop-blur-[1px]"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-zinc-950/60 via-transparent to-zinc-950/20"></div>
+  </div>
+  <div class="mq-container relative z-10 w-full py-20 md:py-32">
+    <div class="max-w-2xl ltr:ml-auto rtl:ml-auto text-left rtl:text-right">
+      <div class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/15 px-4 py-2 rounded-full text-xs font-bold mb-6 animate-pulse">
+        <i data-lucide="map-pin" class="w-4 h-4 text-[#d71920]"></i>
+        {{ _('hero_location_tag').replace('{country}', current_currency_country) }}
+      </div>
+      <h1 class="smart-heading text-4xl md:text-6xl lg:text-7xl font-extrabold leading-[1.02] mb-6 tracking-tight">
+        {{ _('hero_title') }}
+      </h1>
+      <p class="text-lg md:text-xl text-zinc-100/90 leading-relaxed max-w-xl mb-8">
+        {{ _('hero_subtitle') }}
+      </p>
+      <div class="flex flex-col sm:flex-row gap-4">
+        <a href="#shop-all"
+           class="group inline-flex items-center justify-center gap-2 bg-[#d71920] text-white px-8 py-4 font-bold text-sm hover:bg-white hover:text-zinc-950 transition-all rounded-lg shadow-lg shadow-[#d71920]/25 hover:shadow-xl hover:scale-[1.03] transform">
+          <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+          {{ _('shop_now') }}
+        </a>
+        <a href="/contact"
+           class="group inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur border border-white/20 text-white px-8 py-4 font-bold text-sm hover:bg-white hover:text-zinc-950 transition-all rounded-lg">
+          <i data-lucide="messages-square" class="w-5 h-5"></i>
+          {{ _('contact') }}
+        </a>
+      </div>
     </div>
+    <div class="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl ltr:ml-auto rtl:ml-auto">
+      <div class="group bg-white/5 backdrop-blur-md border border-white/10 p-5 rounded-xl hover:bg-white/10 transition-all">
+        <i data-lucide="settings" class="w-6 h-6 text-[#d71920] mb-3"></i>
+        <p class="text-2xl font-extrabold text-white group-hover:text-[#d71920] transition-colors">OEM+</p>
+        <p class="text-sm text-zinc-300 mt-1">{{ _('hero_stat_quality') }}</p>
+      </div>
+      <div class="group bg-white/5 backdrop-blur-md border border-white/10 p-5 rounded-xl hover:bg-white/10 transition-all">
+        <i data-lucide="truck" class="w-6 h-6 text-[#d71920] mb-3"></i>
+        <p class="text-2xl font-extrabold text-white group-hover:text-[#d71920] transition-colors">{{ _('hero_stat_delivery_value') }}</p>
+        <p class="text-sm text-zinc-300 mt-1">{{ _('hero_stat_delivery') }}</p>
+      </div>
+      <div class="group bg-white/5 backdrop-blur-md border border-white/10 p-5 rounded-xl hover:bg-white/10 transition-all">
+        <i data-lucide="shield-check" class="w-6 h-6 text-[#d71920] mb-3"></i>
+        <p class="text-2xl font-extrabold text-white group-hover:text-[#d71920] transition-colors">{{ _('hero_stat_support_value') }}</p>
+        <p class="text-sm text-zinc-300 mt-1">{{ _('hero_stat_support') }}</p>
+      </div>
+    </div>
+  </div>
+</section>
 
-    <div class="relative z-10 container mx-auto px-6 text-center text-white">
-        <h1 class="text-5xl md:text-7xl font-bold mb-4 smart-heading drop-shadow-md">
-            {{ _('hero_title') or 'Timeless Essentials' }}
-        </h1>
-        <p style="margin-top: 43px;" class="text-lg md:text-xl font-medium mb-8 mt-2 smart-body drop-shadow-sm">
-            {{ _('hero_subtitle') or 'Discover our latest collection' }}
+<!-- Policies section -->
+{% if home_sections.policies %}
+<section class="border-b border-zinc-200 bg-white">
+  <div class="mq-container grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x rtl:divide-x-reverse divide-zinc-200">
+    <a href="{{ url_for('main.help') }}#shipping" class="group flex items-center gap-5 py-8 md:px-6 hover:bg-zinc-50 transition-colors">
+      <span class="w-14 h-14 rounded-xl bg-zinc-950 text-white flex items-center justify-center group-hover:bg-[#d71920] transition-colors">
+        <i data-lucide="truck" class="w-7 h-7"></i>
+      </span>
+      <span>
+        <strong class="block text-sm font-bold text-zinc-950">{{ _('home_policy_ship') }}</strong>
+        <span class="block text-sm text-zinc-500 mt-1">{{ _('home_policy_ship_sub') }}</span>
+      </span>
+    </a>
+    <a href="{{ url_for('main.help') }}#refunds" class="group flex items-center gap-5 py-8 md:px-6 hover:bg-zinc-50 transition-colors">
+      <span class="w-14 h-14 rounded-xl bg-zinc-950 text-white flex items-center justify-center group-hover:bg-[#d71920] transition-colors">
+        <i data-lucide="check-circle" class="w-7 h-7"></i>
+      </span>
+      <span>
+        <strong class="block text-sm font-bold text-zinc-950">{{ _('home_policy_return') }}</strong>
+        <span class="block text-sm text-zinc-500 mt-1">{{ _('home_policy_return_sub') }}</span>
+      </span>
+    </a>
+    <a href="{{ url_for('main.help') }}" class="group flex items-center gap-5 py-8 md:px-6 hover:bg-zinc-50 transition-colors">
+      <span class="w-14 h-14 rounded-xl bg-zinc-950 text-white flex items-center justify-center group-hover:bg-[#d71920] transition-colors">
+        <i data-lucide="shield" class="w-7 h-7"></i>
+      </span>
+      <span>
+        <strong class="block text-sm font-bold text-zinc-950">{{ _('home_policy_secure') }}</strong>
+        <span class="block text-sm text-zinc-500 mt-1">{{ _('home_policy_secure_sub') }}</span>
+      </span>
+    </a>
+  </div>
+</section>
+{% endif %}
+
+<!-- Shop by Category -->
+{% if home_sections.featured_categories %}
+<section id="shop-all" class="bg-white py-20 md:py-32">
+  <div class="mq-container">
+    <div class="grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr] gap-8 items-stretch bg-zinc-950 rounded-2xl overflow-hidden shadow-2xl">
+      <div class="p-8 md:p-14 text-white flex flex-col justify-center">
+        <span class="text-sm font-bold text-[#ff5e62] tracking-widest uppercase">{{ _('shop_all_pretitle') }}</span>
+        <h2 class="smart-heading text-4xl md:text-6xl font-extrabold leading-[1.1] mt-4 mb-6">
+          {{ _('shop_all_title') }}
+        </h2>
+        <p class="text-zinc-300 text-lg leading-8 mb-10 max-w-md">
+          {{ _('shop_all_desc') }}
         </p>
-        <a href="#shop-all" class="inline-block bg-white text-black px-8 py-3 font-bold uppercase tracking-widest text-sm hover:bg-black hover:text-white transition-colors duration-300">
-            {{ _('shop_now') }}
+        <a href="{{ url_for('main.all_products_view') }}"
+           class="group inline-flex w-fit items-center gap-3 bg-[#d71920] text-white px-8 py-4 font-bold text-sm hover:bg-white hover:text-zinc-950 transition-all rounded-lg shadow-lg shadow-[#d71920]/25 hover:shadow-xl">
+          {{ _('shop_all_btn') }}
+          <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
         </a>
-                <a href="/contact" class="inline-block bg-white text-black px-8 py-3 font-bold uppercase tracking-widest text-sm hover:bg-black hover:text-white transition-colors duration-300">
-            {{ _('contact') }}
-        </a>
-    </div>
-</div>
-
-<div id="shop-all" class="w-full bg-white pb-24 pt-12">
-    <div class="container mx-auto px-6">
-        
-        <div class="relative w-full bg-[#F5F5DC] overflow-hidden group">
-            <div class="flex flex-col md:flex-row h-auto md:h-[400px]">
-                
-                <div class="w-full md:w-1/2 p-10 md:p-16 flex flex-col justify-center items-start z-10 relative">
-                    
-                    <span class="text-xs font-bold tracking-[0.2em] text-gray-500 mb-4 uppercase">
-                        {{ _('shop_all_pretitle') }}
-                    </span>
-                    
-                    <h2 class="text-3xl md:text-5xl font-bold text-[#1a1a1a] mb-6 smart-heading leading-tight">
-                        {{ _('shop_all_title') }}
-                    </h2>
-                    
-                    <p class="text-gray-600 mb-8 max-w-md smart-body text-base md:text-lg">
-                        {{ _('shop_all_desc') }}
-                    </p>
-
-                    <a href="{{ url_for('main.all_products_view') }}" 
-                       class="inline-flex items-center gap-3 bg-[#1a1a1a] text-white px-8 py-4 text-sm font-bold uppercase tracking-widest hover:bg-gray-800 transition-colors duration-300">
-                        {{ _('shop_all_btn') }}
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                        </svg>
-                    </a>
-                </div>
-
-                <div class="w-full md:w-1/2 relative min-h-[300px] md:min-h-full bg-gray-200">
-                    <div class="absolute inset-0 bg-[#E8E4D9] flex items-center justify-center overflow-hidden">
-                        <span class="text-[200px] font-bold text-white opacity-40 select-none leading-none -rotate-12 transform translate-x-10 translate-y-10">
-                            ALL
-                        </span>
-                        <img src="/static/llogo.PNG" alt="" class="absolute inset-0 w-full h-full object-contain opacity-60 mix-blend-multiply">
-                    </div>
-                </div>
-
-            </div>
-        </div>
-
-    </div>
-</div>
-
-    {% for category in categories %}
-        {% if category.products %}
-        <div class="container mx-auto px-6 py-16 border-b border-gray-50 last:border-0">
-            
-            <div class="flex justify-between items-end mb-8 rtl:flex-row-reverse">
-                <h2 class="text-3xl font-bold text-[#1a1a1a] smart-heading">{{ category.name | translate_dynamic }}</h2>
-                <a href="{{ url_for('main.category_view', category_id=category.id) }}" class="text-sm font-bold text-gray-500 hover:text-black border-b border-transparent hover:border-black transition-all pb-1 uppercase tracking-wider smart-body">
-                    {{ _('view_all') }}
-                </a>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-{% for item in (category.products|sort(attribute='id', reverse=True))[:4] %} <div class="group block relative">
-                    <a href="{{ url_for('main.product_detail', product_id=item.id) }}" class="block w-full aspect-square bg-[#F4F4F4] relative overflow-hidden mb-4 transition-colors hover:bg-[#eaeaea]">
-                        
-                        {% if item.quantity <= 0 %}
-                        <div class="absolute top-3 right-3 bg-white/90 backdrop-blur text-black text-[10px] font-bold px-2 py-1 uppercase tracking-widest z-10 shadow-sm border border-gray-100">
-                            {{ _('sold_out') }}
-                        </div>
-                        {% elif item.discount_percentage > 0 %}
-                        <div class="absolute top-3 right-3 bg-[#1a1a1a] text-white text-[10px] font-bold px-2 py-1 uppercase tracking-widest z-10">
-                            SALE
-                        </div>
-                        {% endif %}
-
-                        {% if item.image_url %}
-                            <img src="{{ url_for('uploaded_file', filename=item.image_url) }}" 
-                                 alt="{{ item.name }}" 
-                                 class="w-full h-full object-cover  mix-blend-multiply transition-transform duration-500 group-hover:scale-105">
-                        {% else %}
-                            <div class="w-full h-full flex items-center justify-center text-gray-300">
-                                <span class="text-xs font-bold">NO IMAGE</span>
-                            </div>
-                        {% endif %}
-                    </a>
-
-                    <div class="text-left rtl:text-right">
-                        <h3 class="text-base font-medium text-[#1a1a1a] mb-1 smart-body leading-tight">
-                            <a href="{{ url_for('main.product_detail', product_id=item.id) }}">
-                                {{ item.name | translate_dynamic }}
-                            </a>
-                        </h3>
-                        
-                        <div class="flex items-center gap-2 smart-body text-sm">
-                            {% if item.discount_percentage > 0 %}
-                                <span class="text-[#cc0000] font-bold">{{ item.get_price() | currency }}</span>
-                                <span class="text-gray-400 line-through text-xs">{{ item.price | currency }}</span>
-                            {% else %}
-                                <span class="text-gray-600 font-bold">{{ item.price | currency }}</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-
-        </div>
-        {% endif %}
-    {% endfor %}
-
-</div>
-<div class="bg-white py-20 border-b border-gray-50">
-    <div class="container mx-auto px-6">
-        
-        <div class="text-center mb-16 max-w-2xl mx-auto">
-            <h2 class="text-3xl md:text-4xl font-bold text-[#1a1a1a] mb-4 smart-heading">
-                {{ _('why_dropi_title') }}
-            </h2>
-            <p class="text-gray-500 text-lg smart-body">
-                {{ _('why_dropi_subtitle') }}
-            </p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
-            
-            <div class="flex flex-col items-center group">
-                <div class="w-16 h-16 mb-6 flex items-center justify-center bg-[#F5F5F5] rounded-full group-hover:bg-black group-hover:text-white transition-colors duration-300">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                    </svg>
-                </div>
-                <h3 class="text-xl font-bold text-[#1a1a1a] mb-3 smart-heading">{{ _('feature_metal_title') }}</h3>
-                <p class="text-gray-500 leading-relaxed smart-body">
-                    {{ _('feature_metal_desc') }}
-                </p>
-            </div>
-
-            <div class="flex flex-col items-center group">
-                <div class="w-16 h-16 mb-6 flex items-center justify-center bg-[#F5F5F5] rounded-full group-hover:bg-black group-hover:text-white transition-colors duration-300">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                </div>
-                <h3 class="text-xl font-bold text-[#1a1a1a] mb-3 smart-heading">{{ _('feature_temp_title') }}</h3>
-                <p class="text-gray-500 leading-relaxed smart-body">
-                    {{ _('feature_temp_desc') }}
-                </p>
-            </div>
-
-            <div class="flex flex-col items-center group">
-                <div class="w-16 h-16 mb-6 flex items-center justify-center bg-[#F5F5F5] rounded-full group-hover:bg-black group-hover:text-white transition-colors duration-300">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-                <h3 class="text-xl font-bold text-[#1a1a1a] mb-3 smart-heading">{{ _('feature_eco_title') }}</h3>
-                <p class="text-gray-500 leading-relaxed smart-body">
-                    {{ _('feature_eco_desc') }}
-                </p>
-            </div>
-
-        </div>
-    </div>
-</div>
-
-<div class="bg-[#F9F9F9] py-20 border-b border-gray-100">
-    <div class="container mx-auto px-6">
-        
-        <div class="text-center mb-12">
-            <h2 class="text-3xl font-bold text-[#1a1a1a] mb-2 smart-heading">{{ _('reviews_title') }}</h2>
-            <p class="text-gray-500 smart-body">{{ _('reviews_subtitle') }}</p>
-        </div>
-
-        {% if reviews %}
-        <div class="flex overflow-x-auto gap-6 pb-8 mb-12 snap-x snap-mandatory hide-scrollbar">
-            {% for review in reviews %}
-            <div class="min-w-[300px] md:min-w-[400px] bg-white p-8 border border-gray-100 shadow-sm snap-center relative">
-                {% if current_user.is_authenticated and current_user.is_admin %}
-                <form action="{{ url_for('main.delete_review', review_id=review.id) }}" method="POST" class="absolute top-3 ltr:right-3 rtl:left-3 z-10" onsubmit="return confirm('{{ _('review_delete_confirm') }}')">
-                    <button type="submit" title="{{ _('review_delete') }}" aria-label="{{ _('review_delete') }}" class="w-7 h-7 rounded-full bg-zinc-100 text-zinc-600 hover:bg-red-600 hover:text-white transition flex items-center justify-center text-sm font-bold">
-                        ×
-                    </button>
-                </form>
-                {% endif %}
-                <div class="flex text-[#1a1a1a] mb-4">
-                    {% for i in range(review.rating) %}★{% endfor %}
-                    {% for i in range(5 - review.rating) %}<span class="text-gray-300">★</span>{% endfor %}
-                </div>
-                <p class="text-gray-600 mb-6 italic smart-body">"{{ review.comment }}"</p>
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center font-bold text-sm">
-                        {{ review.name[0] | upper }}
-                    </div>
-                    <div>
-                        <p class="font-bold text-sm text-[#1a1a1a]">{{ review.name }}</p>
-                        <p class="text-xs text-gray-400">{{ review.created_at.strftime('%Y-%m-%d') }}</p>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
+      </div>
+      <div class="relative min-h-[300px] bg-zinc-900 overflow-hidden">
+        {% if store.secondary_logo %}
+        <img src="{{ store.secondary_logo }}" alt="{{ store.name }}" class="absolute inset-0 w-full h-full object-contain p-16 opacity-90">
         {% else %}
-        <div class="text-center text-gray-400 mb-12 italic">
-            {{ _('no_reviews_yet') }}
-        </div>
+        <img src="{{ store.logo }}" alt="{{ store.name }}" class="absolute inset-0 w-full h-full object-contain p-16 opacity-90">
         {% endif %}
-
-        <div class="max-w-2xl mx-auto bg-white p-8 md:p-12 border border-gray-100 shadow-lg">
-            <h3 class="text-xl font-bold mb-6 text-center smart-heading">{{ _('write_review_title') }}</h3>
-            
-            <form action="{{ url_for('main.submit_review') }}" method="POST" class="space-y-6">
-                
-                <div class="flex flex-col items-center gap-2">
-                    <label class="text-sm font-bold uppercase tracking-wider text-gray-500">{{ _('your_rating') }}</label>
-                    <div class="flex flex-row-reverse justify-center gap-1 group">
-                        <input type="radio" name="rating" value="5" id="star5" class="peer/5 hidden" required />
-                        <label for="star5" class="text-2xl text-gray-300 peer-checked/5:text-black hover:text-black cursor-pointer transition-colors">★</label>
-                        
-                        <input type="radio" name="rating" value="4" id="star4" class="peer/4 hidden" />
-                        <label for="star4" class="text-2xl text-gray-300 peer-checked/4:text-black peer-hover/5:text-black hover:text-black cursor-pointer transition-colors">★</label>
-                        
-                        <input type="radio" name="rating" value="3" id="star3" class="peer/3 hidden" />
-                        <label for="star3" class="text-2xl text-gray-300 peer-checked/3:text-black peer-hover/4:text-black peer-hover/5:text-black hover:text-black cursor-pointer transition-colors">★</label>
-                        
-                        <input type="radio" name="rating" value="2" id="star2" class="peer/2 hidden" />
-                        <label for="star2" class="text-2xl text-gray-300 peer-checked/2:text-black peer-hover/3:text-black peer-hover/4:text-black peer-hover/5:text-black hover:text-black cursor-pointer transition-colors">★</label>
-                        
-                        <input type="radio" name="rating" value="1" id="star1" class="peer/1 hidden" />
-                        <label for="star1" class="text-2xl text-gray-300 peer-checked/1:text-black peer-hover/2:text-black peer-hover/3:text-black peer-hover/4:text-black peer-hover/5:text-black hover:text-black cursor-pointer transition-colors">★</label>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 gap-6">
-                    <div>
-                        <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">{{ _('your_name') }}</label>
-                        <input type="text" name="name" required class="w-full bg-[#F5F5F5] border-none p-4 text-sm focus:ring-1 focus:ring-black outline-none transition-all placeholder-gray-400" placeholder="{{_('rev_ph')}}">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">{{ _('your_comment') }}</label>
-                        <textarea name="comment" rows="4" required class="w-full bg-[#F5F5F5] border-none p-4 text-sm focus:ring-1 focus:ring-black outline-none transition-all placeholder-gray-400" placeholder="{{ _('comment_placeholder') }}"></textarea>
-                    </div>
-                </div>
-
-                <button type="submit" class="w-full bg-black text-white py-4 font-bold uppercase tracking-widest text-sm hover:bg-[#333] transition-all">
-                    {{ _('submit_review_btn') }}
-                </button>
-            </form>
+        <div class="absolute top-0 right-0 w-1/3 h-full bg-[#d71920]/20 skew-x-12"></div>
+        <div class="absolute bottom-6 right-6 left-6 flex flex-wrap gap-2">
+          <span class="bg-white/90 backdrop-blur text-zinc-950 px-4 py-2 rounded-full text-xs font-bold shadow">{{ _('fitment_badge_1') }}</span>
+          <span class="bg-white/90 backdrop-blur text-zinc-950 px-4 py-2 rounded-full text-xs font-bold shadow">{{ _('fitment_badge_2') }}</span>
+          <span class="bg-white/90 backdrop-blur text-zinc-950 px-4 py-2 rounded-full text-xs font-bold shadow">{{ _('fitment_badge_3') }}</span>
         </div>
-
+      </div>
     </div>
-</div>
+  </div>
+</section>
+{% endif %}
 
+<!-- Brand tiles -->
+{% if home_sections.featured_categories and brand_tiles %}
+<section class="bg-zinc-50 py-20 md:py-32 border-y border-zinc-200">
+  <div class="mq-container">
+    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-14">
+      <div class="max-w-2xl">
+        <span class="text-sm font-bold text-[#d71920] uppercase tracking-wide">{{ _('brand_section_label') }}</span>
+        <h2 class="smart-heading text-3xl md:text-5xl font-extrabold text-zinc-950 mt-4 mb-4">
+          {{ _('brand_section_title') }}
+        </h2>
+        <p class="text-zinc-600 text-lg leading-relaxed">
+          {{ _('brand_section_subtitle') }}
+        </p>
+      </div>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+      {% for brand in brand_tiles %}
+      <a href="{{ url_for('main.category_view', category_id=brand.category_id) }}"
+         class="group flex flex-col justify-between bg-white border border-zinc-200 rounded-xl p-6 hover:border-[#d71920] hover:shadow-2xl hover:scale-[1.03] transition-all duration-300">
+        <div class="h-32 flex items-center justify-center mb-4 bg-zinc-50 rounded-lg p-4">
+          <img src="{{ url_for('static', filename=brand.image_path) }}" alt="{{ brand.name }}" loading="lazy"
+               class="max-h-[80%] max-w-[85%] object-contain group-hover:scale-110 transition-transform duration-300">
+        </div>
+        <div class="pt-4 border-t border-zinc-100">
+          <h3 class="smart-heading text-lg font-extrabold text-zinc-950 group-hover:text-[#d71920] transition-colors">
+            {{ brand.name }}
+          </h3>
+          <p class="mt-2 text-sm font-bold text-zinc-500 group-hover:text-[#d71920] transition-colors">
+            {{ _('brand_explore_models') }}
+          </p>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
 
+<!-- Product listings per category -->
+{% if home_sections.featured_categories %}
+{% for category in categories %}
+{% if category.products %}
+<section class="bg-white py-16 md:py-24 border-t border-zinc-100">
+  <div class="mq-container">
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-10">
+      <div>
+        <span class="text-sm font-bold text-[#d71920] uppercase tracking-wide">{{ _('shop_by_category') }}</span>
+        <h2 class="smart-heading text-3xl md:text-5xl font-extrabold text-zinc-950 mt-2">
+          {{ category.name | translate_dynamic }}
+        </h2>
+      </div>
+      <a href="{{ url_for('main.category_view', category_id=category.id) }}"
+         class="inline-flex items-center gap-2 text-sm font-bold text-zinc-700 hover:text-[#d71920] transition-colors group">
+        {{ _('view_all') }}
+        <i data-lucide="chevron-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
+      </a>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      {% for item in (category.products|sort(attribute='id', reverse=True))[:4] %}
+      <article class="group">
+        <a href="{{ url_for('main.product_detail', product_id=item.id) }}"
+           class="block aspect-square bg-zinc-100 relative overflow-hidden rounded-xl border border-zinc-200 group-hover:border-[#d71920] group-hover:shadow-lg transition-all">
+          {% if item.quantity <= 0 %}
+          <div class="absolute top-3 left-3 bg-zinc-900/80 backdrop-blur text-white text-xs font-bold px-3 py-1.5 rounded-full z-10">
+            {{ _('sold_out') }}
+          </div>
+          {% elif item.discount_percentage > 0 %}
+          <div class="absolute top-3 left-3 bg-[#d71920] text-white text-xs font-bold px-3 py-1.5 rounded-full z-10">
+            {{ _('lbl_sale') }}
+          </div>
+          {% endif %}
+          {% if item.image_url %}
+          <img src="{{ url_for('uploaded_file', filename=item.image_url) }}" alt="{{ item.name }}" loading="lazy"
+               class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+          {% else %}
+          <div class="w-full h-full flex items-center justify-center text-zinc-400">
+            <span class="text-sm font-bold">{{ _('prod_no_img') }}</span>
+          </div>
+          {% endif %}
+          <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
+          <div class="absolute inset-x-0 bottom-4 flex justify-center opacity-0 group-hover:opacity-100 transition-all">
+            <span class="bg-white text-zinc-950 px-5 py-2.5 text-sm font-bold rounded-full shadow-lg hover:bg-[#d71920] hover:text-white transition">
+              {{ _('quick_view') }}
+            </span>
+          </div>
+        </a>
+        <div class="pt-4 px-1">
+          <h3 class="font-extrabold text-zinc-950 leading-snug mb-2 line-clamp-2">
+            <a href="{{ url_for('main.product_detail', product_id=item.id) }}" class="hover:text-[#d71920] transition-colors">
+              {{ item.name | translate_dynamic }}
+            </a>
+          </h3>
+          <div class="flex items-center gap-2 text-sm">
+            {% if item.discount_percentage > 0 %}
+            <span class="text-[#d71920] font-extrabold text-lg">{{ item.get_price() | currency }}</span>
+            <span class="text-zinc-400 line-through">{{ item.price | currency }}</span>
+            {% else %}
+            <span class="text-zinc-800 font-extrabold text-lg">{{ item.price | currency }}</span>
+            {% endif %}
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endfor %}
+{% endif %}
+
+<!-- Why Us section -->
+{% if home_sections.why_us %}
+<section class="bg-zinc-50 py-20 md:py-32 border-y border-zinc-200">
+  <div class="mq-container">
+    <div class="max-w-2xl mb-16">
+      <span class="text-sm font-bold text-[#d71920] uppercase tracking-wider">{{ _('why_label') }}</span>
+      <h2 class="smart-heading text-3xl md:text-5xl font-extrabold text-zinc-950 mt-4 mb-4">
+        {{ _('why_dropi_title') }}
+      </h2>
+      <p class="text-zinc-600 text-lg leading-relaxed">
+        {{ _('why_dropi_subtitle') }}
+      </p>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div class="group bg-white border border-zinc-200 rounded-2xl p-8 hover:border-[#d71920] hover:shadow-xl transition-all">
+        <div class="w-14 h-14 mb-6 flex items-center justify-center bg-zinc-950 text-white rounded-xl group-hover:bg-[#d71920] transition-colors">
+          <i data-lucide="cpu" class="w-7 h-7"></i>
+        </div>
+        <h3 class="text-xl font-extrabold text-zinc-950 mb-3">{{ _('feature_metal_title') }}</h3>
+        <p class="text-zinc-600 leading-7">{{ _('feature_metal_desc') }}</p>
+      </div>
+      <div class="group bg-white border border-zinc-200 rounded-2xl p-8 hover:border-[#d71920] hover:shadow-xl transition-all">
+        <div class="w-14 h-14 mb-6 flex items-center justify-center bg-[#d71920] text-white rounded-xl group-hover:bg-zinc-950 transition-colors">
+          <i data-lucide="flame" class="w-7 h-7"></i>
+        </div>
+        <h3 class="text-xl font-extrabold text-zinc-950 mb-3">{{ _('feature_temp_title') }}</h3>
+        <p class="text-zinc-600 leading-7">{{ _('feature_temp_desc') }}</p>
+      </div>
+      <div class="group bg-white border border-zinc-200 rounded-2xl p-8 hover:border-[#d71920] hover:shadow-xl transition-all">
+        <div class="w-14 h-14 mb-6 flex items-center justify-center bg-zinc-950 text-white rounded-xl group-hover:bg-[#d71920] transition-colors">
+          <i data-lucide="leaf" class="w-7 h-7"></i>
+        </div>
+        <h3 class="text-xl font-extrabold text-zinc-950 mb-3">{{ _('feature_eco_title') }}</h3>
+        <p class="text-zinc-600 leading-7">{{ _('feature_eco_desc') }}</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- Reviews section -->
+{% if home_sections.reviews %}
+<section class="bg-white py-20 md:py-32">
+  <div class="mq-container">
+    <div class="text-center mb-16 max-w-2xl mx-auto">
+      <span class="text-sm font-bold text-[#d71920] uppercase tracking-wide">{{ _('reviews_label') }}</span>
+      <h2 class="smart-heading text-3xl md:text-5xl font-extrabold text-zinc-950 mt-4 mb-4">{{ _('reviews_title') }}</h2>
+      <p class="text-zinc-600 text-lg">{{ _('reviews_subtitle') }}</p>
+    </div>
+    {% if reviews %}
+    <div class="flex overflow-x-auto gap-6 pb-8 mb-16 snap-x snap-mandatory hide-scrollbar">
+      {% for review in reviews %}
+      <article class="min-w-[300px] md:min-w-[360px] bg-zinc-50 border border-zinc-200 rounded-2xl p-6 snap-center relative">
+        {% if current_user.is_authenticated and current_user.is_admin %}
+        <form action="{{ url_for('main.delete_review', review_id=review.id) }}" method="POST"
+              class="absolute top-4 ltr:right-4 rtl:left-4 z-10"
+              onsubmit="return confirm('{{ _('review_delete_confirm') }}')">
+          <button type="submit" title="{{ _('review_delete') }}" aria-label="{{ _('review_delete') }}"
+                  class="w-8 h-8 rounded-full bg-white border border-zinc-200 text-zinc-600 hover:bg-[#d71920] hover:text-white transition flex items-center justify-center text-sm font-bold">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </form>
+        {% endif %}
+        <div class="flex text-[#d71920] mb-4" aria-label="{{ review.rating }} / 5">
+          {% for i in range(review.rating) %}<i data-lucide="star" class="w-5 h-5 fill-current"></i>{% endfor %}
+          {% for i in range(5 - review.rating) %}<i data-lucide="star" class="w-5 h-5 text-zinc-300"></i>{% endfor %}
+        </div>
+        <p class="text-zinc-700 mb-6 leading-7 italic">"{{ review.comment }}"</p>
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 bg-zinc-950 text-white rounded-full flex items-center justify-center font-bold text-lg">
+            {{ review.name[0] | upper }}
+          </div>
+          <div>
+            <p class="font-bold text-zinc-950">{{ review.name }}</p>
+            <p class="text-xs text-zinc-500">{{ review.created_at.strftime('%Y-%m-%d') }}</p>
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center text-zinc-500 mb-16 py-16 border border-dashed border-zinc-200 rounded-xl">
+      <i data-lucide="message-circle" class="w-10 h-10 mx-auto mb-4 text-zinc-400"></i>
+      {{ _('no_reviews_yet') }}
+    </div>
+    {% endif %}
+    <div class="max-w-2xl mx-auto bg-zinc-950 text-white p-8 md:p-12 rounded-2xl shadow-xl">
+      <h3 class="text-2xl font-extrabold mb-10 text-center smart-heading">{{ _('write_review_title') }}</h3>
+      <form action="{{ url_for('main.submit_review') }}" method="POST" class="space-y-8">
+        <div class="flex flex-col items-center gap-3">
+          <label class="text-sm font-bold text-zinc-300">{{ _('your_rating') }}</label>
+          <div class="flex flex-row-reverse justify-center gap-1 group">
+            <input type="radio" name="rating" value="5" id="star5" class="peer/5 hidden" required>
+            <label for="star5" class="text-4xl text-zinc-600 peer-checked/5:text-[#d71920] hover:text-[#d71920] cursor-pointer transition-colors">★</label>
+            <input type="radio" name="rating" value="4" id="star4" class="peer/4 hidden">
+            <label for="star4" class="text-4xl text-zinc-600 peer-checked/4:text-[#d71920] peer-hover/5:text-[#d71920] hover:text-[#d71920] cursor-pointer transition-colors">★</label>
+            <input type="radio" name="rating" value="3" id="star3" class="peer/3 hidden">
+            <label for="star3" class="text-4xl text-zinc-600 peer-checked/3:text-[#d71920] peer-hover/4:text-[#d71920] peer-hover/5:text-[#d71920] hover:text-[#d71920] cursor-pointer transition-colors">★</label>
+            <input type="radio" name="rating" value="2" id="star2" class="peer/2 hidden">
+            <label for="star2" class="text-4xl text-zinc-600 peer-checked/2:text-[#d71920] peer-hover/3:text-[#d71920] peer-hover/4:text-[#d71920] peer-hover/5:text-[#d71920] hover:text-[#d71920] cursor-pointer transition-colors">★</label>
+            <input type="radio" name="rating" value="1" id="star1" class="peer/1 hidden">
+            <label for="star1" class="text-4xl text-zinc-600 peer-checked/1:text-[#d71920] peer-hover/2:text-[#d71920] peer-hover/3:text-[#d71920] peer-hover/4:text-[#d71920] peer-hover/5:text-[#d71920] hover:text-[#d71920] cursor-pointer transition-colors">★</label>
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-zinc-300 mb-2">{{ _('your_name') }}</label>
+          <input type="text" name="name" required class="w-full bg-white text-zinc-950 border border-white p-4 text-sm focus:border-[#d71920] outline-none transition-colors rounded-lg" placeholder="{{ _('rev_ph') }}">
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-zinc-300 mb-2">{{ _('your_comment') }}</label>
+          <textarea name="comment" rows="4" required class="w-full bg-white text-zinc-950 border border-white p-4 text-sm focus:border-[#d71920] outline-none transition-colors rounded-lg" placeholder="{{ _('comment_placeholder') }}"></textarea>
+        </div>
+        <button type="submit" class="w-full min-h-[48px] bg-[#d71920] text-white py-3 font-bold text-sm hover:bg-white hover:text-zinc-950 transition-colors rounded-lg flex items-center justify-center gap-2">
+          <i data-lucide="send" class="w-5 h-5"></i>
+          {{ _('submit_review_btn') }}
+        </button>
+      </form>
+    </div>
+  </div>
+</section>
+{% endif %}
 
 <style>
-    /* Hide scrollbar for clean look */
-    .hide-scrollbar::-webkit-scrollbar {
-        display: none;
-    }
-    .hide-scrollbar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-    }
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 </style>
 
-
-<div class="border-y border-zinc-100 bg-zinc-50">
-    <div class="container mx-auto px-6 max-w-7xl">
-        <div class="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-zinc-200 rtl:divide-x-reverse">
-            
-            <div class="py-8 flex items-center justify-center gap-4 group cursor-pointer" onclick="window.location.href='{{ url_for('main.help') }}#shipping'">
-                <div class="w-12 h-12 bg-white border border-zinc-200 rounded-full flex items-center justify-center text-zinc-400 group-hover:text-amber-500 group-hover:border-amber-500 transition-all duration-300">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                </div>
-                <div>
-                    <h3 class="font-bold text-zinc-900 uppercase ltr:font-['Oswald'] rtl:font-['Cairo'] tracking-wide text-sm">{{ _('home_policy_ship') }}</h3>
-                    <p class="text-xs text-zinc-500 font-bold uppercase tracking-wider mt-1">{{ _('home_policy_ship_sub') }}</p>
-                </div>
-            </div>
-
-            <div class="py-8 flex items-center justify-center gap-4 group cursor-pointer" onclick="window.location.href='{{ url_for('main.help') }}#refunds'">
-                <div class="w-12 h-12 bg-white border border-zinc-200 rounded-full flex items-center justify-center text-zinc-400 group-hover:text-amber-500 group-hover:border-amber-500 transition-all duration-300">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                </div>
-                <div>
-                    <h3 class="font-bold text-zinc-900 uppercase ltr:font-['Oswald'] rtl:font-['Cairo'] tracking-wide text-sm">{{ _('home_policy_return') }}</h3>
-                    <p class="text-xs text-zinc-500 font-bold uppercase tracking-wider mt-1 group-hover:text-amber-600 transition-colors">{{ _('home_policy_return_sub') }}</p>
-                </div>
-            </div>
-
-            <div class="py-8 flex items-center justify-center gap-4 group cursor-pointer" onclick="window.location.href='{{ url_for('main.help') }}'">
-                <div class="w-12 h-12 bg-white border border-zinc-200 rounded-full flex items-center justify-center text-zinc-400 group-hover:text-amber-500 group-hover:border-amber-500 transition-all duration-300">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-                </div>
-                <div>
-                    <h3 class="font-bold text-zinc-900 uppercase ltr:font-['Oswald'] rtl:font-['Cairo'] tracking-wide text-sm">{{ _('home_policy_secure') }}</h3>
-                    <a href="{{ url_for('main.help') }}" class="text-xs text-amber-600 font-bold uppercase tracking-wider mt-1 hover:underline underline-offset-4">
-                        {{ _('btn_view_policies') }} &rarr;
-                    </a>
-                </div>
-            </div>
-
-        </div>
-    </div>
-</div>
 <script>
-    window.addEventListener('load', function() {
-        const preloader = document.getElementById('site-preloader');
-        setTimeout(() => {
-            if(preloader) {
-                preloader.style.opacity = '0';
-                setTimeout(() => {
-                    preloader.style.display = 'none';
-                }, 700); 
-            }
-        }, 800); 
-    });
-</script>
+  window.addEventListener('load', function() {
+    const preloader = document.getElementById('site-preloader');
+    setTimeout(() => {
+      if (preloader) {
+        preloader.style.opacity = '0';
+        setTimeout(() => { preloader.style.display = 'none'; }, 500);
+      }
+    }, 450);
 
+    // Scroll‑reveal animation
+    const revealElements = document.querySelectorAll('section, .lazy-reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0)';
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    revealElements.forEach(el => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(24px)';
+      el.style.transition = 'opacity 0.8s cubic-bezier(0.23, 1, 0.32, 1), transform 0.8s cubic-bezier(0.23, 1, 0.32, 1)';
+      observer.observe(el);
+    });
+  });
+</script>
 {% endblock %}

@@ -36,7 +36,7 @@ class Address(db.Model):
     city = db.Column(db.String(100))
     state = db.Column(db.String(100)) 
     zip_code = db.Column(db.String(20))
-    country = db.Column(db.String(100), default="Bahrain")
+    country = db.Column(db.String(100), default="")
     is_default = db.Column(db.Boolean, default=False)
 
 class Category(db.Model):

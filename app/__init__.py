@@ -1,5 +1,5 @@
 import os
-from flask import Flask, session, send_from_directory
+from flask import Flask, session, send_from_directory, current_app
 from config import Config
 from .extensions import db, migrate, login_manager
 from app.translations import dictionary
@@ -74,7 +74,7 @@ GLOSSARY = {
 
 
 @lru_cache(maxsize=2000)
-def cached_translate(text, target_lang='ar'):
+def cached_translate(text, target_lang='ar', glossary_items=()):
     if not text or not isinstance(text, str):
         return text if text else ""
         
@@ -84,7 +84,10 @@ def cached_translate(text, target_lang='ar'):
     processed_text = text
     lower_text = text.lower()
     
-    for eng_word, ar_word in GLOSSARY.items():
+    glossary = dict(GLOSSARY)
+    glossary.update(dict(glossary_items))
+
+    for eng_word, ar_word in glossary.items():
         if eng_word in lower_text:
             pattern = re.compile(re.escape(eng_word), re.IGNORECASE)
             processed_text = pattern.sub(ar_word, processed_text)
@@ -137,7 +140,15 @@ def create_app(config_class=Config):
 
     @app.context_processor
     def inject_currency_data():
-        return dict(current_currency=get_user_currency())
+        code = get_user_currency()
+        currency_data = app.config['CURRENCY_RATES'].get(code, app.config['CURRENCY_RATES']['BHD'])
+        lang = session.get('language', 'en')
+        country_key = 'country_ar' if lang == 'ar' else 'country_en'
+        return dict(
+            current_currency=code,
+            current_currency_data=currency_data,
+            current_currency_country=currency_data.get(country_key, currency_data.get('country_en', 'Bahrain'))
+        )
 
     @app.template_filter('currency')
     def currency_filter(amount):
@@ -167,13 +178,23 @@ def create_app(config_class=Config):
     def inject_translation():
         lang = session.get('language', 'en')
         def translate(key):
-            return dictionary.get(lang, {}).get(key, key) 
+            return app.config.get('STORE_TEXT', {}).get(lang, {}).get(
+                key,
+                dictionary.get(lang, {}).get(key, key)
+            )
         
         layout_dir = dictionary[lang]['direction']
         layout_font = dictionary[lang]['font']
 
         return dict(
             _ = translate,          
+            store = app.config.get('STORE', {}),
+            theme = app.config.get('THEME', {}),
+            home_sections = app.config.get('HOME_SECTIONS', {}),
+            payment_options = app.config.get('PAYMENT_OPTIONS', {}),
+            policies = app.config.get('POLICIES', {}),
+            seo = app.config.get('SEO', {}),
+            email_settings = app.config.get('EMAIL_SETTINGS', {}),
             current_lang = lang,     
             layout_dir = layout_dir,
             layout_font = layout_font
@@ -195,6 +216,7 @@ def create_app(config_class=Config):
         current_lang = session.get('language', 'en')
         if current_lang != 'ar':
             return text
-        return cached_translate(str(text))
+        glossary_items = tuple(sorted(current_app.config.get('STORE_GLOSSARY', {}).items()))
+        return cached_translate(str(text), current_lang, glossary_items)
 
     return app

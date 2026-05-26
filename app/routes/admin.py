@@ -7,6 +7,7 @@ from sqlalchemy import func, extract
 from datetime import datetime, timedelta
 
 from app.models import db, Product, Category, Order, User, Extra, OrderItem, ProductSize, ProductColor, ProductImage, ColorImage, SizeImage, DiscountCode
+from app.catalog import STATIC_BRAND_CATEGORY_NAMES, ensure_static_brand_categories, is_static_brand_category
 from app.translations import dictionary
 import json
 
@@ -30,6 +31,11 @@ def admin_required(f):
             return redirect(url_for('main.home'))
         return f(*args, **kwargs)
     return decorated_function
+
+
+@admin_bp.before_request
+def ensure_storefront_brand_categories():
+    ensure_static_brand_categories()
 
 # --- 1. DASHBOARD ---
 
@@ -71,7 +77,8 @@ def dashboard():
                          products=products,
                          graph_labels=labels,
                          graph_values=values,
-                         categories=all_categories)
+                         categories=all_categories,
+                         static_category_names=STATIC_BRAND_CATEGORY_NAMES)
 
 # --- 2. UPDATE ORDER STATUS ---
 @admin_bp.route('/update_order_status/<int:order_id>', methods=['POST'])
@@ -337,8 +344,13 @@ def manage_product(product_id):
             return redirect(request.url)
 
     # GET Request
-    categories = Category.query.all()
-    return render_template('admin/product_form.html', product=product, categories=categories)
+    categories = Category.query.order_by(Category.name.asc()).all()
+    return render_template(
+        'admin/product_form.html',
+        product=product,
+        categories=categories,
+        static_category_names=STATIC_BRAND_CATEGORY_NAMES
+    )
 
 
 # --- 5. DELETE PRODUCT ---
@@ -396,6 +408,10 @@ def new_category():
 @admin_required
 def edit_category(id):
     category = Category.query.get_or_404(id)
+    if is_static_brand_category(category):
+        flash(_('msg_static_category_locked'), 'error')
+        return redirect(url_for('admin.dashboard'))
+
     all_categories = Category.query.filter(Category.id != id).all()
 
     if request.method == 'POST':
@@ -428,6 +444,10 @@ def edit_category(id):
 @admin_required
 def delete_category(id):
     category = Category.query.get_or_404(id)
+    if is_static_brand_category(category):
+        flash(_('msg_static_category_locked'), 'error')
+        return redirect(url_for('admin.dashboard'))
+
     try:
         db.session.delete(category)
         db.session.commit()

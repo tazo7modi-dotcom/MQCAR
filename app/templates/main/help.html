@@ -9,7 +9,7 @@
                 {{ _('policy_page_title') }}
             </h1>
             <p class="text-zinc-500 text-sm font-bold uppercase tracking-widest">
-                {{ _('policy_last_updated') }}: <span class="text-amber-600">Jan 2026</span>
+                {{ _('policy_last_updated') }}: <span class="text-amber-600">{{ policies.last_updated }}</span>
             </p>
         </div>
     </div>
@@ -44,11 +44,11 @@
                         {{ _('ship_title') }}
                     </h2>
                     <div class="text-zinc-600 leading-relaxed space-y-4">
-                        <p>{{ _('ship_desc') }}</p>
+                        <p>{{ policies.shipping_intro }}</p>
                         <ul class="list-disc ltr:pl-5 rtl:pr-5 space-y-2 marker:text-amber-500">
-                            <li>{{ _('ship_point_1') }}</li>
-                            <li>{{ _('ship_point_2') }}</li>
-                            <li>{{ _('ship_point_3') }}</li>
+                            {% for point in policies.shipping_points %}
+                            <li>{{ point }}</li>
+                            {% endfor %}
                         </ul>
                     </div>
                 </section>
@@ -63,10 +63,10 @@
                     
                     <div class="bg-zinc-50 border-l-4 border-amber-500 p-6 mb-8">
                         <h3 class="font-bold text-zinc-900 uppercase tracking-wider mb-2 text-sm">
-                            {{ _('refund_strict_rule') }}
+                            {{ policies.refund_rule }}
                         </h3>
                         <p class="text-zinc-600 text-sm">
-                            {{ _('refund_process') }}
+                            {{ policies.refund_process }}
                         </p>
                     </div>
 
@@ -74,11 +74,11 @@
                         <div>
                             <h4 class="font-bold text-zinc-900 mb-2">{{ _('refund_condition_title') }}</h4>
                             <p class="bg-zinc-100 p-4 inline-block rounded-sm border border-zinc-200">
-                                {{ _('refund_condition_desc')|safe }}
+                                {{ policies.refund_condition }}
                             </p>
                         </div>
                         <p class="text-sm text-zinc-500 italic">
-                            * {{ _('refund_shipping_note') }}
+                            * {{ policies.refund_note }}
                         </p>
                     </div>
                 </section>
@@ -91,10 +91,11 @@
                         {{ _('privacy_title') }}
                     </h2>
                     <div class="text-zinc-600 leading-relaxed space-y-4">
-                        <p>{{ _('privacy_intro') }}</p>
+                        <p>{{ policies.privacy_intro }}</p>
                         <ul class="list-disc ltr:pl-5 rtl:pr-5 space-y-2 marker:text-amber-500">
-                            <li>{{ _('privacy_point_1') }}</li>
-                            <li>{{ _('privacy_point_2') }}</li>
+                            {% for point in policies.privacy_points %}
+                            <li>{{ point }}</li>
+                            {% endfor %}
                         </ul>
                     </div>
                 </section>
@@ -107,7 +108,7 @@
                         {{ _('terms_title') }}
                     </h2>
                     <div class="text-zinc-600 leading-relaxed">
-                        <p>{{ _('terms_desc') }}</p>
+                        <p>{{ policies.terms }}</p>
                     </div>
                 </section>
 

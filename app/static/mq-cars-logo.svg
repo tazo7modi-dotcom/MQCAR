@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="260" height="80" viewBox="0 0 260 80" role="img" aria-labelledby="title desc">
+  <title id="title">MQ CARS</title>
+  <desc id="desc">MQ CARS automotive accessories logo</desc>
+  <rect width="260" height="80" rx="12" fill="#101114"/>
+  <path d="M16 56L32 24h18l16 32H53l-3-7H32l-3 7H16zm20-17h10l-5-12-5 12z" fill="#d71920"/>
+  <text x="76" y="38" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="800" fill="#ffffff" letter-spacing="1">MQ</text>
+  <text x="76" y="61" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="800" fill="#d71920" letter-spacing="2">CARS</text>
+  <path d="M148 52h70c15 0 23-7 28-18" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
+  <path d="M154 52c5-13 14-21 29-21h35c11 0 19 5 24 12" fill="none" stroke="#d71920" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="172" cy="55" r="7" fill="#101114" stroke="#ffffff" stroke-width="4"/>
+  <circle cx="222" cy="55" r="7" fill="#101114" stroke="#ffffff" stroke-width="4"/>
+</svg>

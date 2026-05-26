@@ -1,106 +1,81 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="min-h-screen bg-white text-[#1a1a1a] pb-24">
-    
-    <div class="container mx-auto px-4 pt-12 pb-8 border-b border-gray-100">
-        <div class="flex flex-col md:flex-row justify-between items-end gap-6">
-            
-            <div>
-                <a href="{{ url_for('main.home') }}" class="inline-flex items-center text-xs font-bold text-gray-400 hover:text-[#CF9238] transition uppercase tracking-widest group font-bold-heading">
-                    <svg class="w-3 h-3 ltr:mr-2 rtl:ml-2 rtl:rotate-180 transform transition-transform group-hover:-translate-x-1 rtl:group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                    {{ _('btn_back') if request.referrer else _('btn_back_home') }}
-                </a>
-                
-                <h1 style="line-height: 2;" class="text-3xl md:text-4xl text-[#1a1a1a] mt-2 leading-[0.9] font-comic uppercase ltr:font-['Bangers'] rtl:font-['Cairo'] rtl:font-black">
-                    {{ category.name | translate_dynamic }} 
-                </h1>
-                <p class="text-[#CF9238] font-bold-heading tracking-widest text-sm mt-1 uppercase">{{category.model_years or ""}}</p>
-            </div>
-            
-            {% if products or (category.subcategories and category.subcategories[0].products) %}
-            <form method="GET" class="w-full md:w-auto bg-[#F9F9F9] p-4 border border-gray-200 flex flex-col md:flex-row gap-4 items-end md:items-center shadow-sm rounded-sm">
-                
-                <div class="flex items-center gap-2">
-                    <div class="flex flex-col">
-                        <label class="text-[10px] font-bold uppercase text-gray-400 mb-1 font-bold-heading">{{ _('lbl_min') }}</label>
-                        <input type="number" name="min_price" value="{{ min_price if min_price else '' }}" class="w-20 bg-white border border-gray-300 text-[#1a1a1a] p-2 text-sm focus:border-[#CF9238] outline-none font-bold-heading placeholder-gray-300" placeholder="0">
-                    </div>
-                    <span class="text-gray-400 mt-4">-</span>
-                    <div class="flex flex-col">
-                        <label class="text-[10px] font-bold uppercase text-gray-400 mb-1 font-bold-heading">{{ _('lbl_max') }}</label>
-                        <input type="number" name="max_price" value="{{ max_price if max_price else '' }}" class="w-20 bg-white border border-gray-300 text-[#1a1a1a] p-2 text-sm focus:border-[#CF9238] outline-none font-bold-heading placeholder-gray-300" placeholder="100">
-                    </div>
+{% set is_all_products = category.id == 0 %}
+{% set reset_url = url_for('main.all_products_view') if is_all_products else url_for('main.category_view', category_id=category.id) %}
+
+<section class="min-h-screen bg-white pb-20">
+    <header class="border-b border-zinc-200 bg-zinc-50">
+        <div class="mq-container py-10 md:py-14">
+            <a href="{{ url_for('main.home') }}" class="inline-flex min-h-[44px] items-center gap-2 text-sm font-semibold text-zinc-500 hover:text-[#d71920] transition-colors">
+                <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                {{ _('btn_back_home') }}
+            </a>
+
+            <div class="mt-6 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8">
+                <div>
+                    <span class="text-sm font-bold text-[#d71920]">{{ _('shop_by_category') }}</span>
+                    <h1 class="smart-heading text-4xl md:text-5xl font-extrabold text-zinc-950 mt-3">
+                        {{ category.name | translate_dynamic }}
+                    </h1>
+                    {% if category.model_years %}
+                    <p class="text-sm font-semibold text-zinc-500 mt-3">{{ category.model_years }}</p>
+                    {% endif %}
                 </div>
 
-                <div class="flex flex-col w-full md:w-auto">
-                    <label class="text-[10px] font-bold uppercase text-gray-400 mb-1 font-bold-heading">{{ _('lbl_sort_by') }}</label>
-                    <select name="sort" class="border border-gray-300 p-2 text-sm bg-white text-[#1a1a1a] focus:border-[#CF9238] outline-none w-full md:w-48 h-[38px] font-bold-heading">
-                        <option value="newest" {% if current_sort == 'newest' %}selected{% endif %}>{{ _('sort_newest') }}</option>
-                        <option value="price_asc" {% if current_sort == 'price_asc' %}selected{% endif %}>{{ _('sort_price_low') }}</option>
-                        <option value="price_desc" {% if current_sort == 'price_desc' %}selected{% endif %}>{{ _('sort_price_high') }}</option>
-                    </select>
-                </div>
-
-                <div class="flex gap-2 w-full md:w-auto">
-                    <button type="submit" class="h-[38px] bg-[#CF9238] text-white px-6 text-sm font-bold uppercase hover:bg-[#1a1a1a] transition w-full md:w-auto mt-auto font-bold-heading tracking-wider shadow-md active:translate-y-1 active:shadow-none">
+                {% if products or category.subcategories %}
+                <form method="GET" class="bg-white border border-zinc-200 rounded-lg p-4 flex flex-col sm:flex-row gap-3 items-end">
+                    <div>
+                        <label class="block text-xs font-bold text-zinc-500 mb-2">{{ _('lbl_min') }}</label>
+                        <input type="number" name="min_price" value="{{ min_price if min_price else '' }}" class="h-11 w-24 bg-white border border-zinc-200 rounded-md px-3 text-sm focus:border-[#d71920] outline-none" placeholder="0">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-zinc-500 mb-2">{{ _('lbl_max') }}</label>
+                        <input type="number" name="max_price" value="{{ max_price if max_price else '' }}" class="h-11 w-24 bg-white border border-zinc-200 rounded-md px-3 text-sm focus:border-[#d71920] outline-none" placeholder="100">
+                    </div>
+                    <div class="w-full sm:w-48">
+                        <label class="block text-xs font-bold text-zinc-500 mb-2">{{ _('lbl_sort_by') }}</label>
+                        <select name="sort" class="h-11 w-full border border-zinc-200 rounded-md px-3 text-sm bg-white focus:border-[#d71920] outline-none">
+                            <option value="newest" {% if current_sort == 'newest' %}selected{% endif %}>{{ _('sort_newest') }}</option>
+                            <option value="price_asc" {% if current_sort == 'price_asc' %}selected{% endif %}>{{ _('sort_price_low') }}</option>
+                            <option value="price_desc" {% if current_sort == 'price_desc' %}selected{% endif %}>{{ _('sort_price_high') }}</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="h-11 bg-[#d71920] text-white rounded-md px-6 text-sm font-bold hover:bg-zinc-950 transition-colors">
                         {{ _('btn_filter') }}
                     </button>
                     {% if min_price or max_price or current_sort != 'newest' %}
-                        <a href="{{ url_for('main.category_view', category_id=category.id) }}" class="h-[38px] flex items-center justify-center border border-gray-300 text-gray-400 px-3 hover:text-[#CF9238] hover:border-[#CF9238] transition mt-auto" title="{{ _('lbl_clear_filters') }}">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                        </a>
+                    <a href="{{ reset_url }}" class="h-11 w-11 inline-flex items-center justify-center rounded-md border border-zinc-200 text-zinc-500 hover:text-[#d71920] hover:border-[#d71920] transition-colors" aria-label="{{ _('lbl_clear_filters') }}">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </a>
                     {% endif %}
-                </div>
-            </form>
-            {% endif %}
+                </form>
+                {% endif %}
+            </div>
         </div>
-    </div>
+    </header>
 
-    <div class="container mx-auto px-4 mt-12">
-
+    <div class="mq-container pt-12 md:pt-16">
         {% if category.subcategories and not min_price and not max_price %}
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-20">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-16">
             {% for sub in category.subcategories %}
-            <a href="{{ url_for('main.category_view', category_id=sub.id) }}" class="block group">
-                
-                <div class="relative w-full h-64 overflow-hidden bg-[#F9F9F9] border border-gray-200 hover:border-[#CF9238] flex items-center justify-between p-8 rtl:flex-row-reverse transition-all duration-300 shadow-sm hover:-translate-y-1 hover:shadow-md">
-                    
-                    <div class="z-20 flex flex-col items-start w-1/2 rtl:items-end rtl:text-right">
-                        <span class="mb-3 bg-white border border-gray-200 px-3 py-1 text-[10px] font-bold text-[#CF9238] group-hover:bg-[#CF9238] group-hover:text-white transition uppercase skew-x-[-10deg]">
-                            <span class="block skew-x-[10deg]">{{ _('btn_shop_now') }}</span>
-                        </span>
-                        
-                        <h2 class="text-3xl md:text-4xl text-[#1a1a1a] font-comic uppercase leading-none ltr:font-['Bangers'] rtl:font-['Cairo'] rtl:font-black">
-                            {{ sub.name | translate_dynamic }}
-                        </h2>
-                        
-                        <h3 class="text-sm font-bold text-gray-400 font-bold-heading mt-2 tracking-widest uppercase">
-                            {{ sub.model_years }} 
-                        </h3>
-                    </div>
-
-                    <div class="relative w-1/2 h-full flex items-center justify-center">
-                        <div class="absolute inset-0 z-0 flex items-center justify-center translate-x-4 rtl:-translate-x-4">
-                            <div class="w-32 h-32 bg-white rounded-full border border-gray-100 group-hover:scale-110 transition-transform duration-500 shadow-inner"></div>
-                        </div>
-
-                        {% if sub.image_url %}
-                            {% if sub.image_url.startswith('http') %}
-                                <img src="{{ sub.image_url }}" 
-                                    alt="{{ sub.name }}" 
-                                    class="relative z-10 w-full h-full object-contain transform group-hover:scale-110 group-hover:rotate-3 transition duration-500 drop-shadow-xl mix-blend-multiply">
-                            {% else %}
-                                <img src="{{ url_for('uploaded_file', filename=sub.image_url) }}" 
-                                    alt="{{ sub.name }}" 
-                                    class="relative z-10 w-full h-full object-contain transform group-hover:scale-110 group-hover:rotate-3 transition duration-500 drop-shadow-xl mix-blend-multiply">
-                            {% endif %}
-                        {% else %}
-                            <div class="relative z-10 flex flex-col items-center justify-center text-gray-300">
-                                <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            </div>
-                        {% endif %}
-                    </div>
+            <a href="{{ url_for('main.category_view', category_id=sub.id) }}" class="group relative min-h-[230px] overflow-hidden bg-zinc-50 border border-zinc-200 rounded-lg p-7 flex items-center hover:border-[#d71920] hover:shadow-lg transition-all">
+                <div class="w-1/2 relative z-10">
+                    <span class="text-sm font-bold text-[#d71920]">{{ _('btn_shop_now') }}</span>
+                    <h2 class="smart-heading text-2xl md:text-3xl font-extrabold text-zinc-950 mt-3">{{ sub.name | translate_dynamic }}</h2>
+                    {% if sub.model_years %}<p class="text-sm text-zinc-500 mt-3">{{ sub.model_years }}</p>{% endif %}
+                </div>
+                <div class="w-1/2 h-44 flex items-center justify-center">
+                    {% if sub.image_url %}
+                    <img src="{{ sub.image_url if sub.image_url.startswith('http') else url_for('uploaded_file', filename=sub.image_url) }}"
+                         alt="{{ sub.name }}" loading="lazy" class="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300">
+                    {% else %}
+                    <svg class="w-12 h-12 text-zinc-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 16l2-5h14l2 5M6 16v2m12-2v2M6 11l2-4h8l2 4M7 16h.01M17 16h.01"></path>
+                    </svg>
+                    {% endif %}
                 </div>
             </a>
             {% endfor %}
@@ -108,79 +83,55 @@
         {% endif %}
 
         {% if products %}
-        <div class="mb-20">
-            <div class="flex items-center gap-4 mb-10">
-                <div class="w-2 h-8 bg-[#CF9238] skew-x-[-10deg]"></div>
-                <h2 class="text-3xl font-comic text-[#1a1a1a] uppercase ltr:tracking-wide rtl:tracking-normal ltr:font-['Bangers'] rtl:font-['Cairo'] rtl:font-black">
-                    {{ category.name }} <span class="text-[#CF9238] text-lg">({{ products|length }})</span>
-                </h2>
-                <div class="h-px bg-gray-200 flex-grow"></div>
-            </div>
+        <div class="flex items-center justify-between gap-4 mb-8">
+            <h2 class="smart-heading text-2xl md:text-3xl font-extrabold text-zinc-950">
+                {{ category.name | translate_dynamic }}
+            </h2>
+            <span class="text-sm font-bold text-[#d71920]">{{ products|length }}</span>
+        </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8">
-                {% for product in products %}
-                    <div class="group relative bg-white border border-gray-100 hover:border-[#CF9238] transition-all duration-300 flex flex-col shadow-sm hover:shadow-lg">
-                        
-                        <div class="aspect-[4/5] w-full overflow-hidden bg-[#F4F4F4] p-4 relative border-b border-gray-100">
-                            
-                            <a href="{{ url_for('main.product_detail', product_id=product.id) }}" class="block w-full h-full">
-                                {% if product.image_url %}
-                                    {# PRIORITY 1: Local File #}
-                                    {% if not product.image_url.startswith('http') %}
-                                        <img src="{{ url_for('uploaded_file', filename=product.image_url) }}" 
-                                             class="h-full w-full object-contain transform group-hover:scale-110 transition duration-500 ease-in-out mix-blend-multiply">
-                                    
-                                    {# PRIORITY 2: Remote URL #}
-                                    {% else %}
-                                        <img src="{{ product.image_url }}" 
-                                             class="h-full w-full object-contain transform group-hover:scale-110 transition duration-500 ease-in-out mix-blend-multiply">
-                                    {% endif %}
-                                {% else %}
-                                    <div class="flex h-full items-center justify-center text-gray-300 text-xs uppercase tracking-widest font-bold">{{ _('txt_no_img') }}</div>
-                                {% endif %}
-                            </a>
-                            
-                            <div class="absolute bottom-0 inset-x-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300 z-30">
-                                <a href="{{ url_for('main.product_detail', product_id=product.id) }}" class="block w-full bg-[#CF9238] text-white text-center py-3 font-comic text-lg uppercase hover:bg-[#1a1a1a] transition ltr:font-['Bangers'] ltr:tracking-widest rtl:font-['Cairo'] rtl:font-bold">
-                                    {{ _('btn_quick_view') }}
-                                </a>
-                            </div>
-                        </div>
-
-                        <div class="p-5 flex flex-col flex-grow ltr:text-left rtl:text-right">
-                            <h3 class="text-lg text-[#1a1a1a] mb-2 uppercase truncate font-comic ltr:font-['Bangers'] rtl:font-['Cairo'] tracking-wide">
-                                <a href="{{ url_for('main.product_detail', product_id=product.id) }}">{{ product.name | translate_dynamic }}</a>
-                            </h3>
-                            
-                            <div class="mt-auto flex flex-col ltr:items-start rtl:items-end">
-                                {% if product.on_sale() %}
-                                    <span class="text-xs text-gray-400 line-through font-bold font-bold-heading">
-                                        {{ product.price | currency }}
-                                    </span>
-                                    <span class="text-2xl text-[#CF9238] font-comic ltr:font-['Bangers'] rtl:font-['Cairo']">
-                                        {{ product.get_price() | currency }}
-                                    </span>
-                                {% else %}
-                                    <span class="text-2xl text-gray-800 font-comic ltr:font-['Bangers'] rtl:font-['Cairo']">
-                                        {{ product.price | currency }}
-                                    </span>
-                                {% endif %}
-                            </div>
-                        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {% for product in products %}
+            <article class="group flex flex-col">
+                <a href="{{ url_for('main.product_detail', product_id=product.id) }}" class="relative aspect-square overflow-hidden bg-zinc-100 border border-zinc-200 rounded-lg hover:border-[#d71920] transition-colors">
+                    {% if product.on_sale() %}
+                    <span class="absolute top-3 left-3 z-10 bg-[#d71920] text-white rounded-full px-3 py-1.5 text-xs font-bold">
+                        {{ _('lbl_sale') }}
+                    </span>
+                    {% endif %}
+                    {% if product.image_url %}
+                    <img src="{{ product.image_url if product.image_url.startswith('http') else url_for('uploaded_file', filename=product.image_url) }}"
+                         alt="{{ product.name }}" loading="lazy" class="h-full w-full object-contain p-5 group-hover:scale-105 transition-transform duration-300">
+                    {% else %}
+                    <div class="h-full w-full flex items-center justify-center text-zinc-400 text-sm font-semibold">{{ _('txt_no_img') }}</div>
+                    {% endif %}
+                </a>
+                <div class="pt-4">
+                    <h3 class="font-bold text-zinc-950 leading-snug min-h-[44px]">
+                        <a href="{{ url_for('main.product_detail', product_id=product.id) }}" class="hover:text-[#d71920] transition-colors">{{ product.name | translate_dynamic }}</a>
+                    </h3>
+                    <div class="mt-2 flex items-center gap-2">
+                        {% if product.on_sale() %}
+                        <span class="text-lg font-extrabold text-[#d71920]">{{ product.get_price() | currency }}</span>
+                        <span class="text-sm text-zinc-400 line-through">{{ product.price | currency }}</span>
+                        {% else %}
+                        <span class="text-lg font-extrabold text-zinc-900">{{ product.price | currency }}</span>
+                        {% endif %}
                     </div>
-                {% endfor %}
-            </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        {% if not category.subcategories %}
+        <div class="text-center py-20 border border-dashed border-zinc-300 rounded-lg bg-zinc-50">
+            <svg class="w-12 h-12 mx-auto text-zinc-300 mb-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 16l2-5h14l2 5M6 16v2m12-2v2M6 11l2-4h8l2 4M7 16h.01M17 16h.01"></path>
+            </svg>
+            <h2 class="smart-heading text-2xl font-bold text-zinc-700">{{ _('msg_no_products_coll') }}</h2>
         </div>
         {% endif %}
-
-        {% if not products and not category.subcategories %}
-            <div class="text-center py-24 border-2 border-dashed border-gray-200 bg-[#F9F9F9]">
-                <div class="text-6xl mb-4 grayscale opacity-50">💨</div>
-                <h3 class="text-2xl font-comic text-gray-500 uppercase ltr:font-['Bangers'] rtl:font-['Cairo']">{{ _('msg_no_products_coll') }}</h3>
-                <p class="text-gray-400 font-bold-heading text-sm mt-2">{{ _('loc_subtitle') }}</p>
-            </div>
         {% endif %}
-
     </div>
-</div>
+</section>
 {% endblock %}

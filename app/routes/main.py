@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app, jsonify
 from flask_login import login_required, current_user
 from app.models import Product, Category, Cart, CartItem, Order, OrderItem, Extra, Address, Review, ProductColor, ProductSize, DiscountCode
+from app.catalog import build_static_brand_tiles, ensure_static_brand_categories
 from app.extensions import db
 from app.translations import dictionary
 import requests
@@ -12,7 +13,6 @@ from app.payment import get_user_currency, create_tap_charge
 
 main_bp = Blueprint('main', __name__)
 
-
 def _t(key):
     lang = session.get('language', 'en')
     return dictionary.get(lang, {}).get(key, key)
@@ -20,11 +20,12 @@ def _t(key):
 @main_bp.route('/')
 def home():
     products = Product.query.limit(8).all()
-    categories = Category.query.filter(Category.parent_id == None).all()
+    categories, brand_categories = ensure_static_brand_categories()
     uncategorized = Product.query.filter(Product.category_id == None).all()
     reviews = Review.query.order_by(Review.created_at.desc()).limit(10).all()
+    brand_tiles = build_static_brand_tiles(brand_categories)
  
-    return render_template("main/home.html", products=products, categories=categories, uncategorized=uncategorized,reviews=reviews)
+    return render_template("main/home.html", products=products, categories=categories, uncategorized=uncategorized, reviews=reviews, brand_tiles=brand_tiles)
 
 
 @main_bp.route('/submit-review', methods=['POST'])
@@ -189,7 +190,6 @@ def add_to_cart():
 def cart_page():
     items = []
     total = 0.0
-    upsell_categories = []
 
     if current_user.is_authenticated:
         # --- LOGGED IN: Get from Database ---
@@ -221,58 +221,10 @@ def cart_page():
                 items.append(fake_item)
                 total += (fake_item.unit_price * fake_item.quantity)
 
-    if items:
-        cart_product_ids = {
-            item.product_id for item in items
-            if getattr(item, 'product_id', None) is not None
-        }
-
-        accessory_name_filters = [
-            Category.name.ilike('%accessor%'),
-            Category.name.ilike('%ملحق%'),
-            Category.name.ilike('%اكسس%'),
-            Category.name.ilike('%إكسس%')
-        ]
-
-        accessory_categories = Category.query.filter(or_(*accessory_name_filters)).all()
-        all_categories = Category.query.order_by(Category.id.desc()).all()
-
-        seen_category_ids = set()
-        ordered_categories = []
-
-        for category in accessory_categories:
-            if category.id not in seen_category_ids:
-                ordered_categories.append(category)
-                seen_category_ids.add(category.id)
-
-        for category in all_categories:
-            if category.id not in seen_category_ids:
-                ordered_categories.append(category)
-                seen_category_ids.add(category.id)
-
-        for category in ordered_categories:
-            products_query = Product.query.filter(
-                Product.category_id == category.id,
-                Product.quantity > 0
-            )
-            if cart_product_ids:
-                products_query = products_query.filter(~Product.id.in_(cart_product_ids))
-
-            suggested_products = products_query.order_by(Product.id.desc()).limit(4).all()
-            if suggested_products:
-                upsell_categories.append({
-                    'category': category,
-                    'products': suggested_products
-                })
-
-            if len(upsell_categories) >= 3:
-                break
-
     return render_template(
         'main/cart.html',
         cart_items=items,
-        total=total,
-        upsell_categories=upsell_categories
+        total=total
     )
 
 
@@ -405,7 +357,7 @@ def checkout():
                 code = phone_parts[0]  
                 phone_clean = phone_parts[1].replace(" ", "") 
             except:
-                code = "+973" 
+                code = current_app.config['STORE'].get('phone_country_code', '+000')
                 phone_clean = final_addr.phone
         else:
             raw_phone = request.form.get('phone_number')
@@ -436,14 +388,17 @@ def checkout():
                 })
 
         # --- 2. Shipping Logic ---
-        country_check = final_addr.country.strip().lower()
-        shipping_option = request.form.get('shipping_option', 'normal') 
-        shipping_cost = 0.0
-
-        if country_check == 'bahrain':
-            shipping_cost = 0.0 if shipping_option == 'fast' else 0 
-        else:
-            shipping_cost = 0.0 
+        selected_country = (final_addr.country or '').strip()
+        shipping_option = request.form.get('shipping_option', 'standard')
+        checkout_zones = current_app.config.get('CHECKOUT_COUNTRIES', [])
+        selected_zone = next(
+            (zone for zone in checkout_zones if zone.get('name') == selected_country),
+            checkout_zones[0] if checkout_zones else {'shipping_rate': 0, 'free_shipping_threshold': 0}
+        )
+        shipping_cost = float(selected_zone.get('shipping_rate') or 0)
+        free_threshold = float(selected_zone.get('free_shipping_threshold') or 0)
+        if free_threshold and cart_total >= free_threshold:
+            shipping_cost = 0.0
 
         raw_discount_code = request.form.get('discount_code', '')
         normalized_discount_code = (raw_discount_code or '').strip().upper()
@@ -502,7 +457,19 @@ def checkout():
         # ======================================================
         #  4. PROCESS PAYMENT & INVENTORY
         # ======================================================
-        payment_method = request.form.get('payment_method') 
+        payment_method = request.form.get('payment_method')
+        payment_options = current_app.config.get('PAYMENT_OPTIONS', {})
+        online_enabled = payment_options.get('tap') or payment_options.get('benefitpay') or payment_options.get('card')
+        if payment_method not in ('cod', 'online'):
+            flash("Please select a payment method.", "error")
+            return redirect(url_for('main.checkout'))
+        if payment_method == 'cod' and not payment_options.get('cod'):
+            flash("Cash on delivery is not available for this store.", "error")
+            return redirect(url_for('main.checkout'))
+        if payment_method == 'online' and not online_enabled:
+            flash("Online payment is not available for this store.", "error")
+            return redirect(url_for('main.checkout'))
+
         if payment_method == 'cod':
             # --- OPTION A: CASH ON DELIVERY ---
             order.payment_status = 'COD'
@@ -577,7 +544,8 @@ def checkout():
             
             db.session.commit()
             
-            flash(f"Order placed! Please pay {final_total_bhd:.3f} BD upon delivery.", "success")
+            currency_symbol = current_app.config['CURRENCY_RATES']['BHD']['symbol']
+            flash(f"Order placed! Please pay {final_total_bhd:.3f} {currency_symbol} upon delivery.", "success")
             return redirect(url_for('main.order_success', order_id=order.id))
 
         else:

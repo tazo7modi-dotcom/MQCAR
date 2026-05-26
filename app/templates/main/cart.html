@@ -1,307 +1,97 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="min-h-screen bg-white text-zinc-900">
-    <div class="container mx-auto px-6 py-16 max-w-7xl">
-        
-        <h1 class="text-4xl md:text-5xl font-bold mb-12 uppercase ltr:font-['Oswald'] rtl:font-['Cairo'] tracking-wide border-b-4 border-amber-500 pb-4 inline-block">
-            {{ _('cart_title') }}
-        </h1>
+<section class="min-h-screen bg-white py-12 md:py-16">
+    <div class="mq-container">
+        <div class="mb-10">
+            <span class="text-sm font-bold text-[#d71920]">{{ _('nav_shop') }}</span>
+            <h1 class="smart-heading text-4xl md:text-5xl font-extrabold text-zinc-950 mt-3">{{ _('cart_title') }}</h1>
+        </div>
 
         {% if cart_items %}
-            <div class="flex flex-col lg:flex-row gap-12 lg:gap-24">
-                
-                <div class="lg:w-2/3 space-y-0 divide-y divide-zinc-100">
-                    {% for item in cart_items %}
-                    <div class="flex gap-6 py-8 group transition-colors hover:bg-zinc-50 px-4 -mx-4">
-                        
-                        <div class="w-24 h-32 md:w-32 md:h-40 flex-shrink-0 bg-zinc-50 border border-zinc-200 relative overflow-hidden">
-                            {% if item.product.image_url %}
-                                <a href="{{ url_for('main.product_detail', product_id=item.product.id) }}" class="block w-full h-full">
-                                    <img src="{{ url_for('uploaded_file', filename=item.product.image_url) }}" 
-                                         class="object-contain w-full h-full mix-blend-multiply p-2 transform group-hover:scale-105 transition duration-500">
-                                </a>
-                            {% else %}
-                                <div class="w-full h-full flex items-center justify-center text-[10px] text-zinc-400 uppercase font-bold">
-                                    {{ _('txt_no_img') }}
-                                </div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="flex-1 flex flex-col justify-between">
+        <div class="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-10 lg:gap-14">
+            <div class="divide-y divide-zinc-200 border-t border-zinc-200">
+                {% for item in cart_items %}
+                <article class="flex flex-col sm:flex-row gap-5 py-6">
+                    <a href="{{ url_for('main.product_detail', product_id=item.product.id) }}" class="w-full sm:w-32 aspect-square sm:h-32 flex-shrink-0 bg-zinc-100 border border-zinc-200 rounded-lg overflow-hidden">
+                        {% if item.product.image_url %}
+                        <img src="{{ item.product.image_url if item.product.image_url.startswith('http') else url_for('uploaded_file', filename=item.product.image_url) }}"
+                             alt="{{ item.product.name }}" class="object-contain w-full h-full p-3">
+                        {% else %}
+                        <div class="w-full h-full flex items-center justify-center text-sm text-zinc-400 font-semibold">{{ _('txt_no_img') }}</div>
+                        {% endif %}
+                    </a>
+
+                    <div class="flex-1 flex flex-col justify-between gap-5">
+                        <div class="flex justify-between items-start gap-5">
                             <div>
-                                <div class="flex justify-between items-start mb-2">
-                                    <h3 class="font-bold text-lg md:text-xl uppercase ltr:font-['Oswald'] rtl:font-['Cairo'] tracking-wide">
-                                        <a href="{{ url_for('main.product_detail', product_id=item.product.id) }}" class="hover:text-amber-600 transition">
-                                            {{ item.product.name }}
-                                        </a>
-                                    </h3>
-                                    
-                                    <p class="font-bold text-lg font-mono text-zinc-900">
-                                        {{ (item.unit_price * item.quantity) | currency }}
-                                    </p>
+                                <h2 class="text-lg font-bold text-zinc-950">
+                                    <a href="{{ url_for('main.product_detail', product_id=item.product.id) }}" class="hover:text-[#d71920] transition-colors">
+                                        {{ item.product.name | translate_dynamic }}
+                                    </a>
+                                </h2>
+                                <div class="flex flex-wrap gap-2 text-sm text-zinc-500 mt-3">
+                                    {% if item.size %}<span class="bg-zinc-100 rounded-md px-3 py-1">{{ item.size }}</span>{% endif %}
+                                    {% if item.color %}<span class="bg-zinc-100 rounded-md px-3 py-1">{{ item.color }}</span>{% endif %}
                                 </div>
-                                
-                                <div class="space-y-1">
-                                    <div class="flex flex-wrap gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500">
-                                        {% if item.size %}
-                                            <span class="bg-zinc-100 px-2 py-1 border border-zinc-200">{{ item.size }}</span>
-                                        {% endif %}
-                                        {% if item.color %}
-                                            <span class="bg-zinc-100 px-2 py-1 border border-zinc-200">{{ item.color }}</span>
-                                        {% endif %}
-                                    </div>
-                                    {% if item.selected_extras %}
-                                        <p class="text-xs text-amber-600 font-medium">+ {{ item.selected_extras }}</p>
-                                    {% endif %}
-                                </div>
+                                {% if item.selected_extras %}<p class="text-sm text-[#d71920] font-semibold mt-3">+ {{ item.selected_extras }}</p>{% endif %}
                             </div>
-
-                            <div class="flex justify-between items-center mt-4">
-                                <div class="flex items-center border border-zinc-200">
-                                    <span class="px-3 py-1 bg-zinc-50 text-[10px] font-bold uppercase text-zinc-500 border-r border-zinc-200">{{ _('lbl_qty') }}</span>
-                                    <span class="px-4 py-1 font-bold font-mono text-sm">{{ item.quantity }}</span>
-                                </div>
-                                
-                                <a href="{{ url_for('main.remove_item', item_id=item.id) }}" class="text-[10px] font-bold text-zinc-400 hover:text-red-600 uppercase tracking-widest transition flex items-center gap-2 group/delete">
-                                    <span class="group-hover/delete:underline">{{ _('lbl_remove') }}</span>
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-
-                    {% if upsell_categories %}
-                    <div class="pt-12 border-t-0">
-                        <div class="border border-zinc-200 bg-gradient-to-br from-zinc-50 to-white p-6 md:p-8">
-                            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
-                                <div>
-                                    <p class="text-[10px] uppercase tracking-[0.25em] font-bold text-amber-600 mb-2">
-                                        {{ _('cart_accessories_badge') }}
-                                    </p>
-                                    <h2 class="text-2xl md:text-3xl font-bold text-zinc-900 ltr:font-['Oswald'] rtl:font-['Cairo'] uppercase">
-                                        {{ _('cart_accessories_question') }}
-                                    </h2>
-                                    <p class="text-zinc-500 text-sm mt-2">{{ _('cart_accessories_hint') }}</p>
-                                </div>
-
-                                <button type="button" id="accessoriesToggle" class="inline-flex items-center justify-center gap-2 border border-zinc-300 bg-white px-5 py-3 text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-zinc-900 hover:text-white hover:border-zinc-900 transition">
-                                    <span id="accessoriesToggleText">{{ _('cart_accessories_toggle_open') }}</span>
-                                    <svg id="accessoriesToggleIcon" class="w-4 h-4 transition-transform duration-300 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                    </svg>
-                                </button>
-                            </div>
-
-                            <div id="accessoriesPanel" class="hidden mt-8">
-                                <div class="flex flex-wrap gap-2 mb-6">
-                                    {% for block in upsell_categories %}
-                                    <button type="button"
-                                            class="upsell-tab px-4 py-2 text-[10px] font-bold uppercase tracking-widest border transition {% if loop.first %}bg-zinc-900 text-white border-zinc-900{% else %}bg-white text-zinc-600 border-zinc-200 hover:border-zinc-400{% endif %}"
-                                            data-target="upsell-cat-{{ block.category.id }}">
-                                        {{ block.category.name | translate_dynamic }}
-                                    </button>
-                                    {% endfor %}
-                                </div>
-
-                                {% for block in upsell_categories %}
-                                <div id="upsell-cat-{{ block.category.id }}" class="upsell-grid {% if not loop.first %}hidden{% endif %}">
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                                        {% for product in block.products %}
-                                        <div class="border border-zinc-200 bg-white p-4 group">
-                                            <a href="{{ url_for('main.product_detail', product_id=product.id) }}" class="block w-full aspect-square bg-zinc-50 border border-zinc-100 overflow-hidden mb-4">
-                                                {% if product.image_url %}
-                                                <img src="{{ url_for('uploaded_file', filename=product.image_url) if not product.image_url.startswith('http') else product.image_url }}"
-                                                     alt="{{ product.name }}"
-                                                     class="w-full h-full object-contain p-3 mix-blend-multiply group-hover:scale-105 transition duration-500">
-                                                {% else %}
-                                                <div class="w-full h-full flex items-center justify-center text-[10px] uppercase font-bold text-zinc-300">
-                                                    {{ _('txt_no_img') }}
-                                                </div>
-                                                {% endif %}
-                                            </a>
-
-                                            <h3 class="font-bold text-sm text-zinc-900 leading-tight mb-2 min-h-[2.5rem]">
-                                                {{ product.name | translate_dynamic }}
-                                            </h3>
-
-                                            <div class="flex items-center gap-2 mb-4">
-                                                {% if product.on_sale() %}
-                                                <span class="font-bold text-sm text-rose-600">{{ product.get_price() | currency }}</span>
-                                                <span class="text-xs text-zinc-400 line-through">{{ product.price | currency }}</span>
-                                                {% else %}
-                                                <span class="font-bold text-sm text-zinc-700">{{ product.price | currency }}</span>
-                                                {% endif %}
-                                            </div>
-
-                                            <div class="flex gap-2">
-                                                {% if product.has_sizes or product.has_colors %}
-                                                <a href="{{ url_for('main.product_detail', product_id=product.id) }}"
-                                                   class="flex-1 text-center border border-zinc-300 py-2 text-[10px] font-bold uppercase tracking-widest hover:border-zinc-900 hover:text-zinc-900 transition">
-                                                    {{ _('cart_accessories_choose_options') }}
-                                                </a>
-                                                {% else %}
-                                                <button type="button"
-                                                        class="quick-accessory-add flex-1 border border-zinc-900 bg-zinc-900 text-white py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-amber-500 hover:border-amber-500 hover:text-black transition"
-                                                        data-product-id="{{ product.id }}">
-                                                    {{ _('cart_accessories_add') }}
-                                                </button>
-                                                {% endif %}
-
-                                                <a href="{{ url_for('main.product_detail', product_id=product.id) }}"
-                                                   class="px-3 border border-zinc-300 py-2 text-[10px] font-bold uppercase tracking-widest hover:border-zinc-900 hover:text-zinc-900 transition">
-                                                    {{ _('cart_accessories_view') }}
-                                                </a>
-                                            </div>
-                                        </div>
-                                        {% endfor %}
-                                    </div>
-                                </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-
-                <div class="lg:w-1/3">
-                    <div class="bg-zinc-50 p-8 border border-zinc-200 sticky top-24">
-                        <h3 class="text-xl font-bold mb-6 uppercase ltr:font-['Oswald'] rtl:font-['Cairo'] tracking-wider border-b border-zinc-200 pb-4">
-                            {{ _('cart_summary') }}
-                        </h3>
-                        
-                        <div class="space-y-4 mb-8">
-                            <div class="flex justify-between items-center text-xs font-bold uppercase text-zinc-500 tracking-wider">
-                                <span>{{ _('cart_subtotal') }}</span>
-                                <span class="font-mono text-zinc-900 text-sm">{{ total | currency }}</span>
-                            </div>
-                            <div class="flex justify-between items-center text-xs font-bold uppercase text-zinc-500 tracking-wider">
-                                <span>{{ _('cart_shipping') }}</span>
-                                <span class="bg-zinc-200 text-zinc-600 px-2 py-0.5 text-[9px]">{{ _('cart_calc_checkout') }}</span>
-                            </div>
-                        </div>
-                        
-                        <div class="flex justify-between items-center mb-8 pt-4 border-t border-zinc-200">
-                            <span class="text-base font-bold uppercase text-zinc-900">{{ _('cart_total') }}</span>
-                            <span class="text-2xl font-bold text-zinc-900 ltr:font-['Oswald'] rtl:font-['Cairo']">{{ total | currency }}</span>
+                            <p class="font-extrabold text-zinc-950 whitespace-nowrap">{{ (item.unit_price * item.quantity) | currency }}</p>
                         </div>
 
-                        <a href="{{ url_for('main.checkout') }}" class="block w-full bg-zinc-900 text-white text-center py-4 font-bold text-sm uppercase tracking-[0.2em] hover:bg-amber-500 hover:text-black transition-all duration-300 ltr:font-['Oswald'] rtl:font-['Cairo'] shadow-lg">
-                            {{ _('btn_checkout') }}
-                        </a>
-                        
-                        <div class="mt-6 text-center">
-                            <a href="{{ url_for('main.home') }}" class="text-[10px] font-bold text-zinc-400 hover:text-zinc-900 transition uppercase tracking-widest hover:underline">
-                                {{ _('cart_continue') }}
+                        <div class="flex justify-between items-center">
+                            <div class="inline-flex h-11 items-center rounded-md border border-zinc-200 overflow-hidden">
+                                <span class="px-3 text-sm font-semibold text-zinc-500 bg-zinc-50 h-full flex items-center">{{ _('lbl_qty') }}</span>
+                                <span class="px-4 font-bold text-sm">{{ item.quantity }}</span>
+                            </div>
+                            <a href="{{ url_for('main.remove_item', item_id=item.id) }}" class="min-h-[44px] inline-flex items-center gap-2 text-sm font-semibold text-zinc-500 hover:text-[#d71920] transition-colors">
+                                {{ _('lbl_remove') }}
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                             </a>
                         </div>
-                        
-                        <div class="mt-8 flex justify-center gap-4 opacity-20">
-                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+
+            <aside>
+                <div class="bg-zinc-50 p-7 border border-zinc-200 rounded-lg sticky top-28">
+                    <h2 class="smart-heading text-2xl font-extrabold text-zinc-950 mb-6">{{ _('cart_summary') }}</h2>
+                    <div class="space-y-4 border-y border-zinc-200 py-5 mb-6">
+                        <div class="flex justify-between text-sm text-zinc-600">
+                            <span>{{ _('cart_subtotal') }}</span>
+                            <span class="font-bold text-zinc-950">{{ total | currency }}</span>
+                        </div>
+                        <div class="flex justify-between text-sm text-zinc-600 gap-3">
+                            <span>{{ _('cart_shipping') }}</span>
+                            <span class="text-right">{{ _('cart_calc_checkout') }}</span>
                         </div>
                     </div>
+                    <div class="flex justify-between items-end mb-7">
+                        <span class="font-bold text-zinc-950">{{ _('cart_total') }}</span>
+                        <span class="text-2xl font-extrabold text-zinc-950">{{ total | currency }}</span>
+                    </div>
+                    <a href="{{ url_for('main.checkout') }}" class="min-h-[48px] flex items-center justify-center w-full bg-[#d71920] text-white rounded-md font-bold text-sm hover:bg-zinc-950 transition-colors">
+                        {{ _('btn_checkout') }}
+                    </a>
+                    <a href="{{ url_for('main.home') }}" class="min-h-[44px] mt-4 flex items-center justify-center w-full text-sm font-semibold text-zinc-500 hover:text-[#d71920] transition-colors">{{ _('cart_continue') }}</a>
+                    <div class="mt-7 pt-5 border-t border-zinc-200 flex items-center justify-center gap-3 text-zinc-500">
+                        <svg class="w-5 h-5 text-[#d71920]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                        <span class="text-sm font-semibold">{{ _('msg_secure_ssl') }}</span>
+                    </div>
                 </div>
-            </div>
-
+            </aside>
+        </div>
         {% else %}
-            <div class="flex flex-col items-center justify-center py-32 text-center border border-dashed border-zinc-300 bg-zinc-50">
-                <div class="w-20 h-20 bg-white border border-zinc-200 rounded-full flex items-center justify-center mb-6 text-zinc-300">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
-                </div>
-                <h2 class="text-2xl font-bold text-zinc-900 mb-2 uppercase ltr:font-['Oswald'] rtl:font-['Cairo']">{{ _('cart_empty_title') }}</h2>
-                <p class="text-zinc-500 mb-10 text-xs font-bold tracking-widest uppercase">{{ _('cart_empty_msg') }}</p>
-                <a href="{{ url_for('main.home') }}" class="inline-block bg-zinc-900 text-white px-10 py-4 font-bold text-xs uppercase tracking-[0.2em] hover:bg-amber-500 hover:text-black transition-all ltr:font-['Oswald'] rtl:font-['Cairo']">
-                    {{ _('dash_start_shopping') }}
-                </a>
+        <div class="flex flex-col items-center justify-center py-20 text-center border border-dashed border-zinc-300 rounded-lg bg-zinc-50">
+            <div class="w-16 h-16 bg-white border border-zinc-200 rounded-lg flex items-center justify-center mb-6 text-[#d71920]">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
             </div>
+            <h2 class="smart-heading text-2xl font-extrabold text-zinc-950 mb-3">{{ _('cart_empty_title') }}</h2>
+            <p class="text-zinc-500 mb-8 max-w-md">{{ _('cart_empty_msg') }}</p>
+            <a href="{{ url_for('main.home') }}" class="min-h-[48px] inline-flex items-center bg-[#d71920] text-white rounded-md px-8 font-bold text-sm hover:bg-zinc-950 transition-colors">{{ _('dash_start_shopping') }}</a>
+        </div>
         {% endif %}
     </div>
-</div>
-{% if cart_items and upsell_categories %}
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const toggleButton = document.getElementById('accessoriesToggle');
-        const panel = document.getElementById('accessoriesPanel');
-        const toggleText = document.getElementById('accessoriesToggleText');
-        const toggleIcon = document.getElementById('accessoriesToggleIcon');
-
-        if (toggleButton && panel && toggleText && toggleIcon) {
-            toggleButton.addEventListener('click', () => {
-                panel.classList.toggle('hidden');
-                const isOpen = !panel.classList.contains('hidden');
-                toggleText.textContent = isOpen
-                    ? "{{ _('cart_accessories_toggle_close') }}"
-                    : "{{ _('cart_accessories_toggle_open') }}";
-                toggleIcon.classList.toggle('rotate-180', isOpen);
-            });
-        }
-
-        const tabs = Array.from(document.querySelectorAll('.upsell-tab'));
-        const grids = Array.from(document.querySelectorAll('.upsell-grid'));
-
-        const activateTab = (activeTab) => {
-            tabs.forEach((tab) => {
-                tab.classList.remove('bg-zinc-900', 'text-white', 'border-zinc-900');
-                tab.classList.add('bg-white', 'text-zinc-600', 'border-zinc-200');
-            });
-
-            activeTab.classList.remove('bg-white', 'text-zinc-600', 'border-zinc-200');
-            activeTab.classList.add('bg-zinc-900', 'text-white', 'border-zinc-900');
-
-            const target = activeTab.getAttribute('data-target');
-            grids.forEach((grid) => {
-                grid.classList.toggle('hidden', grid.id !== target);
-            });
-        };
-
-        tabs.forEach((tab) => {
-            tab.addEventListener('click', () => activateTab(tab));
-        });
-
-        const updateCartBadge = (count) => {
-            document.querySelectorAll('.cart-badge').forEach((badge) => {
-                badge.textContent = count;
-                badge.classList.toggle('hidden', Number(count) === 0);
-            });
-        };
-
-        document.querySelectorAll('.quick-accessory-add').forEach((button) => {
-            button.addEventListener('click', async () => {
-                const productId = button.getAttribute('data-product-id');
-                if (!productId) return;
-
-                button.disabled = true;
-                const originalText = button.textContent;
-                button.textContent = "{{ _('cart_accessories_adding') }}";
-
-                try {
-                    const formData = new FormData();
-                    formData.append('product_id', productId);
-                    formData.append('quantity', '1');
-
-                    const response = await fetch("{{ url_for('main.add_to_cart') }}", {
-                        method: 'POST',
-                        body: formData
-                    });
-                    const data = await response.json();
-
-                    if (data && data.status === 'success') {
-                        button.textContent = "{{ _('cart_accessories_added') }}";
-                        updateCartBadge(data.cart_count);
-                        setTimeout(() => window.location.reload(), 450);
-                    } else {
-                        button.textContent = originalText;
-                        button.disabled = false;
-                    }
-                } catch (error) {
-                    button.textContent = originalText;
-                    button.disabled = false;
-                }
-            });
-        });
-    });
-</script>
-{% endif %}
+</section>
 {% endblock %}
