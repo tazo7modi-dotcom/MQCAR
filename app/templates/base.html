@@ -72,6 +72,33 @@
 
         .mq-container { width: min(1180px, calc(100% - 32px)); margin-inline: auto; }
         .mq-nav-link { min-height: 44px; display: inline-flex; align-items: center; }
+        .mq-language-switch {
+            direction: ltr;
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            padding: 3px;
+            border: 1px solid var(--mq-line);
+            border-radius: 999px;
+            background: var(--mq-soft);
+        }
+        .mq-language-option {
+            min-height: 44px;
+            padding-inline: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            color: #71717a;
+            font-size: 12px;
+            font-weight: 700;
+            transition: color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+        }
+        .mq-language-option[aria-current="true"] {
+            color: var(--mq-red);
+            background: #fff;
+            box-shadow: 0 1px 4px rgba(16, 17, 20, 0.08);
+        }
         .mq-gradient {
             background:
                 linear-gradient(135deg, rgba(16, 17, 20, 0.96), rgba(16, 17, 20, 0.9)),
@@ -83,6 +110,11 @@
         ::-webkit-scrollbar-thumb { background: var(--mq-black); border-radius: 999px; }
         @keyframes shrinkWidth { from { width: 100%; } to { width: 0%; } }
         .animate-shrink { animation: shrinkWidth 4s linear forwards; }
+        @media (max-width: 1023px) {
+            .mq-container { width: min(1180px, calc(100% - 24px)); }
+            .mq-logo img { max-width: 54px; max-height: 54px; }
+            .mq-language-option { padding-inline: 10px; }
+        }
         @media (prefers-reduced-motion: reduce) {
             html { scroll-behavior: auto; }
             *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
@@ -114,66 +146,96 @@
     </div>
 
     <nav class="fixed w-full z-50 bg-white/95 backdrop-blur-xl border-b border-zinc-200/80">
-        <div class="mq-container h-20 flex justify-between items-center gap-5">
-            <a href="{{ url_for('main.home') }}" class="flex items-center gap-3 min-h-[44px]" aria-label="{{ store.name }}">
-                <img style="width: {{ theme.logo_width }}; height: {{ theme.logo_height }};" src="{{ store.logo }}" alt="{{ store.name }}" class="object-contain">
-            </a>
+        <div class="mq-container">
+            <div class="h-[72px] lg:h-20 flex justify-between items-center gap-2 sm:gap-5">
+                <a href="{{ url_for('main.home') }}" class="mq-logo flex items-center flex-shrink-0 min-h-[44px]" aria-label="{{ store.name }}">
+                    <img style="width: {{ theme.logo_width }}; height: {{ theme.logo_height }};" src="{{ store.logo }}" alt="{{ store.name }}" class="object-contain">
+                </a>
 
-            <div class="hidden lg:flex items-center justify-center gap-8 text-sm font-semibold text-zinc-700">
-                <a href="{{ url_for('main.home') }}" class="mq-nav-link hover:text-[#d71920] transition-colors">{{ _('nav_home') }}</a>
-                <a href="{{ url_for('main.all_products_view') }}" class="mq-nav-link hover:text-[#d71920] transition-colors">{{ _('nav_shop') }}</a>
-                <a href="/about" class="mq-nav-link hover:text-[#d71920] transition-colors">{{ _('footer_about') }}</a>
-                <a href="/contact" class="mq-nav-link hover:text-[#d71920] transition-colors">{{ _('contact') }}</a>
-            </div>
+                <div class="hidden lg:flex items-center justify-center gap-8 text-sm font-semibold text-zinc-700">
+                    <a href="{{ url_for('main.home') }}" class="mq-nav-link hover:text-[#d71920] transition-colors">{{ _('nav_home') }}</a>
+                    <a href="{{ url_for('main.all_products_view') }}" class="mq-nav-link hover:text-[#d71920] transition-colors">{{ _('nav_shop') }}</a>
+                    <a href="/about" class="mq-nav-link hover:text-[#d71920] transition-colors">{{ _('footer_about') }}</a>
+                    <a href="/contact" class="mq-nav-link hover:text-[#d71920] transition-colors">{{ _('contact') }}</a>
+                </div>
 
-            <div class="flex items-center gap-3 md:gap-5">
-                <div class="relative block">
+                <div class="hidden lg:flex items-center gap-4">
                     <label for="nav-currency" class="sr-only">{{ _('currency') }}</label>
                     <select id="nav-currency"
                             aria-label="{{ _('currency') }}"
                             class="h-11 bg-zinc-50 border border-zinc-200 text-zinc-900 rounded-md px-3 pr-8 text-xs font-bold focus:border-[#d71920] outline-none cursor-pointer"
                             onchange="if (this.value) window.location.href = this.value;">
                         {% for code, currency_data in config['CURRENCY_RATES'].items() %}
-                        <option value="{{ url_for('main.set_currency', code=code) }}" {% if current_currency == code %}selected{% endif %}>
-                            {{ code }}
-                        </option>
+                        <option value="{{ url_for('main.set_currency', code=code) }}" {% if current_currency == code %}selected{% endif %}>{{ code }}</option>
                         {% endfor %}
                     </select>
+                    <div class="mq-language-switch" role="group" aria-label="{{ _('language') }}">
+                        <a href="{{ url_for('main.set_language', lang_code='en') }}" class="mq-language-option" {% if current_lang == 'en' %}aria-current="true"{% endif %}>EN</a>
+                        <a href="{{ url_for('main.set_language', lang_code='ar') }}" class="mq-language-option" lang="ar" {% if current_lang == 'ar' %}aria-current="true"{% endif %}>العربية</a>
+                    </div>
+                    {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('main.account') }}" class="min-h-[44px] inline-flex items-center gap-2 text-sm font-semibold text-zinc-700 hover:text-[#d71920] transition">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                            <span>{{ _('link_account') }}</span>
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('auth.login') }}" class="min-h-[44px] inline-flex items-center gap-2 text-sm font-semibold text-zinc-700 hover:text-[#d71920] transition">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3h-7a3 3 0 01-3-3v-10a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+                            <span>{{ _('nav_login') }}</span>
+                        </a>
+                    {% endif %}
+                    <a href="{{ url_for('main.cart_page') }}" class="relative min-w-[44px] min-h-[44px] inline-flex items-center justify-center text-zinc-900 hover:text-[#d71920] transition group" aria-label="{{ _('cart_title') }}">
+                        <svg class="w-6 h-6 group-hover:scale-105 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        <span class="cart-badge absolute top-1 right-0 bg-[#d71920] text-white text-[10px] font-bold min-w-5 h-5 px-1 flex items-center justify-center rounded-full {% if cart_count == 0 %}hidden{% endif %}">{{ cart_count }}</span>
+                    </a>
+                    {% if current_user.is_authenticated and current_user.is_admin %}
+                        <a href="{{ url_for('admin.dashboard') }}" class="inline-flex bg-zinc-950 text-white px-4 py-3 text-xs rounded-full font-bold hover:bg-[#d71920] transition">{{ _('nav_admin') }}</a>
+                    {% endif %}
                 </div>
 
-                <div class="hidden sm:flex items-center gap-2 text-xs font-bold">
-                    <a href="{{ url_for('main.set_language', lang_code='en') }}" class="px-2 py-2 hover:text-[#d71920] transition {% if current_lang == 'en' %}text-[#d71920]{% else %}text-zinc-400{% endif %}">EN</a>
-                    <span class="text-zinc-300">/</span>
-                    <a href="{{ url_for('main.set_language', lang_code='ar') }}" class="px-2 py-2 hover:text-[#d71920] transition {% if current_lang == 'ar' %}text-[#d71920]{% else %}text-zinc-400{% endif %}">AR</a>
+                <div class="flex lg:hidden items-center gap-1">
+                    <div class="mq-language-switch" role="group" aria-label="{{ _('language') }}">
+                        <a href="{{ url_for('main.set_language', lang_code='en') }}" class="mq-language-option" {% if current_lang == 'en' %}aria-current="true"{% endif %}>EN</a>
+                        <a href="{{ url_for('main.set_language', lang_code='ar') }}" class="mq-language-option" lang="ar" {% if current_lang == 'ar' %}aria-current="true"{% endif %}>عربي</a>
+                    </div>
+                    <a href="{{ url_for('main.cart_page') }}" class="relative min-w-[44px] min-h-[44px] inline-flex items-center justify-center text-zinc-900" aria-label="{{ _('cart_title') }}">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        <span class="cart-badge absolute top-1 right-0 bg-[#d71920] text-white text-[10px] font-bold min-w-5 h-5 px-1 flex items-center justify-center rounded-full {% if cart_count == 0 %}hidden{% endif %}">{{ cart_count }}</span>
+                    </a>
+                    <button id="mobile-nav-toggle" type="button" class="min-w-[44px] min-h-[44px] inline-flex items-center justify-center text-zinc-950 rounded-lg hover:bg-zinc-100 transition" aria-expanded="false" aria-controls="mobile-nav-panel" aria-label="{{ _('nav_menu') }}">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
                 </div>
-
-                {% if current_user.is_authenticated %}
-                    <a href="{{ url_for('main.account') }}" class="min-h-[44px] inline-flex items-center gap-2 text-sm font-semibold text-zinc-700 hover:text-[#d71920] transition">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                        <span class="hidden md:inline">{{ _('link_account') }}</span>
-                    </a>
-                {% else %}
-                    <a href="{{ url_for('auth.login') }}" class="min-h-[44px] inline-flex items-center gap-2 text-sm font-semibold text-zinc-700 hover:text-[#d71920] transition">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
-                        <span class="hidden md:inline">{{ _('nav_login') }}</span>
-                    </a>
-                {% endif %}
-
-                <a href="{{ url_for('main.cart_page') }}" class="relative min-w-[44px] min-h-[44px] inline-flex items-center justify-center text-zinc-900 hover:text-[#d71920] transition group" aria-label="{{ _('cart_title') }}">
-                    <svg class="w-6 h-6 group-hover:scale-105 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                    <span class="cart-badge absolute top-1 right-0 bg-[#d71920] text-white text-[10px] font-bold min-w-5 h-5 px-1 flex items-center justify-center rounded-full {% if cart_count == 0 %}hidden{% endif %}">
-                        {{ cart_count }}
-                    </span>
-                </a>
-
-                {% if current_user.is_authenticated and current_user.is_admin %}
-                    <a href="{{ url_for('admin.dashboard') }}" class="hidden md:inline-flex bg-zinc-950 text-white px-4 py-2 text-xs rounded-full font-bold hover:bg-[#d71920] transition">{{ _('nav_admin') }}</a>
-                {% endif %}
+            </div>
+            <div id="mobile-nav-panel" class="hidden lg:hidden pb-4">
+                <div class="bg-zinc-50 border border-zinc-200 rounded-2xl p-3 shadow-lg">
+                    <div class="grid grid-cols-2 gap-2 text-sm font-semibold text-zinc-800">
+                        <a href="{{ url_for('main.home') }}" class="min-h-[48px] px-4 flex items-center rounded-xl bg-white">{{ _('nav_home') }}</a>
+                        <a href="{{ url_for('main.all_products_view') }}" class="min-h-[48px] px-4 flex items-center rounded-xl bg-white">{{ _('nav_shop') }}</a>
+                        <a href="/about" class="min-h-[48px] px-4 flex items-center rounded-xl bg-white">{{ _('footer_about') }}</a>
+                        <a href="/contact" class="min-h-[48px] px-4 flex items-center rounded-xl bg-white">{{ _('contact') }}</a>
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-zinc-200 flex items-center justify-between gap-3">
+                        <label for="mobile-nav-currency" class="sr-only">{{ _('currency') }}</label>
+                        <select id="mobile-nav-currency" aria-label="{{ _('currency') }}"
+                                class="h-12 bg-white border border-zinc-200 text-zinc-900 rounded-xl px-4 text-xs font-bold outline-none"
+                                onchange="if (this.value) window.location.href = this.value;">
+                            {% for code, currency_data in config['CURRENCY_RATES'].items() %}
+                            <option value="{{ url_for('main.set_currency', code=code) }}" {% if current_currency == code %}selected{% endif %}>{{ code }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if current_user.is_authenticated %}
+                            <a href="{{ url_for('main.account') }}" class="min-h-[48px] px-4 inline-flex items-center font-semibold text-sm bg-zinc-950 text-white rounded-xl">{{ _('link_account') }}</a>
+                        {% else %}
+                            <a href="{{ url_for('auth.login') }}" class="min-h-[48px] px-4 inline-flex items-center font-semibold text-sm bg-zinc-950 text-white rounded-xl">{{ _('nav_login') }}</a>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
         </div>
     </nav>
 
-    <main class="flex-grow pt-20">
+    <main class="flex-grow pt-[72px] lg:pt-20">
         {% block content %}{% endblock %}
     </main>
 
@@ -293,6 +355,20 @@
         document.addEventListener('DOMContentLoaded', () => {
             if (window.lucide) {
                 window.lucide.createIcons();
+            }
+            const mobileNavToggle = document.getElementById('mobile-nav-toggle');
+            const mobileNavPanel = document.getElementById('mobile-nav-panel');
+            if (mobileNavToggle && mobileNavPanel) {
+                mobileNavToggle.addEventListener('click', () => {
+                    const isOpen = mobileNavToggle.getAttribute('aria-expanded') === 'true';
+                    mobileNavToggle.setAttribute('aria-expanded', String(!isOpen));
+                    mobileNavPanel.classList.toggle('hidden', isOpen);
+                    const icon = mobileNavToggle.querySelector('[data-lucide]');
+                    if (icon) {
+                        icon.setAttribute('data-lucide', isOpen ? 'menu' : 'x');
+                        window.lucide.createIcons();
+                    }
+                });
             }
             const toasts = document.querySelectorAll('.toast-item');
             toasts.forEach((toast, index) => {

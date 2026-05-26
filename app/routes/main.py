@@ -14,7 +14,7 @@ from app.payment import get_user_currency, create_tap_charge
 main_bp = Blueprint('main', __name__)
 
 def _t(key):
-    lang = session.get('language', 'en')
+    lang = session.get('language', 'ar')
     return dictionary.get(lang, {}).get(key, key)
 
 @main_bp.route('/')

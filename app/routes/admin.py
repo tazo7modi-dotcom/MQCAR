@@ -20,7 +20,7 @@ else:
 
 
 def _(key):
-    lang = session.get('language', 'en')
+    lang = session.get('language', 'ar')
     return dictionary.get(lang, {}).get(key, key)
 
 def admin_required(f):

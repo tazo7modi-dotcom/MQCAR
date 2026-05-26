@@ -36,6 +36,7 @@ dictionary = {
         'nav_account': 'Account',
         'nav_login': 'Login',
         'nav_shop': 'Shop',
+        'nav_menu': 'Open menu',
         
         # --- FOOTER (UPDATED FOR CARS) ---
         'footer_shop': 'Catalog',
@@ -671,6 +672,7 @@ dictionary = {
         'nav_account': 'حسابي',
         'nav_login': 'دخول',
         'nav_shop': 'المتجر',
+        'nav_menu': 'فتح القائمة',
         
         # --- FOOTER (UPDATED FOR CARS) ---
         'footer_shop': 'الكتالوج',

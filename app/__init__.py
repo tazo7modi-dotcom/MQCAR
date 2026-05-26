@@ -142,7 +142,7 @@ def create_app(config_class=Config):
     def inject_currency_data():
         code = get_user_currency()
         currency_data = app.config['CURRENCY_RATES'].get(code, app.config['CURRENCY_RATES']['BHD'])
-        lang = session.get('language', 'en')
+        lang = session.get('language', 'ar')
         country_key = 'country_ar' if lang == 'ar' else 'country_en'
         return dict(
             current_currency=code,
@@ -176,7 +176,7 @@ def create_app(config_class=Config):
     
     @app.context_processor
     def inject_translation():
-        lang = session.get('language', 'en')
+        lang = session.get('language', 'ar')
         def translate(key):
             return app.config.get('STORE_TEXT', {}).get(lang, {}).get(
                 key,
@@ -213,7 +213,7 @@ def create_app(config_class=Config):
 
     @app.template_filter('translate_dynamic')
     def translate_dynamic_filter(text):
-        current_lang = session.get('language', 'en')
+        current_lang = session.get('language', 'ar')
         if current_lang != 'ar':
             return text
         glossary_items = tuple(sorted(current_app.config.get('STORE_GLOSSARY', {}).items()))

@@ -9,54 +9,54 @@
 </div>
 
 <!-- Hero Section -->
-<section id="hero" class="relative min-h-screen flex items-center overflow-hidden bg-zinc-950 text-white">
+<section id="hero" class="relative min-h-[calc(100svh-72px)] md:min-h-screen flex items-end sm:items-center overflow-hidden bg-zinc-950 text-white">
   <div class="absolute inset-0 z-0">
     <img src="{{ store.hero_image }}" alt="{{ store.name }}"
-         class="w-full h-full object-cover opacity-95 scale-110 transition-transform duration-[12s] hover:scale-100"
+         class="w-full h-full object-contain md:object-cover opacity-60 md:opacity-95 md:scale-110 transition-transform duration-[12s] hover:scale-100"
          style="object-position: var(--store-hero-position);">
-    <div class="absolute inset-0 bg-gradient-to-l from-zinc-950 via-zinc-950/60 to-zinc-950/5 backdrop-blur-[1px]"></div>
+    <div class="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-l from-zinc-950 via-zinc-950/70 md:via-zinc-950/60 to-zinc-950/10 md:to-zinc-950/5 backdrop-blur-[1px]"></div>
     <div class="absolute inset-0 bg-gradient-to-t from-zinc-950/60 via-transparent to-zinc-950/20"></div>
   </div>
-  <div class="mq-container relative z-10 w-full py-20 md:py-32">
+  <div class="mq-container relative z-10 w-full py-10 sm:py-20 md:py-32">
     <div class="max-w-2xl ltr:ml-auto rtl:ml-auto text-left rtl:text-right">
-      <div class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/15 px-4 py-2 rounded-full text-xs font-bold mb-6 animate-pulse">
+      <div class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/15 px-3 sm:px-4 py-2 rounded-full text-xs font-bold mb-4 sm:mb-6">
         <i data-lucide="map-pin" class="w-4 h-4 text-[#d71920]"></i>
         {{ _('hero_location_tag').replace('{country}', current_currency_country) }}
       </div>
-      <h1 class="smart-heading text-4xl md:text-6xl lg:text-7xl font-extrabold leading-[1.02] mb-6 tracking-tight">
+      <h1 class="smart-heading text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-extrabold leading-[1.08] md:leading-[1.02] mb-4 sm:mb-6 tracking-tight">
         {{ _('hero_title') }}
       </h1>
-      <p class="text-lg md:text-xl text-zinc-100/90 leading-relaxed max-w-xl mb-8">
+      <p class="text-base sm:text-lg md:text-xl text-zinc-100/90 leading-relaxed max-w-xl mb-6 sm:mb-8">
         {{ _('hero_subtitle') }}
       </p>
-      <div class="flex flex-col sm:flex-row gap-4">
+      <div class="grid grid-cols-2 sm:flex sm:flex-row gap-3 sm:gap-4">
         <a href="#shop-all"
-           class="group inline-flex items-center justify-center gap-2 bg-[#d71920] text-white px-8 py-4 font-bold text-sm hover:bg-white hover:text-zinc-950 transition-all rounded-lg shadow-lg shadow-[#d71920]/25 hover:shadow-xl hover:scale-[1.03] transform">
+           class="group min-h-[52px] inline-flex items-center justify-center gap-2 bg-[#d71920] text-white px-3 sm:px-8 py-3 sm:py-4 font-bold text-sm hover:bg-white hover:text-zinc-950 transition-all rounded-xl shadow-lg shadow-[#d71920]/25 hover:shadow-xl">
           <i data-lucide="shopping-bag" class="w-5 h-5"></i>
           {{ _('shop_now') }}
         </a>
         <a href="/contact"
-           class="group inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur border border-white/20 text-white px-8 py-4 font-bold text-sm hover:bg-white hover:text-zinc-950 transition-all rounded-lg">
+           class="group min-h-[52px] inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur border border-white/20 text-white px-3 sm:px-8 py-3 sm:py-4 font-bold text-sm hover:bg-white hover:text-zinc-950 transition-all rounded-xl">
           <i data-lucide="messages-square" class="w-5 h-5"></i>
           {{ _('contact') }}
         </a>
       </div>
     </div>
-    <div class="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl ltr:ml-auto rtl:ml-auto">
-      <div class="group bg-white/5 backdrop-blur-md border border-white/10 p-5 rounded-xl hover:bg-white/10 transition-all">
-        <i data-lucide="settings" class="w-6 h-6 text-[#d71920] mb-3"></i>
-        <p class="text-2xl font-extrabold text-white group-hover:text-[#d71920] transition-colors">OEM+</p>
-        <p class="text-sm text-zinc-300 mt-1">{{ _('hero_stat_quality') }}</p>
+    <div class="mt-8 sm:mt-16 grid grid-cols-3 gap-2 sm:gap-4 max-w-3xl ltr:ml-auto rtl:ml-auto">
+      <div class="group bg-white/5 backdrop-blur-md border border-white/10 p-3 sm:p-5 rounded-xl hover:bg-white/10 transition-all">
+        <i data-lucide="settings" class="w-5 sm:w-6 h-5 sm:h-6 text-[#d71920] mb-2 sm:mb-3"></i>
+        <p dir="ltr" class="text-lg sm:text-2xl font-extrabold text-white group-hover:text-[#d71920] transition-colors">OEM+</p>
+        <p class="text-[11px] sm:text-sm leading-4 sm:leading-normal text-zinc-300 mt-1">{{ _('hero_stat_quality') }}</p>
       </div>
-      <div class="group bg-white/5 backdrop-blur-md border border-white/10 p-5 rounded-xl hover:bg-white/10 transition-all">
-        <i data-lucide="truck" class="w-6 h-6 text-[#d71920] mb-3"></i>
-        <p class="text-2xl font-extrabold text-white group-hover:text-[#d71920] transition-colors">{{ _('hero_stat_delivery_value') }}</p>
-        <p class="text-sm text-zinc-300 mt-1">{{ _('hero_stat_delivery') }}</p>
+      <div class="group bg-white/5 backdrop-blur-md border border-white/10 p-3 sm:p-5 rounded-xl hover:bg-white/10 transition-all">
+        <i data-lucide="truck" class="w-5 sm:w-6 h-5 sm:h-6 text-[#d71920] mb-2 sm:mb-3"></i>
+        <p class="text-lg sm:text-2xl font-extrabold text-white group-hover:text-[#d71920] transition-colors">{{ _('hero_stat_delivery_value') }}</p>
+        <p class="text-[11px] sm:text-sm leading-4 sm:leading-normal text-zinc-300 mt-1">{{ _('hero_stat_delivery') }}</p>
       </div>
-      <div class="group bg-white/5 backdrop-blur-md border border-white/10 p-5 rounded-xl hover:bg-white/10 transition-all">
-        <i data-lucide="shield-check" class="w-6 h-6 text-[#d71920] mb-3"></i>
-        <p class="text-2xl font-extrabold text-white group-hover:text-[#d71920] transition-colors">{{ _('hero_stat_support_value') }}</p>
-        <p class="text-sm text-zinc-300 mt-1">{{ _('hero_stat_support') }}</p>
+      <div class="group bg-white/5 backdrop-blur-md border border-white/10 p-3 sm:p-5 rounded-xl hover:bg-white/10 transition-all">
+        <i data-lucide="shield-check" class="w-5 sm:w-6 h-5 sm:h-6 text-[#d71920] mb-2 sm:mb-3"></i>
+        <p class="text-lg sm:text-2xl font-extrabold text-white group-hover:text-[#d71920] transition-colors">{{ _('hero_stat_support_value') }}</p>
+        <p class="text-[11px] sm:text-sm leading-4 sm:leading-normal text-zinc-300 mt-1">{{ _('hero_stat_support') }}</p>
       </div>
     </div>
   </div>
@@ -65,32 +65,32 @@
 <!-- Policies section -->
 {% if home_sections.policies %}
 <section class="border-b border-zinc-200 bg-white">
-  <div class="mq-container grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x rtl:divide-x-reverse divide-zinc-200">
-    <a href="{{ url_for('main.help') }}#shipping" class="group flex items-center gap-5 py-8 md:px-6 hover:bg-zinc-50 transition-colors">
-      <span class="w-14 h-14 rounded-xl bg-zinc-950 text-white flex items-center justify-center group-hover:bg-[#d71920] transition-colors">
-        <i data-lucide="truck" class="w-7 h-7"></i>
+  <div class="mq-container grid grid-cols-3 divide-x rtl:divide-x-reverse divide-zinc-200">
+    <a href="{{ url_for('main.help') }}#shipping" class="group flex flex-col md:flex-row items-center text-center md:text-start gap-3 md:gap-5 py-4 md:py-8 px-2 md:px-6 hover:bg-zinc-50 transition-colors">
+      <span class="w-11 md:w-14 h-11 md:h-14 rounded-xl bg-zinc-950 text-white flex items-center justify-center group-hover:bg-[#d71920] transition-colors">
+        <i data-lucide="truck" class="w-5 md:w-7 h-5 md:h-7"></i>
       </span>
       <span>
         <strong class="block text-sm font-bold text-zinc-950">{{ _('home_policy_ship') }}</strong>
-        <span class="block text-sm text-zinc-500 mt-1">{{ _('home_policy_ship_sub') }}</span>
+        <span class="hidden sm:block text-sm text-zinc-500 mt-1">{{ _('home_policy_ship_sub') }}</span>
       </span>
     </a>
-    <a href="{{ url_for('main.help') }}#refunds" class="group flex items-center gap-5 py-8 md:px-6 hover:bg-zinc-50 transition-colors">
-      <span class="w-14 h-14 rounded-xl bg-zinc-950 text-white flex items-center justify-center group-hover:bg-[#d71920] transition-colors">
-        <i data-lucide="check-circle" class="w-7 h-7"></i>
+    <a href="{{ url_for('main.help') }}#refunds" class="group flex flex-col md:flex-row items-center text-center md:text-start gap-3 md:gap-5 py-4 md:py-8 px-2 md:px-6 hover:bg-zinc-50 transition-colors">
+      <span class="w-11 md:w-14 h-11 md:h-14 rounded-xl bg-zinc-950 text-white flex items-center justify-center group-hover:bg-[#d71920] transition-colors">
+        <i data-lucide="check-circle" class="w-5 md:w-7 h-5 md:h-7"></i>
       </span>
       <span>
         <strong class="block text-sm font-bold text-zinc-950">{{ _('home_policy_return') }}</strong>
-        <span class="block text-sm text-zinc-500 mt-1">{{ _('home_policy_return_sub') }}</span>
+        <span class="hidden sm:block text-sm text-zinc-500 mt-1">{{ _('home_policy_return_sub') }}</span>
       </span>
     </a>
-    <a href="{{ url_for('main.help') }}" class="group flex items-center gap-5 py-8 md:px-6 hover:bg-zinc-50 transition-colors">
-      <span class="w-14 h-14 rounded-xl bg-zinc-950 text-white flex items-center justify-center group-hover:bg-[#d71920] transition-colors">
-        <i data-lucide="shield" class="w-7 h-7"></i>
+    <a href="{{ url_for('main.help') }}" class="group flex flex-col md:flex-row items-center text-center md:text-start gap-3 md:gap-5 py-4 md:py-8 px-2 md:px-6 hover:bg-zinc-50 transition-colors">
+      <span class="w-11 md:w-14 h-11 md:h-14 rounded-xl bg-zinc-950 text-white flex items-center justify-center group-hover:bg-[#d71920] transition-colors">
+        <i data-lucide="shield" class="w-5 md:w-7 h-5 md:h-7"></i>
       </span>
       <span>
         <strong class="block text-sm font-bold text-zinc-950">{{ _('home_policy_secure') }}</strong>
-        <span class="block text-sm text-zinc-500 mt-1">{{ _('home_policy_secure_sub') }}</span>
+        <span class="hidden sm:block text-sm text-zinc-500 mt-1">{{ _('home_policy_secure_sub') }}</span>
       </span>
     </a>
   </div>
@@ -99,34 +99,34 @@
 
 <!-- Shop by Category -->
 {% if home_sections.featured_categories %}
-<section id="shop-all" class="bg-white py-20 md:py-32">
+<section id="shop-all" class="bg-white py-12 md:py-32">
   <div class="mq-container">
-    <div class="grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr] gap-8 items-stretch bg-zinc-950 rounded-2xl overflow-hidden shadow-2xl">
-      <div class="p-8 md:p-14 text-white flex flex-col justify-center">
-        <span class="text-sm font-bold text-[#ff5e62] tracking-widest uppercase">{{ _('shop_all_pretitle') }}</span>
-        <h2 class="smart-heading text-4xl md:text-6xl font-extrabold leading-[1.1] mt-4 mb-6">
+    <div class="grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr] items-stretch bg-zinc-950 rounded-2xl overflow-hidden shadow-xl md:shadow-2xl">
+      <div class="p-6 sm:p-8 md:p-14 text-white flex flex-col justify-center">
+        <span class="text-xs sm:text-sm font-bold text-[#ff5e62] tracking-widest uppercase">{{ _('shop_all_pretitle') }}</span>
+        <h2 class="smart-heading text-3xl sm:text-4xl md:text-6xl font-extrabold leading-[1.12] mt-3 sm:mt-4 mb-4 sm:mb-6">
           {{ _('shop_all_title') }}
         </h2>
-        <p class="text-zinc-300 text-lg leading-8 mb-10 max-w-md">
+        <p class="text-zinc-300 text-base sm:text-lg leading-7 sm:leading-8 mb-6 sm:mb-10 max-w-md">
           {{ _('shop_all_desc') }}
         </p>
         <a href="{{ url_for('main.all_products_view') }}"
-           class="group inline-flex w-fit items-center gap-3 bg-[#d71920] text-white px-8 py-4 font-bold text-sm hover:bg-white hover:text-zinc-950 transition-all rounded-lg shadow-lg shadow-[#d71920]/25 hover:shadow-xl">
+           class="group min-h-[52px] inline-flex w-full sm:w-fit justify-center items-center gap-3 bg-[#d71920] text-white px-8 py-4 font-bold text-sm hover:bg-white hover:text-zinc-950 transition-all rounded-xl shadow-lg shadow-[#d71920]/25 hover:shadow-xl">
           {{ _('shop_all_btn') }}
-          <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
+          <i data-lucide="arrow-right" class="w-5 h-5 rtl:rotate-180 group-hover:translate-x-1 transition-transform"></i>
         </a>
       </div>
-      <div class="relative min-h-[300px] bg-zinc-900 overflow-hidden">
+      <div class="relative min-h-[218px] sm:min-h-[300px] bg-zinc-900 overflow-hidden">
         {% if store.secondary_logo %}
-        <img src="{{ store.secondary_logo }}" alt="{{ store.name }}" class="absolute inset-0 w-full h-full object-contain p-16 opacity-90">
+        <img src="{{ store.secondary_logo }}" alt="{{ store.name }}" class="absolute inset-0 w-full h-full object-contain p-10 sm:p-16 opacity-90">
         {% else %}
-        <img src="{{ store.logo }}" alt="{{ store.name }}" class="absolute inset-0 w-full h-full object-contain p-16 opacity-90">
+        <img src="{{ store.logo }}" alt="{{ store.name }}" class="absolute inset-0 w-full h-full object-contain p-10 sm:p-16 opacity-90">
         {% endif %}
         <div class="absolute top-0 right-0 w-1/3 h-full bg-[#d71920]/20 skew-x-12"></div>
-        <div class="absolute bottom-6 right-6 left-6 flex flex-wrap gap-2">
-          <span class="bg-white/90 backdrop-blur text-zinc-950 px-4 py-2 rounded-full text-xs font-bold shadow">{{ _('fitment_badge_1') }}</span>
-          <span class="bg-white/90 backdrop-blur text-zinc-950 px-4 py-2 rounded-full text-xs font-bold shadow">{{ _('fitment_badge_2') }}</span>
-          <span class="bg-white/90 backdrop-blur text-zinc-950 px-4 py-2 rounded-full text-xs font-bold shadow">{{ _('fitment_badge_3') }}</span>
+        <div class="absolute bottom-4 sm:bottom-6 right-4 sm:right-6 left-4 sm:left-6 flex flex-wrap gap-2">
+          <span class="bg-white/90 backdrop-blur text-zinc-950 px-3 sm:px-4 py-2 rounded-full text-xs font-bold shadow">{{ _('fitment_badge_1') }}</span>
+          <span class="bg-white/90 backdrop-blur text-zinc-950 px-3 sm:px-4 py-2 rounded-full text-xs font-bold shadow">{{ _('fitment_badge_2') }}</span>
+          <span class="bg-white/90 backdrop-blur text-zinc-950 px-3 sm:px-4 py-2 rounded-full text-xs font-bold shadow">{{ _('fitment_badge_3') }}</span>
         </div>
       </div>
     </div>
@@ -136,32 +136,32 @@
 
 <!-- Brand tiles -->
 {% if home_sections.featured_categories and brand_tiles %}
-<section class="bg-zinc-50 py-20 md:py-32 border-y border-zinc-200">
+<section class="bg-zinc-50 py-12 md:py-32 border-y border-zinc-200">
   <div class="mq-container">
-    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-14">
+    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 md:gap-6 mb-8 md:mb-14">
       <div class="max-w-2xl">
-        <span class="text-sm font-bold text-[#d71920] uppercase tracking-wide">{{ _('brand_section_label') }}</span>
-        <h2 class="smart-heading text-3xl md:text-5xl font-extrabold text-zinc-950 mt-4 mb-4">
+        <span class="text-xs sm:text-sm font-bold text-[#d71920] uppercase tracking-wide">{{ _('brand_section_label') }}</span>
+        <h2 class="smart-heading text-2xl sm:text-3xl md:text-5xl font-extrabold text-zinc-950 mt-3 md:mt-4 mb-3 md:mb-4">
           {{ _('brand_section_title') }}
         </h2>
-        <p class="text-zinc-600 text-lg leading-relaxed">
+        <p class="text-zinc-600 text-base md:text-lg leading-relaxed">
           {{ _('brand_section_subtitle') }}
         </p>
       </div>
     </div>
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
       {% for brand in brand_tiles %}
       <a href="{{ url_for('main.category_view', category_id=brand.category_id) }}"
-         class="group flex flex-col justify-between bg-white border border-zinc-200 rounded-xl p-6 hover:border-[#d71920] hover:shadow-2xl hover:scale-[1.03] transition-all duration-300">
-        <div class="h-32 flex items-center justify-center mb-4 bg-zinc-50 rounded-lg p-4">
+         class="group flex flex-col justify-between bg-white border border-zinc-200 rounded-xl p-3 sm:p-6 hover:border-[#d71920] hover:shadow-2xl transition-all duration-300">
+        <div class="h-20 sm:h-32 flex items-center justify-center mb-3 sm:mb-4 bg-zinc-50 rounded-lg p-3 sm:p-4">
           <img src="{{ url_for('static', filename=brand.image_path) }}" alt="{{ brand.name }}" loading="lazy"
                class="max-h-[80%] max-w-[85%] object-contain group-hover:scale-110 transition-transform duration-300">
         </div>
-        <div class="pt-4 border-t border-zinc-100">
-          <h3 class="smart-heading text-lg font-extrabold text-zinc-950 group-hover:text-[#d71920] transition-colors">
+        <div class="pt-3 sm:pt-4 border-t border-zinc-100">
+          <h3 class="smart-heading text-sm sm:text-lg font-extrabold text-zinc-950 group-hover:text-[#d71920] transition-colors">
             {{ brand.name }}
           </h3>
-          <p class="mt-2 text-sm font-bold text-zinc-500 group-hover:text-[#d71920] transition-colors">
+          <p class="mt-1 sm:mt-2 text-xs sm:text-sm font-bold text-zinc-500 group-hover:text-[#d71920] transition-colors">
             {{ _('brand_explore_models') }}
           </p>
         </div>
@@ -176,32 +176,32 @@
 {% if home_sections.featured_categories %}
 {% for category in categories %}
 {% if category.products %}
-<section class="bg-white py-16 md:py-24 border-t border-zinc-100">
+<section class="bg-white py-12 md:py-24 border-t border-zinc-100">
   <div class="mq-container">
-    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-10">
+    <div class="flex items-end justify-between gap-3 mb-7 md:mb-10">
       <div>
-        <span class="text-sm font-bold text-[#d71920] uppercase tracking-wide">{{ _('shop_by_category') }}</span>
-        <h2 class="smart-heading text-3xl md:text-5xl font-extrabold text-zinc-950 mt-2">
+        <span class="text-xs sm:text-sm font-bold text-[#d71920] uppercase tracking-wide">{{ _('shop_by_category') }}</span>
+        <h2 class="smart-heading text-2xl sm:text-3xl md:text-5xl font-extrabold text-zinc-950 mt-2">
           {{ category.name | translate_dynamic }}
         </h2>
       </div>
       <a href="{{ url_for('main.category_view', category_id=category.id) }}"
-         class="inline-flex items-center gap-2 text-sm font-bold text-zinc-700 hover:text-[#d71920] transition-colors group">
+         class="min-h-[44px] shrink-0 inline-flex items-center gap-1 sm:gap-2 text-xs sm:text-sm font-bold text-zinc-700 hover:text-[#d71920] transition-colors group">
         {{ _('view_all') }}
-        <i data-lucide="chevron-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
+        <i data-lucide="chevron-right" class="w-4 sm:w-5 h-4 sm:h-5 rtl:rotate-180 group-hover:translate-x-1 transition-transform"></i>
       </a>
     </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
       {% for item in (category.products|sort(attribute='id', reverse=True))[:4] %}
       <article class="group">
         <a href="{{ url_for('main.product_detail', product_id=item.id) }}"
            class="block aspect-square bg-zinc-100 relative overflow-hidden rounded-xl border border-zinc-200 group-hover:border-[#d71920] group-hover:shadow-lg transition-all">
           {% if item.quantity <= 0 %}
-          <div class="absolute top-3 left-3 bg-zinc-900/80 backdrop-blur text-white text-xs font-bold px-3 py-1.5 rounded-full z-10">
+          <div class="absolute top-2 sm:top-3 left-2 sm:left-3 bg-zinc-900/80 backdrop-blur text-white text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-1.5 rounded-full z-10">
             {{ _('sold_out') }}
           </div>
           {% elif item.discount_percentage > 0 %}
-          <div class="absolute top-3 left-3 bg-[#d71920] text-white text-xs font-bold px-3 py-1.5 rounded-full z-10">
+          <div class="absolute top-2 sm:top-3 left-2 sm:left-3 bg-[#d71920] text-white text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-1.5 rounded-full z-10">
             {{ _('lbl_sale') }}
           </div>
           {% endif %}
@@ -214,24 +214,24 @@
           </div>
           {% endif %}
           <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
-          <div class="absolute inset-x-0 bottom-4 flex justify-center opacity-0 group-hover:opacity-100 transition-all">
+          <div class="hidden sm:flex absolute inset-x-0 bottom-4 justify-center opacity-0 group-hover:opacity-100 transition-all">
             <span class="bg-white text-zinc-950 px-5 py-2.5 text-sm font-bold rounded-full shadow-lg hover:bg-[#d71920] hover:text-white transition">
               {{ _('quick_view') }}
             </span>
           </div>
         </a>
-        <div class="pt-4 px-1">
-          <h3 class="font-extrabold text-zinc-950 leading-snug mb-2 line-clamp-2">
+        <div class="pt-3 sm:pt-4 px-1">
+          <h3 class="text-sm sm:text-base font-extrabold text-zinc-950 leading-snug mb-2 line-clamp-2">
             <a href="{{ url_for('main.product_detail', product_id=item.id) }}" class="hover:text-[#d71920] transition-colors">
               {{ item.name | translate_dynamic }}
             </a>
           </h3>
           <div class="flex items-center gap-2 text-sm">
             {% if item.discount_percentage > 0 %}
-            <span class="text-[#d71920] font-extrabold text-lg">{{ item.get_price() | currency }}</span>
-            <span class="text-zinc-400 line-through">{{ item.price | currency }}</span>
+            <span class="text-[#d71920] font-extrabold text-sm sm:text-lg">{{ item.get_price() | currency }}</span>
+            <span class="text-zinc-400 text-xs sm:text-sm line-through">{{ item.price | currency }}</span>
             {% else %}
-            <span class="text-zinc-800 font-extrabold text-lg">{{ item.price | currency }}</span>
+            <span class="text-zinc-800 font-extrabold text-sm sm:text-lg">{{ item.price | currency }}</span>
             {% endif %}
           </div>
         </div>
@@ -246,38 +246,38 @@
 
 <!-- Why Us section -->
 {% if home_sections.why_us %}
-<section class="bg-zinc-50 py-20 md:py-32 border-y border-zinc-200">
+<section class="bg-zinc-50 py-12 md:py-32 border-y border-zinc-200">
   <div class="mq-container">
-    <div class="max-w-2xl mb-16">
-      <span class="text-sm font-bold text-[#d71920] uppercase tracking-wider">{{ _('why_label') }}</span>
-      <h2 class="smart-heading text-3xl md:text-5xl font-extrabold text-zinc-950 mt-4 mb-4">
+    <div class="max-w-2xl mb-8 md:mb-16">
+      <span class="text-xs sm:text-sm font-bold text-[#d71920] uppercase tracking-wider">{{ _('why_label') }}</span>
+      <h2 class="smart-heading text-2xl sm:text-3xl md:text-5xl font-extrabold text-zinc-950 mt-3 md:mt-4 mb-3 md:mb-4">
         {{ _('why_dropi_title') }}
       </h2>
-      <p class="text-zinc-600 text-lg leading-relaxed">
+      <p class="text-zinc-600 text-base md:text-lg leading-relaxed">
         {{ _('why_dropi_subtitle') }}
       </p>
     </div>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-      <div class="group bg-white border border-zinc-200 rounded-2xl p-8 hover:border-[#d71920] hover:shadow-xl transition-all">
-        <div class="w-14 h-14 mb-6 flex items-center justify-center bg-zinc-950 text-white rounded-xl group-hover:bg-[#d71920] transition-colors">
-          <i data-lucide="cpu" class="w-7 h-7"></i>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-8">
+      <div class="group bg-white border border-zinc-200 rounded-2xl p-5 sm:p-8 hover:border-[#d71920] hover:shadow-xl transition-all">
+        <div class="w-12 sm:w-14 h-12 sm:h-14 mb-4 sm:mb-6 flex items-center justify-center bg-zinc-950 text-white rounded-xl group-hover:bg-[#d71920] transition-colors">
+          <i data-lucide="cpu" class="w-6 sm:w-7 h-6 sm:h-7"></i>
         </div>
-        <h3 class="text-xl font-extrabold text-zinc-950 mb-3">{{ _('feature_metal_title') }}</h3>
-        <p class="text-zinc-600 leading-7">{{ _('feature_metal_desc') }}</p>
+        <h3 class="text-lg sm:text-xl font-extrabold text-zinc-950 mb-2 sm:mb-3">{{ _('feature_metal_title') }}</h3>
+        <p class="text-sm sm:text-base text-zinc-600 leading-6 sm:leading-7">{{ _('feature_metal_desc') }}</p>
       </div>
-      <div class="group bg-white border border-zinc-200 rounded-2xl p-8 hover:border-[#d71920] hover:shadow-xl transition-all">
-        <div class="w-14 h-14 mb-6 flex items-center justify-center bg-[#d71920] text-white rounded-xl group-hover:bg-zinc-950 transition-colors">
-          <i data-lucide="flame" class="w-7 h-7"></i>
+      <div class="group bg-white border border-zinc-200 rounded-2xl p-5 sm:p-8 hover:border-[#d71920] hover:shadow-xl transition-all">
+        <div class="w-12 sm:w-14 h-12 sm:h-14 mb-4 sm:mb-6 flex items-center justify-center bg-[#d71920] text-white rounded-xl group-hover:bg-zinc-950 transition-colors">
+          <i data-lucide="flame" class="w-6 sm:w-7 h-6 sm:h-7"></i>
         </div>
-        <h3 class="text-xl font-extrabold text-zinc-950 mb-3">{{ _('feature_temp_title') }}</h3>
-        <p class="text-zinc-600 leading-7">{{ _('feature_temp_desc') }}</p>
+        <h3 class="text-lg sm:text-xl font-extrabold text-zinc-950 mb-2 sm:mb-3">{{ _('feature_temp_title') }}</h3>
+        <p class="text-sm sm:text-base text-zinc-600 leading-6 sm:leading-7">{{ _('feature_temp_desc') }}</p>
       </div>
-      <div class="group bg-white border border-zinc-200 rounded-2xl p-8 hover:border-[#d71920] hover:shadow-xl transition-all">
-        <div class="w-14 h-14 mb-6 flex items-center justify-center bg-zinc-950 text-white rounded-xl group-hover:bg-[#d71920] transition-colors">
-          <i data-lucide="leaf" class="w-7 h-7"></i>
+      <div class="group bg-white border border-zinc-200 rounded-2xl p-5 sm:p-8 hover:border-[#d71920] hover:shadow-xl transition-all">
+        <div class="w-12 sm:w-14 h-12 sm:h-14 mb-4 sm:mb-6 flex items-center justify-center bg-zinc-950 text-white rounded-xl group-hover:bg-[#d71920] transition-colors">
+          <i data-lucide="leaf" class="w-6 sm:w-7 h-6 sm:h-7"></i>
         </div>
-        <h3 class="text-xl font-extrabold text-zinc-950 mb-3">{{ _('feature_eco_title') }}</h3>
-        <p class="text-zinc-600 leading-7">{{ _('feature_eco_desc') }}</p>
+        <h3 class="text-lg sm:text-xl font-extrabold text-zinc-950 mb-2 sm:mb-3">{{ _('feature_eco_title') }}</h3>
+        <p class="text-sm sm:text-base text-zinc-600 leading-6 sm:leading-7">{{ _('feature_eco_desc') }}</p>
       </div>
     </div>
   </div>
@@ -286,17 +286,17 @@
 
 <!-- Reviews section -->
 {% if home_sections.reviews %}
-<section class="bg-white py-20 md:py-32">
+<section class="bg-white py-12 md:py-32">
   <div class="mq-container">
-    <div class="text-center mb-16 max-w-2xl mx-auto">
-      <span class="text-sm font-bold text-[#d71920] uppercase tracking-wide">{{ _('reviews_label') }}</span>
-      <h2 class="smart-heading text-3xl md:text-5xl font-extrabold text-zinc-950 mt-4 mb-4">{{ _('reviews_title') }}</h2>
-      <p class="text-zinc-600 text-lg">{{ _('reviews_subtitle') }}</p>
+    <div class="text-center mb-8 md:mb-16 max-w-2xl mx-auto">
+      <span class="text-xs sm:text-sm font-bold text-[#d71920] uppercase tracking-wide">{{ _('reviews_label') }}</span>
+      <h2 class="smart-heading text-2xl sm:text-3xl md:text-5xl font-extrabold text-zinc-950 mt-3 md:mt-4 mb-3 md:mb-4">{{ _('reviews_title') }}</h2>
+      <p class="text-zinc-600 text-base md:text-lg">{{ _('reviews_subtitle') }}</p>
     </div>
     {% if reviews %}
-    <div class="flex overflow-x-auto gap-6 pb-8 mb-16 snap-x snap-mandatory hide-scrollbar">
+    <div class="flex overflow-x-auto gap-4 sm:gap-6 pb-6 md:pb-8 mb-8 md:mb-16 snap-x snap-mandatory hide-scrollbar">
       {% for review in reviews %}
-      <article class="min-w-[300px] md:min-w-[360px] bg-zinc-50 border border-zinc-200 rounded-2xl p-6 snap-center relative">
+      <article class="min-w-[86%] sm:min-w-[300px] md:min-w-[360px] bg-zinc-50 border border-zinc-200 rounded-2xl p-5 sm:p-6 snap-center relative">
         {% if current_user.is_authenticated and current_user.is_admin %}
         <form action="{{ url_for('main.delete_review', review_id=review.id) }}" method="POST"
               class="absolute top-4 ltr:right-4 rtl:left-4 z-10"
@@ -325,14 +325,14 @@
       {% endfor %}
     </div>
     {% else %}
-    <div class="text-center text-zinc-500 mb-16 py-16 border border-dashed border-zinc-200 rounded-xl">
+    <div class="text-center text-zinc-500 mb-8 md:mb-16 py-10 md:py-16 border border-dashed border-zinc-200 rounded-xl">
       <i data-lucide="message-circle" class="w-10 h-10 mx-auto mb-4 text-zinc-400"></i>
       {{ _('no_reviews_yet') }}
     </div>
     {% endif %}
-    <div class="max-w-2xl mx-auto bg-zinc-950 text-white p-8 md:p-12 rounded-2xl shadow-xl">
-      <h3 class="text-2xl font-extrabold mb-10 text-center smart-heading">{{ _('write_review_title') }}</h3>
-      <form action="{{ url_for('main.submit_review') }}" method="POST" class="space-y-8">
+    <div class="max-w-2xl mx-auto bg-zinc-950 text-white p-6 sm:p-8 md:p-12 rounded-2xl shadow-xl">
+      <h3 class="text-xl sm:text-2xl font-extrabold mb-7 sm:mb-10 text-center smart-heading">{{ _('write_review_title') }}</h3>
+      <form action="{{ url_for('main.submit_review') }}" method="POST" class="space-y-6 sm:space-y-8">
         <div class="flex flex-col items-center gap-3">
           <label class="text-sm font-bold text-zinc-300">{{ _('your_rating') }}</label>
           <div class="flex flex-row-reverse justify-center gap-1 group">
@@ -381,8 +381,8 @@
       }
     }, 450);
 
-    // Scroll‑reveal animation
-    const revealElements = document.querySelectorAll('section, .lazy-reveal');
+    // Keep the primary offer immediate; reveal supporting sections as they enter view.
+    const revealElements = document.querySelectorAll('section:not(#hero), .lazy-reveal');
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -396,7 +396,7 @@
     revealElements.forEach(el => {
       el.style.opacity = '0';
       el.style.transform = 'translateY(24px)';
-      el.style.transition = 'opacity 0.8s cubic-bezier(0.23, 1, 0.32, 1), transform 0.8s cubic-bezier(0.23, 1, 0.32, 1)';
+      el.style.transition = 'opacity 0.3s ease-out, transform 0.3s ease-out';
       observer.observe(el);
     });
   });
