@@ -186,12 +186,12 @@
                 </p>
                 <div class="flex gap-3 items-center">
                     {% if store.instagram_url %}
-                    <a href="{{ store.instagram_url }}" target="_blank" class="w-11 h-11 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-white hover:bg-[#d71920] hover:border-[#d71920] transition-all duration-200" aria-label="Instagram">
+                    <a href="{{ store.instagram_url }}" target="_blank" rel="noopener noreferrer" class="w-11 h-11 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-white hover:bg-[#d71920] hover:border-[#d71920] transition-all duration-200" aria-label="Instagram {{ store.instagram_handle or '' }}">
                         <i class="fab fa-instagram text-base"></i>
                     </a>
                     {% endif %}
                     {% if store.whatsapp_url %}
-                    <a href="{{ store.whatsapp_url }}" target="_blank" class="w-11 h-11 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-white hover:bg-[#25D366] hover:border-[#25D366] transition-all duration-200" aria-label="WhatsApp">
+                    <a href="{{ store.whatsapp_url }}" target="_blank" rel="noopener noreferrer" class="w-11 h-11 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-white hover:bg-[#25D366] hover:border-[#25D366] transition-all duration-200" aria-label="WhatsApp">
                         <i class="fab fa-whatsapp text-base"></i>
                     </a>
                     {% endif %}
@@ -234,6 +234,20 @@
                     <li class="flex items-center gap-3">
                         <svg class="w-5 h-5 text-[#d71920] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106a1.125 1.125 0 00-1.173.417l-.97 1.293a12.035 12.035 0 01-5.973-5.973l1.293-.97c.36-.27.527-.734.417-1.173L8.963 5.102A1.125 1.125 0 007.872 4.25H6.5A2.25 2.25 0 004.25 6.5v.25z"></path></svg>
                         <a href="tel:{{ store.phone }}" dir="ltr" class="hover:text-white transition">{{ store.phone_display or store.phone }}</a>
+                    </li>
+                    {% endif %}
+                    {% if store.whatsapp_url %}
+                    <li class="flex items-center gap-3">
+                        <i class="fab fa-whatsapp w-5 text-center text-[#25D366] flex-shrink-0" aria-hidden="true"></i>
+                        <a href="{{ store.whatsapp_url }}" target="_blank" rel="noopener noreferrer" class="hover:text-white transition">
+                            WhatsApp: <span dir="ltr">{{ store.phone_display or store.phone }}</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% if store.instagram_url %}
+                    <li class="flex items-center gap-3">
+                        <i class="fab fa-instagram w-5 text-center text-[#d71920] flex-shrink-0" aria-hidden="true"></i>
+                        <a href="{{ store.instagram_url }}" target="_blank" rel="noopener noreferrer" dir="ltr" class="hover:text-white transition">{{ store.instagram_handle or 'Instagram' }}</a>
                     </li>
                     {% endif %}
                     {% if store.email %}

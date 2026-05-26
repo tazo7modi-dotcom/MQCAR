@@ -31,6 +31,7 @@ These control the visible brand/contact info across navbar, footer, contact page
 | `STORE_PHONE_COUNTRY_CODE` | Default phone code in checkout. |
 | `STORE_WHATSAPP_URL` | WhatsApp link. Leave blank to hide. |
 | `STORE_INSTAGRAM_URL` | Instagram link. Leave blank to hide. |
+| `STORE_INSTAGRAM_HANDLE` | Instagram account text shown to customers, e.g. `@mq.cars`. |
 | `STORE_TIKTOK_URL` | TikTok link. Leave blank to hide. |
 
 ## Images
