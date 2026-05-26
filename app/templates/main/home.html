@@ -153,7 +153,7 @@
       {% for brand in brand_tiles %}
       <a href="{{ url_for('main.category_view', category_id=brand.category_id) }}"
          class="group flex flex-col justify-between bg-white border border-zinc-200 rounded-xl p-3 sm:p-6 hover:border-[#d71920] hover:shadow-2xl transition-all duration-300">
-        <div class="h-20 sm:h-32 flex items-center justify-center mb-3 sm:mb-4 bg-zinc-50 rounded-lg p-3 sm:p-4">
+        <div class="brand-logo-bg h-20 sm:h-32 flex items-center justify-center mb-3 sm:mb-4 bg-zinc-50 rounded-lg p-3 sm:p-4">
           <img src="{{ url_for('static', filename=brand.image_path) }}" alt="{{ brand.name }}" loading="lazy"
                class="max-h-[80%] max-w-[85%] object-contain group-hover:scale-110 transition-transform duration-300">
         </div>
@@ -369,6 +369,7 @@
 <style>
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+html.dark .brand-logo-bg { background-color: #ffffff !important; }
 </style>
 
 <script>
